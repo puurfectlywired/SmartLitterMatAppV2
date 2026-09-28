@@ -291,7 +291,7 @@ class MyBottomNavBar extends StatelessWidget {
                   icon: const Icon(
                     Icons.home,
                     size: 30,
-                    color: Colors.white,
+                    //color: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -306,7 +306,7 @@ class MyBottomNavBar extends StatelessWidget {
                 const Text(
                   'Home',
                   style: TextStyle(
-                    color: Colors.white,
+                    //color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -322,7 +322,7 @@ class MyBottomNavBar extends StatelessWidget {
                   icon: const Icon(
                     Icons.pets,
                     size: 30,
-                    color: Colors.white,
+                    //color: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -337,7 +337,7 @@ class MyBottomNavBar extends StatelessWidget {
                 const Text(
                   'Cats',
                   style: TextStyle(
-                    color: Colors.white,
+                    //color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -353,7 +353,7 @@ class MyBottomNavBar extends StatelessWidget {
                   icon: const Icon(
                     Icons.notifications,
                     size: 30,
-                    color: Colors.white,
+                    //color: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -368,7 +368,7 @@ class MyBottomNavBar extends StatelessWidget {
                 const Text(
                   'Alerts',
                   style: TextStyle(
-                    color: Colors.white,
+                    //color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -384,7 +384,7 @@ class MyBottomNavBar extends StatelessWidget {
                   icon: const Icon(
                     Icons.settings,
                     size: 30,
-                    color: Colors.white,
+                    //color: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -399,7 +399,7 @@ class MyBottomNavBar extends StatelessWidget {
                 const Text(
                   'Settings',
                   style: TextStyle(
-                    color: Colors.white,
+                    //color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -423,132 +423,194 @@ class FullProfilePage extends StatelessWidget {
     required this.cat,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
 
-      //TITLE: CAT NAME
-      appBar: MyAppBar(
-        title: cat.name,
-      ),
+    endDrawer: const MyDrawer(),
 
-      endDrawer: const MyDrawer(),
+    body: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
 
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        // CAT IMAGE + BACK BUTTON + MENU BUTTON
+        Stack(
+          children: [
 
-          //CAT IMAGE
-          Container(
-            width: double.infinity,
-            height: 250,
-            color: Colors.grey[200],
+            // CAT IMAGE
+            Container(
+              width: double.infinity,
+              height: 250,
+              color: Colors.grey[200],
 
-            child: cat.imagePath == null
-
-                ? const Center(
-                    child: Icon(
-                      Icons.add_a_photo,
-                      size: 60,
-                      color: Colors.grey,
-                    ),
-                  )
-
-                : Image.file(
-                    File(cat.imagePath!),
-                    width: double.infinity,
-                    height: 250,
-                    fit: BoxFit.cover,
-                  ),
-          ),
-
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  //CAT AGE
-                  Text(
-                    'Age: ${cat.age}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  //CAT WEIGHT
-                  Text(
-                    'Weight: ${displayWeight(cat.weight)}',
-                    style: const TextStyle(
-                      fontSize: 18
+              child: cat.imagePath == null
+                  ? const Center(
+                      child: Icon(
+                        Icons.add_a_photo,
+                        size: 60,
+                        color: Colors.grey,
                       ),
-                  ),
-
-                  const Spacer(),
-
-                  //DELETE PROFILE
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-
-                        final shouldDelete = await showDialog<bool>(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('Delete Profile'),
-                              content: Text(
-                                'Are you sure you want to delete ${cat.name}\'s profile?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, false);
-                                  },
-                                  child: const Text('Cancel'),
-                                ),
-
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, true);
-                                  },
-                                  child: const Text('Delete'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-
-                        if (shouldDelete == true) {
-                          catProfiles.remove(cat);
-
-                          if (!context.mounted) return;
-
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) =>
-                                  const ProfilesPage(),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            ),
-                            (route) => false,
-                          );
-                        }
-                      },
-                      child: const Text('Delete Profile'),
+                    )
+                  : Image.file(
+                      File(cat.imagePath!),
+                      width: double.infinity,
+                      height: 250,
+                      fit: BoxFit.cover,
                     ),
-                  ),
-                ],
+            ),
+
+            // BACK BUTTON
+            Positioned(
+              top: 50,
+              left: 10,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Colors.white,
+                  size: 30,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
             ),
+
+            // HAMBURGER MENU
+            Positioned(
+              top: 50,
+              right: 10,
+              child: Builder(
+                builder: (context) {
+                  return IconButton(
+                    icon: const Icon(
+                      Icons.menu,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      Scaffold.of(context).openEndDrawer();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+
+        // PROFILE INFORMATION
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // CAT NAME
+                Center(
+                  child: Text(
+                    cat.name,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // CAT AGE
+                Text(
+                  'Age: ${cat.age}' ' years',
+                  style: const TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  'Sex: ${cat.sex}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+                // CAT SEX
+
+                const SizedBox(height: 10),
+
+                // CAT WEIGHT
+                Text(
+                  'Weight: ${displayWeight(cat.weight)}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+
+                const Spacer(),
+
+                // DELETE PROFILE
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+
+                      final shouldDelete = await showDialog<bool>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Delete Profile'),
+                            content: Text(
+                              'Are you sure you want to delete ${cat.name}\'s profile?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context, false);
+                                },
+                                child: const Text('Cancel'),
+                              ),
+
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context, true);
+                                },
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (shouldDelete == true) {
+                        catProfiles.remove(cat);
+
+                        if (!context.mounted) return;
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const ProfilesPage(),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    },
+                    child: const Text('Delete Profile'),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-      bottomNavigationBar: const MyBottomNavBar(),
-    );
-  }
+        ),
+      ],
+    ),
+    bottomNavigationBar: const MyBottomNavBar(),
+  );
+}
 }
 
 
@@ -608,12 +670,14 @@ class FullProfilePage extends StatelessWidget {
 class CatProfile {
   final String name;
   final String age;
+  final String sex;
   final double weight;
   final String? imagePath;
 
   CatProfile({
     required this.name,
     required this.age,
+    required this.sex,
     required this.weight,
     this.imagePath,
   });
@@ -1156,6 +1220,7 @@ class _NewProfilePageState extends State<NewProfilePage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
+  final TextEditingController sexController = TextEditingController();
   
   //PROFILE IMAGE
   File? selectedImage;
@@ -1244,12 +1309,23 @@ class _NewProfilePageState extends State<NewProfilePage> {
 
                   const SizedBox(height: 20),
 
+                  //sex input
+                  TextField(
+                    controller: sexController,
+                    decoration: InputDecoration(
+                      labelText: 'Sex',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
                   //weight input
                   TextField(
                     controller: weightController,
-                    decoration: const InputDecoration(
-                      labelText: 'Weight',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'Current Weight ($weightUnit)',
+                      border: const OutlineInputBorder(),
                     ),
                   ),
 
@@ -1267,6 +1343,7 @@ class _NewProfilePageState extends State<NewProfilePage> {
                         final newCat = CatProfile(
                           name: nameController.text,
                           age: ageController.text,
+                          sex: sexController.text,
                           weight: storeWeight(enteredWeight),
                           imagePath: selectedImage?.path,
                         );
