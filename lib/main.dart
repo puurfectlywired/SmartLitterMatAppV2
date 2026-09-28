@@ -291,7 +291,7 @@ class MyBottomNavBar extends StatelessWidget {
                   icon: const Icon(
                     Icons.home,
                     size: 30,
-                    //color: Colors.white,
+                    color: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -306,7 +306,7 @@ class MyBottomNavBar extends StatelessWidget {
                 const Text(
                   'Home',
                   style: TextStyle(
-                    //color: Colors.white,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -322,7 +322,7 @@ class MyBottomNavBar extends StatelessWidget {
                   icon: const Icon(
                     Icons.pets,
                     size: 30,
-                    //color: Colors.white,
+                    color: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -337,7 +337,7 @@ class MyBottomNavBar extends StatelessWidget {
                 const Text(
                   'Cats',
                   style: TextStyle(
-                    //color: Colors.white,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -353,7 +353,7 @@ class MyBottomNavBar extends StatelessWidget {
                   icon: const Icon(
                     Icons.notifications,
                     size: 30,
-                    //color: Colors.white,
+                    color: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -368,7 +368,7 @@ class MyBottomNavBar extends StatelessWidget {
                 const Text(
                   'Alerts',
                   style: TextStyle(
-                    //color: Colors.white,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -384,7 +384,7 @@ class MyBottomNavBar extends StatelessWidget {
                   icon: const Icon(
                     Icons.settings,
                     size: 30,
-                    //color: Colors.white,
+                    color: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -399,7 +399,7 @@ class MyBottomNavBar extends StatelessWidget {
                 const Text(
                   'Settings',
                   style: TextStyle(
-                    //color: Colors.white,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -631,40 +631,41 @@ Widget build(BuildContext context) {
 
 
 
+/////////////////////////////////////GLOBAL VARIABLES///////////////////////////////////
 
+//WEIGHT CONTROL
+//default weight unit
+String weightUnit = 'kg';
 
-  //default weight unit
-  String weightUnit = 'kg';
-
-  //store weight value
-  double storeWeight(double enteredWeight) {
-      if (weightUnit == 'lb') {
-        return enteredWeight / 2.20462;
-      }
-      else if (weightUnit == 'g') {
-        return enteredWeight / 1000;
-      }
-      else {
-        return enteredWeight;
-      }
-  }
-
-  //convert weight unit, assuming internally stored as Kg
-  String displayWeight(double weightKg) {
-    if (weightUnit == 'lb') {
-      return '${(weightKg * 2.20462).toStringAsFixed(1)} lb';
-    } 
-    else if (weightUnit == 'g') {
-      return '${(weightKg * 1000).toStringAsFixed(0)} g';
-    } 
-    else {
-      return '${weightKg.toStringAsFixed(1)} kg';
+//store weight value
+double storeWeight(double enteredWeight) {
+  if (weightUnit == 'lb') {
+    return enteredWeight / 2.20462;
     }
+    else if (weightUnit == 'g') {
+      return enteredWeight / 1000;
+    }
+    else {
+      return enteredWeight;
+    }
+}
+
+//convert weight unit, assuming internally stored as Kg
+String displayWeight(double weightKg) {
+  if (weightUnit == 'lb') {
+    return '${(weightKg * 2.20462).toStringAsFixed(1)} lb';
+  } 
+  else if (weightUnit == 'g') {
+    return '${(weightKg * 1000).toStringAsFixed(0)} g';
+  } 
+  else {
+    return '${weightKg.toStringAsFixed(1)} kg';
   }
+}
 
 
 
-
+//PROFILE CONTROL
  List<CatProfile> catProfiles = []; // Example list of cat profiles
 
 class CatProfile {
