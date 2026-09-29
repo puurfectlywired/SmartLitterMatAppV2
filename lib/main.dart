@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'api/api_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -224,7 +225,7 @@ class MyDrawer extends StatelessWidget {
             ),
           ),
 
-          //____ BUTTON
+          //TEST BUTTON
           ListTile(
             //leading: const Icon(Icons.home),
             title: const Text('Test'),
@@ -233,7 +234,7 @@ class MyDrawer extends StatelessWidget {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) => 
-                    const HomePage(title: 'Puurfectly WIRED'),
+                    const TestPage(),
                 ),
               );
             },
@@ -703,6 +704,31 @@ class CatProfile {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////WELCOME PAGE//////////////////////////////////////////
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -773,6 +799,104 @@ class SettingsPage extends StatefulWidget {
 
 
 
+
+
+
+
+
+
+
+///////////////////////////////////////////TEST PAGE///////////////////////////////////////////
+class TestPage extends StatefulWidget {
+  const TestPage({super.key});
+
+  @override
+  State<TestPage> createState() => _TestPage();
+}
+
+////////////////////////////////////////////TEST PAGE////////////////////////////////
+class _TestPage extends State<TestPage> {
+  
+  bool ledOn = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      
+      appBar: const MyAppBar(
+        title: 'Test Page',
+        showLogo: true,
+        ),
+      
+      endDrawer: const MyDrawer(),
+      
+      body: Center(
+        child: Column (
+          children: [
+            
+            SizedBox(height: 200),
+
+            ElevatedButton(
+              onPressed: () async {
+                final newLedState = await ApiFlutter.setLed(!ledOn);
+
+                setState(() {
+                  ledOn = newLedState;
+                });
+              },
+              child: const Text('LED Toggle'),
+            ),
+
+            SizedBox(height: 50),
+
+            Icon(
+              Icons.pets,
+              size: 50,
+              color: ledOn
+                  ? Colors.red
+                  : Colors.grey,
+            ),
+          ]
+        ),
+      ),
+      
+      bottomNavigationBar: const MyBottomNavBar(),
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ////////////////////////////////////////////WELCOME PAGE STATE//////////////////////////////////////////
 class _WelcomePageState extends State<WelcomePage> {
 
@@ -791,7 +915,13 @@ class _WelcomePageState extends State<WelcomePage> {
 
             setState(() {});
           });
+    //testPiConnection();
   }
+
+  // Future<void> testPiConnection() async {
+  //   final buttonPressed = await ApiFlutter.getButtonStatus();
+  //   print('Button pressed: $buttonPressed');
+  // }
 
   @override
   void dispose() {
