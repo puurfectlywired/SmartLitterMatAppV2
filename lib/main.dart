@@ -1508,21 +1508,201 @@ class _NewProfilePageState extends State<NewProfilePage> {
 
 /////////////////////////////////////////////ALERTS PAGE STATE//////////////////////////////////////////
 class _AlertsPageState extends State<AlertsPage> {
+  
+  String selectedAlertView = 'Overview';
+  String selectedAlertProfile = 'General';
+  
+  //hardcoded demo weights
+  final demoWeights = [
+  10.8,
+  10.7,
+  10.7,
+  10.6,
+  10.5,
+  10.4,
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       appBar: const MyAppBar(
         title: 'Alerts'
         ),
+      
       endDrawer: const MyDrawer(),
       
-      body: const Center(
-        child: Text('This is the alerts page.'),
-      ),
+      body: Column(
+        children: [
 
-      bottomNavigationBar: const MyBottomNavBar(),
-    );
+          const SizedBox(height: 20),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+
+            child: SizedBox(
+              width: double.infinity,
+
+              child: Container(
+                height: 50,
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                //padding: const EdgeInsets.all(4),
+
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9EEF2),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+
+                child: Row(
+                  children: [
+                    _alertTab('Overview'),
+                    _alertTab('Recent'),
+                    _alertTab('History'),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          SizedBox(
+            height: 90,
+
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+              children: [
+                _profileAlertButton(
+                  name: 'General',
+                  icon: Icons.sensors,
+                ),
+
+                _profileAlertButton(
+                  name: 'Olive',
+                  icon: Icons.pets,
+                ),
+
+                _profileAlertButton(
+                  name: 'Miso',
+                  icon: Icons.pets,
+                ),
+
+                _profileAlertButton(
+                  name: 'Luna',
+                  icon: Icons.pets,
+                ),
+              ],
+            ),
+          ),
+        ],
+
+
+      ),
+    
+      bottomNavigationBar: const MyBottomNavBar()
+      );
   }
+
+Widget _alertTab(String title) {
+  final bool selected = selectedAlertView == title;
+
+  return Expanded(
+    child: GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedAlertView = title;
+        });
+      },
+
+      child: Container(
+        height: double.infinity,
+        alignment: Alignment.center,
+
+        decoration: BoxDecoration(
+          color: selected
+              ? const Color(0xFFFFA6C9)
+              : Colors.transparent,
+
+          borderRadius: BorderRadius.circular(30),
+        ),
+
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            color: selected
+                ? Colors.black
+                : Colors.grey,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _profileAlertButton({
+  required String name,
+  required IconData icon,
+}) {
+  final bool selected = selectedAlertProfile == name;
+
+  return GestureDetector(
+    onTap: () {
+      setState(() {
+        selectedAlertProfile = name;
+      });
+    },
+
+    child: Container(
+      width: 80,
+
+      child: Column(
+        children: [
+
+          Container(
+            width: 55,
+            height: 55,
+
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: selected
+                  ? const Color(0xFFF2D5DD)
+                  : Colors.grey[200],
+
+              border: selected
+                  ? Border.all(
+                      color: const Color(0xFFB95F79),
+                      width: 3,
+                    )
+                  : null,
+            ),
+
+            child: Icon(
+              icon,
+              size: 27,
+              color: selected
+                  ? const Color(0xFFB95F79)
+                  : Colors.grey,
+            ),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight:
+                  selected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 }
 
 ////////////////////////////////////////////SETTINGS PAGE STATE//////////////////////////////////////////
