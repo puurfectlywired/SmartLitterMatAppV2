@@ -40,6 +40,7 @@ dependencies:
   video_player: ^2.14.0
   http: ^1.6.0
   image_cropper: ^12.2.1
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:
