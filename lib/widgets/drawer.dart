@@ -6,6 +6,7 @@ import '../pages/profiles/all_profiles.dart';
 import '../pages/settings.dart';
 import '../pages/test.dart';
 import '../pages/login.dart';
+import '../pages/alerts/all_alerts.dart';
 
 /////////////////////////////////////////MY DRAWER//////////////////////////////////////////
 class MyDrawer extends StatelessWidget {
@@ -17,19 +18,8 @@ class MyDrawer extends StatelessWidget {
       width: 275,
       child: Column(
         children: [
-          //TITLE
-          const SizedBox(
-            height: 100,
-            // child: Center(
-            //   child: Text(
-            //     'Menu',
-            //     style: TextStyle(
-            //       fontSize: 20,
-            //       fontWeight: FontWeight.bold,
-            //     ),
-            //   ),
-            // ),
-          ),
+
+          const SizedBox(height: 100),
 
           //NAVIGATION SUBHEADING
           Padding(
@@ -82,6 +72,21 @@ class MyDrawer extends StatelessWidget {
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) => 
                     const ProfilesPage(),
+                ),
+              );
+            },
+          ),
+
+          //ALERTS BUTTON
+          ListTile(
+            //leading: const Icon(Icons.pets),
+            title: const Text('Alerts'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => 
+                    const AlertsPage(),
                 ),
               );
             },

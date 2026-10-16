@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/cat_profile.dart';
-import 'new_profile.dart';
+import 'new_profile_01.dart';
 
 
 /////////////////////////////////////////////EDIT PROFILE PAGE STATE//////////////////////////////////////////

@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
               )
             ),
 
-            SizedBox(height: 70),
+            SizedBox(height: 100),
 
             //username field
             SizedBox(

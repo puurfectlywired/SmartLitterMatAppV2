@@ -1,12 +1,11 @@
 
 
-
 //List<CatProfile> catProfiles = []; // Example list of cat profiles
 
 class CatProfile {
   final String id;
   final String name;
-  final String age;
+  final int age;
   final String breed;
   final String sex;
   final double weight;

@@ -1,154 +1,114 @@
 
 import 'package:flutter/material.dart';
 
-import '../pages/home.dart'; 
+import '../pages/home.dart';
 import '../pages/profiles/all_profiles.dart';
 import '../pages/alerts/all_alerts.dart';
-import '../pages/settings.dart';
+import '../pages/devices.dart';
 
 /////////////////////////////////////MY BOTTOM NAV BAR//////////////////////////////////////////////
 class MyBottomNavBar extends StatelessWidget {
-  const MyBottomNavBar({super.key});
+  const MyBottomNavBar({
+    super.key,
+    this.selectedIndex,
+  });
+
+  final int? selectedIndex;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-        borderRadius: const BorderRadius.vertical(          
-          top: Radius.circular(50)
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // NAVIGATION COLOURS
+    final selectedColor = colorScheme.primary;
+    final unselectedColor = colorScheme.onSurfaceVariant;
+
+    // NAVIGATION FUNCTION
+    void navigateTo(int index) {
+      if (index == selectedIndex) return;
+
+      Widget page;
+
+      switch (index) {
+        case 0:
+          page = const HomePage(title: 'Puurfectly WIRED');
+          break;
+        case 1:
+          page = const DevicesPage();
+          break;
+        case 2:
+          page = const ProfilesPage();
+          break;
+        case 3:
+          page = const AlertsPage();
+          break;
+        default:
+          return;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => page,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
+    }
+
+    // REUSABLE NAVIGATION ITEM
+    Widget navItem(int index, IconData icon, String label) {
+      final isSelected = selectedIndex == index;
+      final itemColor = isSelected ? selectedColor : unselectedColor;
+
+      return Expanded(
+        child: InkWell(
+          onTap: () => navigateTo(index),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 30,
+                color: itemColor,
+              ),
+
+              const SizedBox(height: 5),
+
+              Text(
+                label,
+                style: TextStyle(
+                  color: itemColor,
+                  fontSize: 12,
+                  fontWeight: isSelected
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+            ],
           ),
-        child: BottomAppBar(
-          color: Theme.of(context).colorScheme.inversePrimary,
-          height: 90.0,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(50),
+      ),
+      child: BottomAppBar(
+        color: colorScheme.surfaceContainer,
+        height: 90,
+        padding: EdgeInsets.zero,
+
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            
-            //HOME
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.home,
-                    size: 30,
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => 
-                        const HomePage(title: 'Puurfectly WIRED'),
-                      ),
-                    );
-                  },
-                ),
-                Text(
-                  'Home',
-                  style: TextStyle(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            
-            //CATS
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.pets,
-                    size: 30,
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => 
-                        const ProfilesPage(),
-                      ),
-                    );
-                  },
-                ),
-                Text(
-                  'Cats',
-                  style: TextStyle(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            
-            //ALERTS
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.notifications,
-                    size: 30,
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => 
-                        const AlertsPage(),
-                      ),
-                    );
-                  },
-                ),
-                Text(
-                  'Alerts',
-                  style: TextStyle(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            
-            //SETTINGS
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.settings,
-                    size: 30,
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => 
-                        const SettingsPage(),
-                      ),
-                    );
-                  },
-                ),
-                Text(
-                  'Settings',
-                  style: TextStyle(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+            navItem(0, Icons.home, 'Home'),
+            navItem(1, Icons.devices, 'Devices'),
+            navItem(2, Icons.pets, 'Cats'),
+            navItem(3, Icons.notifications, 'Alerts'),
           ],
         ),
-        )
+      ),
     );
   }
 }

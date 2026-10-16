@@ -240,7 +240,7 @@ class CurrentStatusCard extends StatelessWidget {
                   children: [
                     Text(
                       //'${status.visitCount}',
-                      'goodbye',
+                      '#',
                       style: TextStyle(
                         fontSize: 21,
                         fontWeight: FontWeight.bold,
@@ -269,7 +269,7 @@ class CurrentStatusCard extends StatelessWidget {
                   children: [
                     Text(
                       //'${status.dailyAverage}',
-                      'hello',
+                      '#',
                       style: TextStyle(
                         fontSize: 21,
                         fontWeight: FontWeight.bold,

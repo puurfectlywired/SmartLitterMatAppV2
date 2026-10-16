@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../models/cat_profile.dart';
-import '../../services/cat_service.dart';
+import '../../services/profile_service.dart';
 
 import 'edit_profile.dart';
 import '../report.dart';
@@ -133,7 +133,7 @@ Widget build(BuildContext context) {
 
                 const SizedBox(height: 10),
 
-                //hardcoded for demo
+                //HARD CODED FOR DEMO
                 Center(
                   child: Text(
                     'Last visit 09/30/2026 8:36PM',
@@ -241,7 +241,7 @@ Widget build(BuildContext context) {
                       );
 
                       if (shouldDelete == true) {
-                        await CatService.deleteCat(cat.id);
+                        await ProfileService.deleteProfile(cat.id);
 
                         if (!context.mounted) return;
 
@@ -267,7 +267,9 @@ Widget build(BuildContext context) {
         ),
       ],
     ),
-    bottomNavigationBar: const MyBottomNavBar(),
+    bottomNavigationBar: const MyBottomNavBar(
+      selectedIndex: 2,
+    ),
   );
 }
 }

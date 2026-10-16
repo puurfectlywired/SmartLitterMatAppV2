@@ -1,6 +1,9 @@
 
 import 'package:flutter/material.dart';
 
+import '../../models/cat_profile.dart';
+import '../../services/profile_service.dart';
+
 import '../../widgets/app_bar.dart';
 import '../../widgets/drawer.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -17,17 +20,25 @@ class AlertsPage extends StatefulWidget {
 class _AlertsPageState extends State<AlertsPage> {
   
   String selectedAlertView = 'Overview';
-  String selectedAlertProfile = 'General';
+  String? selectedCatId;
   
-  //hardcoded for demo
-  final demoWeights = [
-  10.8,
-  10.7,
-  10.7,
-  10.6,
-  10.5,
-  10.4,
-  ];
+  List<CatProfile> catProfiles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfiles();
+  }
+
+  Future<void> _loadProfiles() async {
+    final profiles = await ProfileService.getProfiles();
+
+    if (!mounted) return;
+
+    setState(() {
+      catProfiles = profiles;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,41 +68,33 @@ class _AlertsPageState extends State<AlertsPage> {
               _profileAlertButton(
                 name: 'General',
                 icon: Icons.sensors,
+                catId: null,
               ),
 
-              _profileAlertButton(
-                name: 'Olive',
+              ...catProfiles.map((cat) => _profileAlertButton(
+                name: cat.name,
                 icon: Icons.pets,
-              ),
-
-              _profileAlertButton(
-                name: 'Winston',
-                icon: Icons.pets,
-              ),
-
-              _profileAlertButton(
-                name: 'Miso',
-                icon: Icons.pets,
+                catId: cat.id,
+              )
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 20),
 
 
-        // ALERT SELECTION
-        SizedBox(
-          height: 90,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _alertTab('General'),
-              _alertTab('Ammonia'),
-              _alertTab('Weight'),
-            ]
-          ),
-        ),
+        // // ALERT SELECTION
+        // SizedBox(
+        //   height: 90,
+        //   child: Row(
+        //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //     children: [
+        //       _alertTab('General'),
+        //       _alertTab('Ammonia'),
+        //       _alertTab('Weight'),
+        //     ]
+        //   ),
+        // ),
         
 
         const SizedBox(height: 20),
@@ -111,133 +114,80 @@ class _AlertsPageState extends State<AlertsPage> {
                 ),
               ),
 
-              const SizedBox(height: 12),
-
-              // AMMONIA ALERT
-              // AlertCard(
-              //   icon: Icons.air,
-              //   title: 'High Ammonia Level',
-              //   description:
-              //       'Ammonia concentration exceeded the recommended threshold.',
-              //   time: 'Today • 10:42 AM',
-              //   category: 'General',
-              //   iconColor: Colors.orange,
-              // ),
-
-              // // WEIGHT ALERT
-              // AlertCard(
-              //   icon: Icons.monitor_weight_outlined,
-              //   title: 'Weight Decrease Detected',
-              //   description:
-              //       'Olive\'s weight decreased from 9.2 lb to 8.8 lb.',
-              //   time: 'Yesterday • 8:36 PM',
-              //   category: 'Olive',
-              //   iconColor: Colors.pink,
-              // ),
-
-              // // LITTER BOX VISIT ALERT
-              // AlertCard(
-              //   icon: Icons.pets,
-              //   title: 'Frequent Litter Box Visits',
-              //   description:
-              //       'Olive visited the litter box more frequently than usual.',
-              //   time: 'Sep 28 • 6:15 PM',
-              //   category: 'Olive',
-              //   iconColor: Colors.purple,
-              // ),
-
-              // // AMMONIA ALERT
-              // AlertCard(
-              //   icon: Icons.air,
-              //   title: 'Elevated Ammonia Level',
-              //   description:
-              //       'Ammonia concentration was above the normal operating range.',
-              //   time: 'Sep 26 • 9:14 AM',
-              //   category: 'General',
-              //   iconColor: Colors.orange,
-              // ),
-
-              // // WEIGHT INCREASE ALERT
-              // AlertCard(
-              //   icon: Icons.trending_up,
-              //   title: 'Weight Increase Detected',
-              //   description:
-              //       'Olive\'s weight increased by 0.4 lb over seven days.',
-              //   time: 'Sep 22 • 7:52 PM',
-              //   category: 'Olive',
-              //   iconColor: Colors.blue,
-             // ),
             ],
           ),
         ),
 
-        const SizedBox(height: 20),
+        //const SizedBox(height: 20),
 
         // WEEKLY LITTER BOX VISIT CHART
         // Only displayed for individual cats
-        if (selectedAlertView == 'Overview' &&
-            selectedAlertProfile != 'General')
+        // if (selectedAlertView == 'General' &&
+        //     selectedCatId != null)
 //          const WeeklyVisitsChart(),
 
         // SPACE AT BOTTOM OF SCROLL VIEW
-        const SizedBox(height: 30),
+        //const SizedBox(height: 30),
       ],
     ),
   ),
 
-  bottomNavigationBar: const MyBottomNavBar(),
+  bottomNavigationBar: const MyBottomNavBar(
+    selectedIndex: 3,
+  ),
     );
   }
 
 // ALERT TAB - select between alert types
-Widget _alertTab(String title) {
-  final bool selected = selectedAlertView == title;
+// Widget _alertTab(String title) {
+//   final bool selected = selectedAlertView == title;
 
-  return Expanded(
-    child: GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedAlertView = title;
-        });
-      },
+//   return Expanded(
+//     child: GestureDetector(
+//       onTap: () {
+//         setState(() {
+//           selectedAlertView = title;
+//         });
+//       },
 
-      child: Container(
-        height: double.infinity,
-        alignment: Alignment.center,
+//       child: Container(
+//         height: double.infinity,
+//         alignment: Alignment.center,
 
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFFFFA6C9)
-              : Colors.transparent,
+//         decoration: BoxDecoration(
+//           color: selected
+//               ? const Color(0xFFFFA6C9)
+//               : Colors.transparent,
 
-          borderRadius: BorderRadius.circular(30),
-        ),
+//           borderRadius: BorderRadius.circular(30),
+//         ),
 
-        child: Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: selected
-                ? Colors.black
-                : Colors.grey,
-          ),
-        ),
-      ),
-    ),
-  );
-}
+//         child: Text(
+//           title,
+//           style: TextStyle(
+//             fontSize: 14,
+//             color: selected
+//                 ? Colors.black
+//                 : Colors.grey,
+//           ),
+//         ),
+//       ),
+//     ),
+//   );
+// }
 
 // PROFILE TAB - select between cat profiles
 Widget _profileAlertButton({
   required String name,
   required IconData icon,
+  String? catId,
 }) {
-  final bool selected = selectedAlertProfile == name;
+  final bool selected = selectedCatId == catId;
 
   return GestureDetector(
     onTap: () {
       setState(() {
-        selectedAlertProfile = name;
+        selectedCatId = catId;
       });
     },
 

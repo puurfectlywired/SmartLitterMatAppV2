@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../pages/login.dart';
+import 'registration/create_username.dart';
 
 ///////////////////////////////////////////WELCOME PAGE//////////////////////////////////////////
 class WelcomePage extends StatefulWidget {
@@ -66,6 +67,17 @@ class _WelcomePageState extends State<WelcomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
 
+                Text( 
+                  'APP NAME',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+
+                const SizedBox(height: 100),
+
                 // LOGIN BUTTON
                 SizedBox(
                   width: 200,
@@ -93,7 +105,13 @@ class _WelcomePageState extends State<WelcomePage> {
                       backgroundColor: const Color.fromARGB(255, 255, 213, 230),
                     ),
                     onPressed: () {
-                      // Go to register page
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => 
+                          const CreateUsername(),
+                        ),
+                      );
                     },
                     child: const Text('Register'),
                   ),

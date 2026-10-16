@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 import '../../models/cat_profile.dart';
-import '../../services/cat_service.dart';
+import '../../services/profile_service.dart';
 
 import '../../other/global_variables.dart';
 
-import 'new_profile.dart';
+import 'new_profile_01.dart';
 import 'full_profile.dart';
 
 import '../../widgets/app_bar.dart';
@@ -34,7 +34,12 @@ class _ProfilesPageState extends State<ProfilesPage> {
   }
 
   Future<void> _loadCatProfiles() async {
-    final cats = await CatService.getCats();
+    //get cat profiles from cloud server
+    final cats = await ProfileService.getProfiles();
+
+    //for when user leaves page before profiles are loaded
+    if (!mounted) return;
+
     setState(() {
       catProfiles = cats;
     });
@@ -52,7 +57,9 @@ class _ProfilesPageState extends State<ProfilesPage> {
         ? _buildEmptyPage()     //no cat profiles added
         : _buildProfilesList(), //cat profiles added
 
-      bottomNavigationBar: const MyBottomNavBar(),
+      bottomNavigationBar: const MyBottomNavBar(
+        selectedIndex: 2,
+      ),
     );
   }
 
@@ -78,23 +85,40 @@ class _ProfilesPageState extends State<ProfilesPage> {
 
           const SizedBox(height: 20),
 
-          //ADD CAT BUTTON
+
+          // ADD CAT BUTTON
           ElevatedButton(
             onPressed: () async {
-              //opens new profile page and waits
               final newCat = await Navigator.push<CatProfile>(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const NewProfilePage(),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const NewProfilePage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
+
+              if (!mounted || newCat == null) return;
+
+              try {
+                await ProfileService.addProfile(newCat);
+
+                if (!mounted) return;
+
+                await _loadCatProfiles();
+
+              } catch (e) {
+                debugPrint('ERROR ADDING CAT: $e');
+
+                if (!mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Could not save cat profile.'),
                   ),
                 );
-                if (newCat != null) {
-                  await CatService.addCat(newCat);
-                  await _loadCatProfiles();
-                }
+              }
             },
             child: const Text('Add Cat'),
           ),
@@ -130,7 +154,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
 
               //empty state remains the same
               if (newCat != null) {
-                await CatService.addCat(newCat);
+                await ProfileService.addProfile(newCat);
                 await _loadCatProfiles();
               }
             },
@@ -140,6 +164,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
       }
 
       // Otherwise display the cat
+      // Selects one profile
       final cat = catProfiles[index];
 
       //info displayed on cat profile outside of full profile page
