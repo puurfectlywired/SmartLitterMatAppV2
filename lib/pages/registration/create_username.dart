@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 //import 'package:smart_litter_mat/pages/home.dart';
 
@@ -17,20 +18,21 @@ class CreateUsername extends StatefulWidget {
 
 ///////////////////////////////////////////CREATE USER PROFILE PAGE//////////////////////////////////////////
 class _CreateUsernameState extends State<CreateUsername> {
-  
+
   //controllers retrieve info from username/password text fields
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
+      resizeToAvoidBottomInset: true,
+
       body: SafeArea(
         child: Stack(
           children: [
-            
+
             //bits kept from app bar
             //back arrow
             Positioned(
@@ -48,121 +50,150 @@ class _CreateUsernameState extends State<CreateUsername> {
               ),
             ),
 
-            //body
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    
-                    Text(
-                      'Register',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.normal,
-                      )
-                    ),
-
-                    SizedBox(height: 70),
-
-                    SizedBox(
-                      width: 300,
-                      child: Text(
-                        'What should we call you?',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                        ),
+            // SCROLLABLE BODY
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
                       ),
-                    ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
 
-                    SizedBox(height: 10),
+                            // Logo above title
+                            Image.asset(
+                              'assets/images/PUUR_v4.png',
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.contain,
+                              color: Theme.of(context).colorScheme.onSurface,
 
-                    //first name field
-                    SizedBox(
-                      width: 300,
-                      child: TextField(
-                        controller: firstNameController,
-                        decoration: InputDecoration(
-                          labelText: 'First Name',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
+                            ),
 
-                    SizedBox(height: 20),
+                            SizedBox(height: 20),
 
-                    //last name field
-                    SizedBox(
-                      width: 300,
-                      child: TextField(
-                        controller: lastNameController,
-                        decoration: InputDecoration(
-                          labelText: 'Last Name',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
+                            Text(
+                              'Register',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
 
-                    SizedBox(height: 80),
+                            SizedBox(height: 70),
 
-                    SizedBox(
-                      width: 300,
-                      child: Text(
-                        "What's your email?",
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 10),
-
-                    // emailfield
-                    SizedBox(
-                      width: 300,
-                      child: TextField(
-                        controller: emailController,
-                        decoration:  InputDecoration(
-                          labelText: 'Email',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    
-                    SizedBox(height: 30),
-
-                  // Continue button
-                    SizedBox(
-                      width: 300,
-                      child: ElevatedButton(
-                        onPressed: () {
-                              Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                  pageBuilder: (context, animation, secondaryAnimation) => 
-                                  CreatePassword(
-                                    user: UserProfile(
-                                    firstName: firstNameController.text.trim(),
-                                    lastName: lastNameController.text.trim(),
-                                    email: emailController.text.trim(),
-                                    ),
-                                  ),
+                            SizedBox(
+                              width: 300,
+                              child: Text(
+                                'What should we call you?',
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.normal,
                                 ),
-                              );
-                            }, //onPressed
-                        child: const Text('Continue'),
+                              ),
+                            ),
+
+                            SizedBox(height: 10),
+
+                            //first name field
+                            SizedBox(
+                              width: 300,
+                              child: TextField(
+                                controller: firstNameController,
+                                decoration: InputDecoration(
+                                  labelText: 'First Name',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: 20),
+
+                            //last name field
+                            SizedBox(
+                              width: 300,
+                              child: TextField(
+                                controller: lastNameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Last Name',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: 80),
+
+                            SizedBox(
+                              width: 300,
+                              child: Text(
+                                "What's your email?",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: 10),
+
+                            // emailfield
+                            SizedBox(
+                              width: 300,
+                              child: TextField(
+                                controller: emailController,
+                                decoration: InputDecoration(
+                                  labelText: 'Email',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: 30),
+
+                            // Continue button
+                            SizedBox(
+                              width: 300,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                      ) =>
+                                          CreatePassword(
+                                        user: UserProfile(
+                                          firstName: firstNameController.text.trim(),
+                                          lastName: lastNameController.text.trim(),
+                                          email: emailController.text.trim(),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }, //onPressed
+                                child: const Text('Continue'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
-            ]
-          )
-        )
-      );
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

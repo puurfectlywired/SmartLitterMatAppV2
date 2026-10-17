@@ -19,9 +19,16 @@ class StartJourney extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Welcome to\nPUUR',
+              'Welcome to',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 40),
+            ),
+
+            Image.asset(
+              'assets/images/PUUR_v4.png',
+              width: 100,
+              height: 100,
+              fit: BoxFit.contain,
             ),
 
             SizedBox(height: 10),

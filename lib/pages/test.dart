@@ -55,7 +55,7 @@ class _TestPage extends State<TestPage> {
     return Scaffold(
       appBar: const MyAppBar(
         title: 'Test Page',
-        showLogo: true,
+        showAppLogo: true,
         ),
       endDrawer: const MyDrawer(),
       body: Center(

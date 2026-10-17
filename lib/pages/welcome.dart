@@ -89,12 +89,12 @@ class _WelcomePageState extends State<WelcomePage> {
 
                   Image.asset(
                     'assets/images/PUUR_v4.png',
-                    width: 500,
-                    height: 100,
+                    width: 200,
+                    height: 200,
                     fit: BoxFit.contain,
                   ),
 
-                const SizedBox(height: 200),
+                const SizedBox(height: 150),
 
                 // LOGIN BUTTON
                 SizedBox(

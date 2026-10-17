@@ -157,11 +157,15 @@ Widget passwordRequirement(String text, bool isMet) {
                 children:[
                   // Logo above title
                   Image.asset(
-                    'assets/images/cat_icon.png',
+                    'assets/images/PUUR_v4.png',
                     width: 100,
                     height: 100,
                     fit: BoxFit.contain,
+                    color: Theme.of(context).colorScheme.onSurface,
+
                   ),
+
+                  SizedBox(height: 20),
 
                   // Page title
                   Text(

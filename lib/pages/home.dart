@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import 'profiles/new_profile_01.dart';
+import 'devices.dart';
 
 import '../widgets/app_bar.dart';
 import '../widgets/drawer.dart';
@@ -26,7 +27,7 @@ class _HomePageState extends State<HomePage> {
       
       appBar: const MyAppBar(
        title: 'Puurfectly WIRED',
-       showLogo: false,
+       showAppLogo: true,
        showBackButton: false,
        showHamburgerMenu: true,
       ),
@@ -97,7 +98,15 @@ class _HomePageState extends State<HomePage> {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    // Add device functionality later
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const DevicesPage(),
+                      ),
+                    );
                   },
                   icon: Icon(
                     Icons.add_circle_outline,
