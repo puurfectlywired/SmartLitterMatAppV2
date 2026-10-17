@@ -36,7 +36,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  google_fonts: ^8.2.1
+  google_fonts: ^9.0.0
   video_player: ^2.14.0
   http: ^1.6.0
   image_cropper: ^12.2.1
@@ -68,6 +68,10 @@ flutter:
   assets:
     - assets/images/logo.png
     - assets/images/cat_icon.png
+    - assets/images/PUUR_v1.png
+    - assets/images/PUUR_v2.png
+    - assets/images/PUUR_v3.png
+    - assets/images/PUUR_v4.png
     - assets/videos/olive.mp4
   #   - images/a_dot_ham.jpeg
 

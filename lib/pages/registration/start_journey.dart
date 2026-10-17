@@ -10,6 +10,7 @@ class StartJourney extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       
       body: Center(
@@ -18,7 +19,8 @@ class StartJourney extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Welcome to \n APP NAME',
+              'Welcome to\nPUUR',
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 40),
             ),
 
@@ -31,20 +33,31 @@ class StartJourney extends StatelessWidget {
 
             SizedBox(height: 100),
 
+            // START YOUR JOURNEY BUTTON
             SizedBox(
               width: 300,
+              height: 50,
+
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const HomePage(
+                    PageRouteBuilder(
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+
+                      pageBuilder: (
+                        context,
+                        animation,
+                        secondaryAnimation,
+                      ) => const HomePage(
                         title: 'Puurfectly WIRED',
                       ),
                     ),
                     (route) => false,
                   );
-                }, //onPressed
+                },
+
                 child: const Text('Start Your Journey'),
               ),
             ),

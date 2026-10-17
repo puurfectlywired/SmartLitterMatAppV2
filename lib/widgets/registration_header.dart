@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 
+
+///////////////////////////////////////////REGISTRATION HEADER/////////////////////////////
 class RegistrationHeader extends StatelessWidget {
   const RegistrationHeader({
     super.key,

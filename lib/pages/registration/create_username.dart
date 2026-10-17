@@ -58,7 +58,7 @@ class _CreateUsernameState extends State<CreateUsername> {
                       'Register',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 40,
+                        fontSize: 30,
                         fontWeight: FontWeight.normal,
                       )
                     ),

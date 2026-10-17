@@ -127,6 +127,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
     );
   }
 
+
   //WITH PROFILES ADDED
   Widget _buildProfilesList() {
   return ListView.builder(
@@ -168,81 +169,90 @@ class _ProfilesPageState extends State<ProfilesPage> {
       final cat = catProfiles[index];
 
       //info displayed on cat profile outside of full profile page
-      return Container(
-        margin: const EdgeInsets.symmetric(
+      return Padding(
+        padding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 8,
         ),
 
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primaryContainer,
+        child: Card(
+          // Background, corners, and elevation
+          // are controlled by main.dart
 
-          // box border
-          // border: Border.all(
-          //   color: Theme.of(context).colorScheme.secondaryContainer,
-          //   width: 1,
-          // ),
-          borderRadius: BorderRadius.circular(15),
-        ),
-
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
-          // minTileHeight: 0,
-          // minVerticalPadding: 0,
-
-          leading: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: SizedBox(
-            width: 55,
-            height: 55,
-            child: cat.imagePath != null
-                ? Image.file(
-                    File(cat.imagePath!),
-                    fit: BoxFit.cover,
-                  )
-                : Container(
-                    color: Colors.grey[200],
-                    child: const Icon(
-                      Icons.pets,
-                      size: 30,
-                      color: Colors.grey,
-                    ),
-                  ),
-          ),
-          ),
-          
-          //CAT NAME
-          title: Text(
-            cat.name,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
             ),
-          ),
 
-          //
-          subtitle: Text(
-            'Age: ${cat.age} years   Weight: ${displayWeight(cat.weight)}',
-          ),
+            // CAT IMAGE
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
 
-          //ARROW
-          trailing: const Icon(
-            Icons.chevron_right,
-          ),
+              child: SizedBox(
+                width: 55,
+                height: 55,
 
-          //CLICK INTO FULL PROFILE
-          onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    FullProfilePage(cat: cat),
+                child: cat.imagePath != null
+                    ? Image.file(
+                        File(cat.imagePath!),
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        color: Theme.of(context)
+                            .colorScheme.surfaceContainerHighest,
+
+                        child: Icon(
+                          Icons.pets,
+                          size: 30,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
               ),
-            );
-          },
+            ),
+
+            // CAT NAME
+            title: Text(
+              cat.name,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+
+            // CAT INFORMATION
+            subtitle: Text(
+              'Age: ${cat.age} years   Weight: ${displayWeight(cat.weight)}',
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+
+            // ARROW
+            trailing: Icon(
+              Icons.chevron_right,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+
+            // OPEN FULL PROFILE
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+
+                  pageBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                  ) => FullProfilePage(cat: cat),
+                ),
+              );
+            },
+          ),
         ),
       );
     },

@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+//import 'package:google_fonts/google_fonts.dart';
 
 import '../pages/login.dart';
 import 'registration/create_username.dart';
@@ -61,37 +62,75 @@ class _WelcomePageState extends State<WelcomePage> {
                 : Container(),
           ),
 
+          // SUBTLE BACKGROUND GRADIENT
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.15),
+                      Colors.black.withValues(alpha: 0.35),
+                      Colors.black.withValues(alpha: 0.20),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           // BUTTONS ON TOP OF VIDEO
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
 
-                Text( 
-                  'APP NAME',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white.withOpacity(0.9),
+                  Image.asset(
+                    'assets/images/PUUR_v4.png',
+                    width: 500,
+                    height: 100,
+                    fit: BoxFit.contain,
                   ),
-                ),
 
-                const SizedBox(height: 100),
+                const SizedBox(height: 200),
 
                 // LOGIN BUTTON
                 SizedBox(
                   width: 200,
+                  height: 45,
+
                   child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF5F0F0),
+                      foregroundColor: const Color(0xFF29252A),
+                      elevation: 4,
+                      shadowColor: Colors.black.withValues(alpha:0.4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+
                     onPressed: () {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => 
-                          const LoginPage(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const LoginPage(),
                         ),
                       );
                     },
-                    child: const Text('Log In'),
+
+                    child: const Text(
+                      'Log In',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
 
@@ -100,20 +139,38 @@ class _WelcomePageState extends State<WelcomePage> {
                 // REGISTER BUTTON
                 SizedBox(
                   width: 200,
+                  height: 45,
+
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 255, 213, 230),
+                      backgroundColor: const Color(0xFFEFA0BD),
+                      foregroundColor: const Color(0xFF29252A),
+                      elevation: 4,
+                      shadowColor: Colors.black.withValues(alpha:0.4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
+
                     onPressed: () {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => 
-                          const CreateUsername(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const CreateUsername(),
                         ),
                       );
                     },
-                    child: const Text('Register'),
+
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],

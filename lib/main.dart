@@ -1,3 +1,4 @@
+
 //Author: Else
 
 import 'package:flutter/material.dart';
@@ -12,18 +13,25 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Puurfectly WIRED',
-      //themeMode: ThemeMode,
 
-      //temporary
+      // USES THEME THAT SYSTEM IS ALREADY USING
       themeMode: ThemeMode.system,
 
-      //LIGHT MODE EXPLICIT
+
+
+
+
+
+
+
+
+
+      //////////////////////////////////////////LIGHT MODE//////////////////////////////////////////
       theme: ThemeData(
         useMaterial3: true,
 
@@ -52,7 +60,6 @@ class MyApp extends StatelessWidget {
 
           // SECONDARY TEXT AND ICONS
           onSurfaceVariant: const Color(0xFF666168),
-
           // OUTLINES AND DIVIDERS
           outline: const Color(0xFF89838A),
           outlineVariant: const Color(0xFFD0CBD0),
@@ -62,6 +69,42 @@ class MyApp extends StatelessWidget {
           onInverseSurface: const Color(0xFFF8F6F6),
           inversePrimary: const Color(0xFFEFEAEC),
         ),
+
+        // GLOBAL BUTTON THEME
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            // ENABLED BUTTON
+            backgroundColor: const Color(0xFFF2B3CB),
+            foregroundColor: const Color(0xFF29252A),
+
+            // DISABLED BUTTON
+            disabledBackgroundColor: Colors.grey.shade300,
+            disabledForegroundColor: Colors.grey.shade600,
+
+            // BUTTON APPEARANCE
+            minimumSize: const Size(0, 45),
+            elevation: 1,
+
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+
+            textStyle: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+
+      // CAT PROFILE CARDS
+      cardTheme: CardThemeData(
+        color: const Color(0xFFFFD7E5),
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
 
         // DRAWER
         drawerTheme: const DrawerThemeData(
@@ -83,7 +126,16 @@ class MyApp extends StatelessWidget {
       ),
 
 
-      //DARK MODE EXPLICIT
+
+
+
+
+
+
+
+
+
+      //////////////////////////////////////////DARK MODE//////////////////////////////////////////
       darkTheme: ThemeData(
         useMaterial3: true,
 
@@ -123,6 +175,42 @@ class MyApp extends StatelessWidget {
           inversePrimary: const Color(0xFF292B30),
         ),
 
+        // BUTTONS
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            // ENABLED BUTTON
+            backgroundColor: const Color(0xFFEFA0BD),
+            foregroundColor: const Color(0xFF29252A),
+
+            // DISABLED BUTTON
+            disabledBackgroundColor: Colors.grey.shade800,
+            disabledForegroundColor: Colors.grey,
+
+            // BUTTON APPEARANCE
+            minimumSize: const Size(0, 45),
+            elevation: 0,
+
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+
+            textStyle: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+
+        // CAT PROFILE CARDS - DARK MODE
+        cardTheme: CardThemeData(
+          color: const Color(0xFF303238),
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+
         // DRAWER
         drawerTheme: const DrawerThemeData(
           backgroundColor: Color(0xFF202126),
@@ -142,11 +230,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF17191D),
       ),
 
-
-
+      //////////////////////////////////////////HOME//////////////////////////////////////////
       home: const WelcomePage(),
     );
   }
 }
-
-
