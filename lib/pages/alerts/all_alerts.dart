@@ -2,7 +2,10 @@
 import 'package:flutter/material.dart';
 
 import '../../models/cat_profile.dart';
-import '../../services/profile_service.dart';
+import '../../models/ammonia_model.dart';
+
+import '../../services/cat_profile_service.dart';
+import '../../services/ammonia_service.dart';
 
 import '../../widgets/app_bar.dart';
 import '../../widgets/drawer.dart';
@@ -16,222 +19,252 @@ class AlertsPage extends StatefulWidget {
   State<AlertsPage> createState() => _AlertsPageState();
 }
 
-/////////////////////////////////////////////ALERTS PAGE STATE//////////////////////////////////////////
+////////////////////////////////////////////ALERTS PAGE STATE//////////////////////////////////////////
 class _AlertsPageState extends State<AlertsPage> {
-  
-  String selectedAlertView = 'Overview';
+
   String? selectedCatId;
-  
+
   List<CatProfile> catProfiles = [];
+  List<AmmoniaAlert> ammoniaAlerts = [];
+
+  bool isLoading = true;
+  String? loadError;
 
   @override
   void initState() {
     super.initState();
-    _loadProfiles();
+    _loadData();
   }
 
-  Future<void> _loadProfiles() async {
-    final profiles = await ProfileService.getProfiles();
-
-    if (!mounted) return;
-
+  ////////////////////////////////////////////LOAD DATA//////////////////////////////////////////
+  Future<void> _loadData() async {
     setState(() {
-      catProfiles = profiles;
+      isLoading = true;
+      loadError = null;
     });
+
+    try {
+      final profiles = await ProfileService.getProfiles();
+      final alerts = await AmmoniaService.getAlerts();
+
+      if (!mounted) return;
+
+      setState(() {
+        catProfiles = profiles;
+        ammoniaAlerts = alerts;
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        loadError = 'Unable to load alerts.';
+        isLoading = false;
+      });
+    }
   }
 
+  ////////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
 
-  // APP BAR
-  appBar: const MyAppBar(
-    title: 'Alerts',
-  ),
+      // APP BAR
+      appBar: const MyAppBar(
+        title: 'Alerts',
+      ),
 
-  endDrawer: const MyDrawer(),
+      endDrawer: const MyDrawer(),
 
-  // SCROLLABLE PAGE
-  body: SingleChildScrollView(
-    child: Column(
-      children: [
+      body: Column(
+        children: [
 
-        const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-        // PROFILE SELECTION
-        SizedBox(
-          height: 90,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
+          // AMMONIA AND CAT PROFILE TABS
+          LayoutBuilder(
+            builder: (context, constraints) {
 
-              _profileAlertButton(
-                name: 'General',
-                icon: Icons.sensors,
-                catId: null,
-              ),
+              final int tabCount = catProfiles.length + 1;
 
-              ...catProfiles.map((cat) => _profileAlertButton(
-                name: cat.name,
-                icon: Icons.pets,
-                catId: cat.id,
-              )
-              ),
-            ],
-          ),
-        ),
+              const double minTabWidth = 100;
 
+              final double tabWidth =
+                  constraints.maxWidth / tabCount;
 
+              final double effectiveTabWidth =
+                  tabWidth < minTabWidth
+                      ? minTabWidth
+                      : tabWidth;
 
-        // // ALERT SELECTION
-        // SizedBox(
-        //   height: 90,
-        //   child: Row(
-        //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //     children: [
-        //       _alertTab('General'),
-        //       _alertTab('Ammonia'),
-        //       _alertTab('Weight'),
-        //     ]
-        //   ),
-        // ),
-        
+              return SizedBox(
+                height: 60,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
 
-        const SizedBox(height: 20),
+                      // AMMONIA TAB
+                      SizedBox(
+                        width: effectiveTabWidth,
+                        child: _alertTab(
+                          title: 'Ammonia',
+                          catId: null,
+                        ),
+                      ),
 
-        // RECENT ALERTS
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              const Text(
-                'Recent Alerts',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                      // CAT PROFILE TABS
+                      ...catProfiles.map(
+                        (cat) => SizedBox(
+                          width: effectiveTabWidth,
+                          child: _alertTab(
+                            title: cat.name,
+                            catId: cat.id,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-
-            ],
+              );
+            },
           ),
-        ),
 
-        //const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-        // WEEKLY LITTER BOX VISIT CHART
-        // Only displayed for individual cats
-        // if (selectedAlertView == 'General' &&
-        //     selectedCatId != null)
-//          const WeeklyVisitsChart(),
+          // ALERT CONTENT
+          Expanded(
+            child: _buildAlertContent(),
+          ),
+        ],
+      ),
 
-        // SPACE AT BOTTOM OF SCROLL VIEW
-        //const SizedBox(height: 30),
-      ],
-    ),
-  ),
-
-  bottomNavigationBar: const MyBottomNavBar(
-    selectedIndex: 3,
-  ),
+      bottomNavigationBar: const MyBottomNavBar(
+        selectedIndex: 3,
+      ),
     );
   }
 
-// ALERT TAB - select between alert types
-// Widget _alertTab(String title) {
-//   final bool selected = selectedAlertView == title;
+  ////////////////////////////////////////////ALERT CONTENT//////////////////////////////////////////
+  Widget _buildAlertContent() {
 
-//   return Expanded(
-//     child: GestureDetector(
-//       onTap: () {
-//         setState(() {
-//           selectedAlertView = title;
-//         });
-//       },
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
-//       child: Container(
-//         height: double.infinity,
-//         alignment: Alignment.center,
+    if (loadError != null) {
+      return Center(
+        child: Text(loadError!),
+      );
+    }
 
-//         decoration: BoxDecoration(
-//           color: selected
-//               ? const Color(0xFFFFA6C9)
-//               : Colors.transparent,
+    // Ammonia alerts are currently the only implemented alert type.
+    // Cat-specific alert data can be added through another service.
+    final List<AmmoniaAlert> visibleAlerts =
+        selectedCatId == null ? ammoniaAlerts : [];
 
-//           borderRadius: BorderRadius.circular(30),
-//         ),
+    if (visibleAlerts.isEmpty) {
+      return _buildEmptyPage();
+    }
 
-//         child: Text(
-//           title,
-//           style: TextStyle(
-//             fontSize: 14,
-//             color: selected
-//                 ? Colors.black
-//                 : Colors.grey,
-//           ),
-//         ),
-//       ),
-//     ),
-//   );
-// }
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: visibleAlerts.length,
+      itemBuilder: (context, index) {
 
-// PROFILE TAB - select between cat profiles
-Widget _profileAlertButton({
-  required String name,
-  required IconData icon,
-  String? catId,
-}) {
-  final bool selected = selectedCatId == catId;
+        final alert = visibleAlerts[index];
 
-  return GestureDetector(
-    onTap: () {
-      setState(() {
-        selectedCatId = catId;
-      });
-    },
-
-    child: SizedBox(
-      width: 80,
-      child: Column(
-        children: [
-          Container(
-            width: 55,
-            height: 55,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: selected
-                  ? const Color(0xFFF2D5DD)
-                  : Colors.grey[200],
-              border: selected
-                  ? Border.all(
-                      color: const Color(0xFFB95F79),
-                      width: 3,
-                    )
-                  : null,
+        return Card(
+          child: ListTile(
+            leading: const Icon(
+              Icons.warning_amber_rounded,
             ),
-            child: Icon(
-              icon,
-              size: 27,
-              color: selected
-                  ? const Color(0xFFB95F79)
-                  : Colors.grey,
+
+            title: Text(
+              'Ammonia: ${alert.status}',
+            ),
+
+            subtitle: Text(
+              alert.timestamp.toLocal().toString(),
             ),
           ),
+        );
+      },
+    );
+  }
 
-          const SizedBox(height: 5),
+  ////////////////////////////////////////////EMPTY PAGE//////////////////////////////////////////
+  Widget _buildEmptyPage() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
 
-          Text(
-            name,
+          const Icon(
+            Icons.notifications,
+            size: 80,
+          ),
+
+          const SizedBox(height: 20),
+
+          const Text(
+            'All caught up!', //change this phrasing later
             style: TextStyle(
-              fontSize: 13,
-              fontWeight:
-                  selected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 20,
             ),
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
+
+  ////////////////////////////////////////////TOP BAR ALERT TAB//////////////////////////////////////////
+  Widget _alertTab({
+    required String title,
+    required String? catId,
+  }) {
+
+    final bool selected = selectedCatId == catId;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedCatId = catId;
+        });
+      },
+
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 5,
+        ),
+
+        child: Container(
+          height: double.infinity,
+          alignment: Alignment.center,
+
+          decoration: BoxDecoration(
+            color: selected
+                ? const Color(0xFFFFA6C9)
+                : Colors.transparent,
+
+            borderRadius: BorderRadius.circular(30),
+          ),
+
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14,
+              color: selected
+                  ? Colors.black
+                  : Colors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

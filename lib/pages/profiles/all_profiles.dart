@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 import '../../models/cat_profile.dart';
-import '../../services/profile_service.dart';
+import '../../services/cat_profile_service.dart';
 
 import '../../other/global_variables.dart';
+
+import '../../theme/app_colours.dart';
 
 import 'new_profile_01.dart';
 import 'full_profile.dart';
@@ -26,6 +28,7 @@ class ProfilesPage extends StatefulWidget {
 class _ProfilesPageState extends State<ProfilesPage> {
     
   List<CatProfile> catProfiles = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -34,15 +37,24 @@ class _ProfilesPageState extends State<ProfilesPage> {
   }
 
   Future<void> _loadCatProfiles() async {
-    //get cat profiles from cloud server
-    final cats = await ProfileService.getProfiles();
+    try {
+      final profiles = await ProfileService.getProfiles();
 
-    //for when user leaves page before profiles are loaded
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      catProfiles = cats;
-    });
+      setState(() {
+        catProfiles = profiles;
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        isLoading = false;
+      });
+
+      debugPrint('Error loading cat profiles: $e');
+    }
   }
 
   @override
@@ -53,9 +65,13 @@ class _ProfilesPageState extends State<ProfilesPage> {
         ),
       endDrawer: const MyDrawer(),
       
-      body: catProfiles.isEmpty
-        ? _buildEmptyPage()     //no cat profiles added
-        : _buildProfilesList(), //cat profiles added
+      body: isLoading
+        ? const Center (
+            child: CircularProgressIndicator(),
+        )
+        : catProfiles.isEmpty
+          ? _buildEmptyPage()     //no cat profiles added
+          : _buildProfilesList(), //cat profiles added
 
       bottomNavigationBar: const MyBottomNavBar(
         selectedIndex: 2,
@@ -63,7 +79,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
     );
   }
 
-  //NO PROFILES YET PAGE
+  ////////////////////////////////////NO PROFILES YET PAGE///////////////////////////
   Widget _buildEmptyPage() {
     return Center(
       child: Column(
@@ -128,8 +144,10 @@ class _ProfilesPageState extends State<ProfilesPage> {
   }
 
 
-  //WITH PROFILES ADDED
+  /////////////////////////////////////WITH PROFILES ADDED//////////////////////////
   Widget _buildProfilesList() {
+    final appColors = Theme.of(context).extension<AppColors>()!;
+
   return ListView.builder(
     // +1 is for the add another cat button
     padding: const EdgeInsets.only(top: 12),
@@ -217,7 +235,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: appColors.catCardTitle,
               ),
             ),
 
@@ -226,14 +244,14 @@ class _ProfilesPageState extends State<ProfilesPage> {
               'Age: ${cat.age} years   Weight: ${displayWeight(cat.weight)}',
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: appColors.catCardSubtitle,
               ),
             ),
 
             // ARROW
             trailing: Icon(
               Icons.chevron_right,
-              color: Theme.of(context).colorScheme.primary,
+              color: appColors.catCardIcon,
             ),
 
             // OPEN FULL PROFILE

@@ -1,25 +1,23 @@
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'dart:io';
 
-import '../../models/cat_profile.dart';
-import '../../other/global_variables.dart';
 import '../../widgets/registration_header.dart';
+import '../../theme/app_colours.dart';
 
-////////////////////////////////////////////NEW PROFILE PAGE//////////////////////////////////////////
+import 'new_profile_02.dart';
+
+////////////////////////////////////////////NEW PROFILE PAGE 01//////////////////////////////////////////
 class NewProfilePage extends StatefulWidget {
   const NewProfilePage({
     super.key,
-    this.cat,
-    this.title = 'Create New Profile',
-    this.buttonText = 'Create Profile',
+    this.initialName = '',
+    this.initialGender,
+    this.initialBirthday,
   });
 
-  final CatProfile? cat;
-  final String title;
-  final String buttonText;
+  final String initialName;
+  final String? initialGender;
+  final DateTime? initialBirthday;
 
   @override
   State<NewProfilePage> createState() => _NewProfilePageState();
@@ -30,168 +28,109 @@ class _NewProfilePageState extends State<NewProfilePage> {
 
   // TEXT CONTROLLERS
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController ageController = TextEditingController();
-  final TextEditingController breedController = TextEditingController();
-  final TextEditingController weightController = TextEditingController();
-  final TextEditingController sexController = TextEditingController();
+  final TextEditingController birthdayController = TextEditingController();
 
-  File? selectedImage;
-  bool isSaving = false;
+  String? selectedGender;
+  DateTime? selectedBirthday;
 
   @override
   void initState() {
     super.initState();
 
-    // PREFILL FIELDS WHEN EDITING
-    if (widget.cat != null) {
-      nameController.text = widget.cat!.name;
-      ageController.text = widget.cat!.age.toString();
-      breedController.text = widget.cat!.breed;
-      sexController.text = widget.cat!.sex;
+    nameController.text = widget.initialName;
+    selectedGender = widget.initialGender;
+    selectedBirthday = widget.initialBirthday;
 
-      if (weightUnit == 'lb') {
-        weightController.text =
-            (widget.cat!.weight * 2.20462).toStringAsFixed(1);
-      } else if (weightUnit == 'g') {
-        weightController.text =
-            (widget.cat!.weight * 1000).toStringAsFixed(0);
-      } else {
-        weightController.text =
-            widget.cat!.weight.toStringAsFixed(1);
-      }
-
-      if (widget.cat!.imagePath != null) {
-        selectedImage = File(widget.cat!.imagePath!);
-      }
+    if (selectedBirthday != null) {
+      birthdayController.text = _formatDate(selectedBirthday!);
     }
   }
 
   @override
   void dispose() {
     nameController.dispose();
-    ageController.dispose();
-    breedController.dispose();
-    weightController.dispose();
-    sexController.dispose();
-
+    birthdayController.dispose();
     super.dispose();
   }
 
-  ////////////////////////////////////////////PROFILE IMAGE//////////////////////////////////////////
-  Future<void> pickImage() async {
-    try {
-      final ImagePicker picker = ImagePicker();
+  ////////////////////////////////////////////FORMAT DATE//////////////////////////////////////////
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
 
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-      );
-
-      if (image == null) return;
-
-      final CroppedFile? croppedImage =
-          await ImageCropper().cropImage(
-        sourcePath: image.path,
-
-        aspectRatio: const CropAspectRatio(
-          ratioX: 3,
-          ratioY: 2,
-        ),
-
-        uiSettings: [
-          IOSUiSettings(
-            title: 'Adjust Photo',
-          ),
-
-          AndroidUiSettings(
-            toolbarTitle: 'Adjust Photo',
-            lockAspectRatio: false,
-          ),
-        ],
-      );
-
-      if (croppedImage == null || !mounted) return;
-
-      setState(() {
-        selectedImage = File(croppedImage.path);
-      });
-
-    } catch (e) {
-      debugPrint('IMAGE PICKER ERROR: $e');
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not select image.'),
-        ),
-      );
-    }
+    return '$month/$day/${date.year}';
   }
 
-  ////////////////////////////////////////////SAVE PROFILE//////////////////////////////////////////
-  void saveProfile() {
-    if (isSaving) return;
+  ////////////////////////////////////////////SELECT BIRTHDAY//////////////////////////////////////////
+  Future<void> _selectBirthday() async {
 
-    final enteredWeight = double.tryParse(
-      weightController.text.trim(),
+    final now = DateTime.now();
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: selectedBirthday ?? now,
+      firstDate: DateTime(1990),
+      lastDate: now,
+      helpText: 'Select Birthday',
     );
 
+    if (pickedDate == null || !mounted) return;
+
+    setState(() {
+      selectedBirthday = pickedDate;
+      birthdayController.text = _formatDate(pickedDate);
+    });
+  }
+
+  ////////////////////////////////////////////NEXT PAGE//////////////////////////////////////////
+  void _nextPage() {
+
+    // VALIDATE NAME
     if (nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter a cat name.'),
+          content: Text('Please enter your cat\'s name.'),
         ),
       );
       return;
     }
 
-    if (enteredWeight == null ||
-        !enteredWeight.isFinite ||
-        enteredWeight <= 0) {
+    // VALIDATE GENDER
+    if (selectedGender == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter a valid weight.'),
+          content: Text('Please select your cat\'s gender.'),
         ),
       );
       return;
     }
 
-    setState(() {
-      isSaving = true;
-    });
-
-    try {
-      final newCat = CatProfile(
-        id: widget.cat?.id ??
-            DateTime.now().microsecondsSinceEpoch.toString(),
-        name: nameController.text.trim(),
-        age: int.tryParse(ageController.text.trim()) ?? 0,
-        breed: breedController.text.trim(),
-        sex: sexController.text.trim(),
-        weight: storeWeight(enteredWeight),
-        imagePath: selectedImage?.path,
-      );
-
-      debugPrint('RETURNING CAT: ${newCat.name}');
-
-      Navigator.pop(context, newCat);
-
-    } catch (e) {
-      debugPrint('PROFILE ERROR: $e');
-
-      if (!mounted) return;
-
-      setState(() {
-        isSaving = false;
-      });
-
+    // VALIDATE BIRTHDAY
+    if (selectedBirthday == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Could not create profile.'),
+          content: Text('Please select your cat\'s birthday.'),
         ),
       );
+      return;
     }
+
+    // NAVIGATE TO PAGE 2
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            NewProfilePage02(
+              initialName: nameController.text.trim(),
+              initialGender: selectedGender!,
+              initialBirthday: selectedBirthday!,
+            ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
+
 
   ////////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
   @override
@@ -199,145 +138,156 @@ class _NewProfilePageState extends State<NewProfilePage> {
 
     final colorScheme = Theme.of(context).colorScheme;
     final topPadding = MediaQuery.of(context).padding.top;
+    final appColors = Theme.of(context).extension<AppColors>()!;  
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
 
       body: ListView(
         padding: EdgeInsets.zero,
-        physics: const AlwaysScrollableScrollPhysics(),
         keyboardDismissBehavior:
             ScrollViewKeyboardDismissBehavior.onDrag,
 
         children: [
 
-          // CUSTOM REGISTRATION HEADER
-          // Extend the pink header behind the status bar.
+          //REGISTRATION HEADER
           ColoredBox(
-            color: colorScheme.primary,
+            color: appColors.registrationHeader,
             child: Padding(
               padding: EdgeInsets.only(top: topPadding),
-              child: const RegistrationHeader(
-                progress: 0.25,
+              child: ColoredBox(
+                color: colorScheme.surface,
+                child: const RegistrationHeader(
+                  progress: 0.25,
+                ),
               ),
             ),
           ),
 
-          // CAT IMAGE
-          GestureDetector(
-            onTap: pickImage,
 
-            child: Container(
-              width: double.infinity,
-              height: 250,
-              color: colorScheme.surfaceContainer,
+          //const SizedBox(height: 20),
 
-              child: selectedImage == null
-
-                  ? Center(
-                      child: Icon(
-                        Icons.add_a_photo,
-                        size: 60,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    )
-
-                  : Image.file(
-                      selectedImage!,
-                      width: double.infinity,
-                      height: 250,
-                      fit: BoxFit.cover,
-                    ),
+          // INTRODUCTION
+          const Text(
+            'Meow!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
             ),
           ),
 
-          // PROFILE INFORMATION
+          const SizedBox(height: 12),
+
+          const Text(
+            "Let's kick things off with the basics",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+
+          const SizedBox(height: 45),
+
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-
               children: [
 
                 // NAME
+                const Text(
+                  'Name',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18),
+                ),
+
+                const SizedBox(height: 20),
+
                 TextField(
                   controller: nameController,
                   maxLength: 30,
+                  textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(
-                    labelText: 'Name',
+                    hintText: 'Cat Name',
                     border: OutlineInputBorder(),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 35),
 
-                // BREED
-                TextField(
-                  controller: breedController,
-                  decoration: const InputDecoration(
-                    labelText: 'Breed',
-                    border: OutlineInputBorder(),
-                  ),
+                // GENDER
+                const Text(
+                  'Gender',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 25),
 
-                // AGE
-                TextField(
-                  controller: ageController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Age',
-                    border: OutlineInputBorder(),
-                  ),
+                Row(
+                  children: [
+
+                    Expanded(
+                      child: _genderButton('Male'),
+                    ),
+
+                    const SizedBox(width: 20),
+
+                    Expanded(
+                      child: _genderButton('Female'),
+                    ),
+                  ],
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 50),
 
-                // SEX
-                TextField(
-                  controller: sexController,
-                  decoration: const InputDecoration(
-                    labelText: 'Sex',
-                    border: OutlineInputBorder(),
-                  ),
+                // BIRTHDAY
+                const Text(
+                  "When is your cat's birthday?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 25),
 
-                // WEIGHT
                 TextField(
-                  controller: weightController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  controller: birthdayController,
+                  readOnly: true,
+                  onTap: _selectBirthday,
+
                   decoration: InputDecoration(
-                    labelText: 'Current Weight ($weightUnit)',
+                    hintText: 'Select Birthday',
                     border: const OutlineInputBorder(),
+
+                    suffixIcon: IconButton(
+                      icon: const Icon(
+                        Icons.calendar_month,
+                      ),
+                      color: colorScheme.primary,
+                      onPressed: _selectBirthday,
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 60),
 
-                // CREATE PROFILE BUTTON
+                // NEXT BUTTON
                 SizedBox(
-                  width: double.infinity,
                   height: 55,
-
                   child: ElevatedButton(
-                    onPressed: isSaving ? null : saveProfile,
-                    child: Text(widget.buttonText),
+                    onPressed: _nextPage,
+                    child: const Text('Next'),
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 15),
 
                 // CANCEL BUTTON
                 SizedBox(
-                  width: double.infinity,
                   height: 55,
-
                   child: OutlinedButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -354,4 +304,89 @@ class _NewProfilePageState extends State<NewProfilePage> {
       ),
     );
   }
+
+  ////////////////////////////////////////////GENDER BUTTON//////////////////////////////////////////
+  Widget _genderButton(String gender) {
+
+    final bool selected = selectedGender == gender;
+
+    final buttonStyle = ElevatedButtonTheme.of(context).style;
+
+    final selectedColor = buttonStyle?.backgroundColor
+        ?.resolve(<WidgetState>{}) ??
+        Theme.of(context).colorScheme.primary;
+
+    final selectedTextColor = buttonStyle?.foregroundColor
+        ?.resolve(<WidgetState>{}) ??
+        Theme.of(context).colorScheme.onPrimary;
+
+    return SizedBox(
+      height: 55,
+
+      child: OutlinedButton(
+        onPressed: () {
+          setState(() {
+            selectedGender = gender;
+          });
+        },
+
+      style: OutlinedButton.styleFrom(
+        backgroundColor: selected
+            ? selectedColor
+            : Theme.of(context).colorScheme.surfaceContainer,
+
+        foregroundColor: selected
+            ? selectedTextColor
+            : Theme.of(context).colorScheme.onSurface,
+
+        side: BorderSide(
+          color: selected
+              ? selectedColor
+              : Theme.of(context).colorScheme.outline,
+        ),
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+      ),
+
+        child: Text(
+          gender,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
 }
+
+////////////////////////////////////////////CURVED HEADER//////////////////////////////////////////
+// class _CurvedHeaderClipper extends CustomClipper<Path> {
+
+//   @override
+//   Path getClip(Size size) {
+
+//     final path = Path();
+
+//     path.lineTo(0, size.height * 0.82);
+
+//     path.quadraticBezierTo(
+//       size.width * 0.55,
+//       size.height * 0.60,
+//       size.width,
+//       size.height * 0.98,
+//     );
+
+//     path.lineTo(size.width, 0);
+//     path.close();
+
+//     return path;
+//   }
+
+//   @override
+//   bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
+//     return false;
+//   }
+// }

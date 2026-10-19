@@ -3,15 +3,15 @@
 
 //WEIGHT CONTROL
 //default weight unit
-String weightUnit = 'kg';
+String weightUnit = 'lb';
 
 //store weight value
 double storeWeight(double enteredWeight) {
-  if (weightUnit == 'lb') {
-    return enteredWeight / 2.20462;
+  if (weightUnit == 'kg') {
+    return enteredWeight * 2.20462;
     }
     else if (weightUnit == 'g') {
-      return enteredWeight / 1000;
+      return enteredWeight * 453.59237;
     }
     else {
       return enteredWeight;
@@ -20,13 +20,13 @@ double storeWeight(double enteredWeight) {
 
 //convert weight unit, assuming internally stored as Kg
 String displayWeight(double weightKg) {
-  if (weightUnit == 'lb') {
-    return '${(weightKg * 2.20462).toStringAsFixed(1)} lb';
+  if (weightUnit == 'kg') {
+    return '${(weightKg / 2.20462).toStringAsFixed(1)} lb';
   } 
   else if (weightUnit == 'g') {
-    return '${(weightKg * 1000).toStringAsFixed(0)} g';
+    return '${(weightKg * 453.59237).toStringAsFixed(0)} g';
   } 
   else {
-    return '${weightKg.toStringAsFixed(1)} kg';
+    return '${weightKg.toStringAsFixed(1)} lb';
   }
 }

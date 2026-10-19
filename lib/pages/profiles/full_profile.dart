@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../models/cat_profile.dart';
-import '../../services/profile_service.dart';
+import '../../services/cat_profile_service.dart';
 
 import 'edit_profile.dart';
 import '../report.dart';

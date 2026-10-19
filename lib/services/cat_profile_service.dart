@@ -1,3 +1,6 @@
+//Service: Cat Profiles
+//Sends/recieves/updates/deletes cat profile data on cloud server
+
 import '../models/cat_profile.dart';
 
 class ProfileService {
@@ -23,6 +26,16 @@ class ProfileService {
       breed: 'Maine Coon',
       sex: 'Male',
       weight: 12,
+      imagePath: null,
+    ),
+
+    CatProfile(
+      id: 'cat_003',
+      name: 'Mushu',
+      age: 7,
+      breed: 'Domestic Shorthair',
+      sex: 'Male',
+      weight: 9,
       imagePath: null,
     ),
   ];

@@ -14,9 +14,9 @@ class EditProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NewProfilePage(
-      cat: cat,
-      title: 'Edit Profile',
-      buttonText: 'Confirm',
+      // cat: cat,
+      // title: 'Edit Profile',
+      // buttonText: 'Confirm',
       );
   }
 }
