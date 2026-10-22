@@ -109,7 +109,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
-                      const NewProfilePage(),
+                      const NewProfilePage01(),
                   transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),
@@ -165,7 +165,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
-                      const NewProfilePage(),
+                      const NewProfilePage01(),
                   transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),

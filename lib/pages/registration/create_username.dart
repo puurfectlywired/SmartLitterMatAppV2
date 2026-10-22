@@ -2,11 +2,16 @@
 import 'package:flutter/material.dart';
 //import 'package:smart_litter_mat/pages/home.dart';
 
-import 'create_password.dart';
-import '../../models/user_profile.dart';
-// import '../widgets/app_bar.dart';
-// import '../widgets/drawer.dart';
-// import '../widgets/bottom_nav_bar.dart';
+//pages
+import 'create_password.dart';                  //registration page 2
+
+//models
+//import '../../models/user_profile.dart';
+import '../../models/user_registration.dart';   //holds user registration data
+
+//services
+//import '../../services/auth_service.dart';    //connects user registration to firebase
+
 
 ////////////////////////////////////////////CREATE USER PROFILE PAGE//////////////////////////////////////////
 class CreateUsername extends StatefulWidget {
@@ -23,6 +28,14 @@ class _CreateUsernameState extends State<CreateUsername> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,24 +175,26 @@ class _CreateUsernameState extends State<CreateUsername> {
                               width: 300,
                               child: ElevatedButton(
                                 onPressed: () {
+
+                                  // Get the information entered by the user
+                                  final userRegistration = UserRegistration(
+                                    firstName: firstNameController.text.trim(),
+                                    lastName: lastNameController.text.trim(),
+                                    email: emailController.text.trim(),
+                                  );
+
+                                  // Navigate to registration page 2
                                   Navigator.push(
                                     context,
                                     PageRouteBuilder(
-                                      pageBuilder: (
-                                        context,
-                                        animation,
-                                        secondaryAnimation,
-                                      ) =>
-                                          CreatePassword(
-                                        user: UserProfile(
-                                          firstName: firstNameController.text.trim(),
-                                          lastName: lastNameController.text.trim(),
-                                          email: emailController.text.trim(),
-                                        ),
+                                      pageBuilder: (_, __, ___) => CreatePassword(
+                                        user: userRegistration,
                                       ),
+                                      transitionDuration: Duration.zero,
+                                      reverseTransitionDuration: Duration.zero,
                                     ),
                                   );
-                                }, //onPressed
+                                },
                                 child: const Text('Continue'),
                               ),
                             ),

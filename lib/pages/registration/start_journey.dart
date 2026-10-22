@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../models/user_profile.dart';
+
+//pages
 import '../home.dart';
+
+//models
+import '../../models/user_registration.dart';
+
 
 ////////////////////////////////////////////START JOURNEY PAGE//////////////////////////////////////////
 class StartJourney extends StatelessWidget {
   const StartJourney({super.key, required this.user});
 
-  final UserProfile user;
+  final UserRegistration user;
 
   @override
   Widget build(BuildContext context) {

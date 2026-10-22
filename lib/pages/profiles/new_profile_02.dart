@@ -4,21 +4,17 @@ import 'package:flutter/material.dart';
 import '../../other/global_variables.dart';
 import '../../widgets/registration_header.dart';
 import '../../theme/app_colours.dart';
-
+import '../../models/cat_registration.dart';
 import 'new_profile_03.dart';
 
 ////////////////////////////////////////////NEW PROFILE PAGE 02//////////////////////////////////////////
 class NewProfilePage02 extends StatefulWidget {
   const NewProfilePage02({
     super.key,
-    this.initialName = '',
-    this.initialGender,
-    this.initialBirthday,
+    required this.registration,
   });
 
-  final String initialName;
-  final String? initialGender;
-  final DateTime? initialBirthday;
+  final CatRegistration registration;
 
   @override
   State<NewProfilePage02> createState() => _NewProfilePage02State();
@@ -29,6 +25,15 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
 
   // TEXT CONTROLLER
   final TextEditingController weightController = TextEditingController();
+  final TextEditingController breedController = TextEditingController();
+
+  @override
+  void initState() {
+  super.initState();
+
+  // LOAD PREVIOUSLY ENTERED BREED
+  breedController.text = widget.registration.breed;
+}
 
   @override
   void dispose() {
@@ -39,15 +44,12 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
   ////////////////////////////////////////////NEXT PAGE//////////////////////////////////////////
   void _nextPage() {
 
-    // GET ENTERED WEIGHT
-    final enteredWeight = double.tryParse(
+    // VALIDATE WEIGHT
+    final weight = double.tryParse(
       weightController.text.trim(),
     );
 
-    // VALIDATE WEIGHT
-    if (enteredWeight == null ||
-        !enteredWeight.isFinite ||
-        enteredWeight <= 0) {
+    if (weight == null || !weight.isFinite || weight <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter a valid weight.'),
@@ -56,8 +58,9 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
       return;
     }
 
-    // CONVERT WEIGHT TO KG FOR STORAGE
-    final weightKg = storeWeight(enteredWeight);
+    // SAVE INFORMATION TO REGISTRATION MODEL
+    widget.registration.weight = storeWeight(weight);
+    widget.registration.breed = breedController.text.trim();
 
     // NAVIGATE TO PAGE 3
     Navigator.push(
@@ -65,10 +68,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             NewProfilePage03(
-              initialName: widget.initialName,
-              initialGender: widget.initialGender,
-              initialBirthday: widget.initialBirthday,
-              initialWeight: weightKg,
+              registration: widget.registration,
             ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
@@ -120,8 +120,8 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
 
           const SizedBox(height: 12),
 
-          const Text(
-            "Let's get your cat's current weight",
+          Text(
+            "Let's learn a little more about ${widget.registration.name}",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 17,
@@ -177,7 +177,31 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
                   ),
                 ),
 
-                const SizedBox(height: 100),
+              const SizedBox(height: 45),
+
+              // BREED LABEL
+              const Text(
+                'What breed is your cat?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              // BREED INPUT
+              TextField(
+                controller: breedController,
+                maxLength: 50,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  hintText: 'Cat Breed (Optional)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              const SizedBox(height: 65),
 
                 // NEXT BUTTON
                 SizedBox(

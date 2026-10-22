@@ -7,25 +7,17 @@ import '../../services/cat_profile_service.dart';
 import '../../widgets/registration_header.dart';
 import '../../theme/app_colours.dart';
 import '../../other/global_variables.dart';
-
+import '../../models/cat_registration.dart';
 import 'all_profiles.dart';
 
 ////////////////////////////////////////////NEW PROFILE PAGE 04//////////////////////////////////////////
 class NewProfilePage04 extends StatefulWidget {
   const NewProfilePage04({
     super.key,
-    required this.initialName,
-    required this.initialGender,
-    required this.initialBirthday,
-    required this.initialWeight,
-    this.initialImagePath,
+    required this.registration,
   });
 
-  final String initialName;
-  final String initialGender;
-  final DateTime initialBirthday;
-  final double initialWeight;
-  final String? initialImagePath;
+  final CatRegistration registration;
 
   @override
   State<NewProfilePage04> createState() => _NewProfilePage04State();
@@ -63,19 +55,40 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
   Future<void> _createProfile() async {
     if (isSaving) return;
 
+    // GET REGISTRATION INFORMATION
+    final registration = widget.registration;
+
+    // VALIDATE REQUIRED INFORMATION
+    if (registration.name.trim().isEmpty ||
+        registration.sex.isEmpty ||
+        registration.birthday == null ||
+        registration.weight == null ||
+        !registration.weight!.isFinite ||
+        registration.weight! <= 0) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Some profile information is missing.'),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       isSaving = true;
     });
 
     try {
+
+      // CREATE CAT PROFILE
       final newCat = CatProfile(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
-        name: widget.initialName,
-        age: _calculateAge(widget.initialBirthday),
-        breed: '',
-        sex: widget.initialGender,
-        weight: widget.initialWeight,
-        imagePath: widget.initialImagePath,
+        name: registration.name.trim(),
+        age: _calculateAge(registration.birthday!),
+        breed: registration.breed,
+        sex: registration.sex,
+        weight: registration.weight!,
+        imagePath: registration.imagePath,
       );
 
       // SAVE PROFILE
@@ -83,7 +96,7 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
 
       if (!mounted) return;
 
-      // NAVIGATE TO ALL PROFILES INSTANTLY
+      // NAVIGATE TO ALL PROFILES PAGE
       Navigator.pushAndRemoveUntil(
         context,
         PageRouteBuilder(
@@ -130,7 +143,7 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
 
           const Spacer(),
 
-          Flexible(
+          Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
@@ -145,12 +158,16 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
     );
   }
 
+
   ////////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final topPadding = MediaQuery.of(context).padding.top;
     final appColors = Theme.of(context).extension<AppColors>()!;
+
+    // GET INFORMATION FROM REGISTRATION MODEL
+    final registration = widget.registration;
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -206,9 +223,9 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
                 color: colors.surfaceContainerHighest,
               ),
               child: ClipOval(
-                child: widget.initialImagePath != null
+                child: registration.imagePath != null
                     ? Image.file(
-                        File(widget.initialImagePath!),
+                        File(registration.imagePath!),
                         fit: BoxFit.cover,
                       )
                     : Icon(
@@ -236,30 +253,49 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
 
               child: Column(
                 children: [
+
+                  // NAME
                   _informationRow(
                     'Name',
-                    widget.initialName,
+                    registration.name,
                   ),
 
                   const Divider(),
 
+                  // GENDER
                   _informationRow(
                     'Gender',
-                    widget.initialGender,
+                    registration.sex,
                   ),
 
                   const Divider(),
 
+                  // BREED
+                  _informationRow(
+                    'Breed',
+                    registration.breed.isNotEmpty
+                        ? registration.breed
+                        : 'Not provided',
+                  ),
+
+                  const Divider(),
+
+                  // BIRTHDAY
                   _informationRow(
                     'Birthday',
-                    _formatDate(widget.initialBirthday),
+                    registration.birthday != null
+                        ? _formatDate(registration.birthday!)
+                        : 'Not provided',
                   ),
 
                   const Divider(),
 
+                  // WEIGHT
                   _informationRow(
                     'Weight',
-                    displayWeight(widget.initialWeight),
+                    registration.weight != null
+                        ? displayWeight(registration.weight!)
+                        : 'Not provided',
                   ),
                 ],
               ),
@@ -308,4 +344,6 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
       ),
     );
   }
+
+
 }

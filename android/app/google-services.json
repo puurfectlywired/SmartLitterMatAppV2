@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "432767535806",
+    "project_id": "smartlittermat",
+    "storage_bucket": "smartlittermat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:432767535806:android:990648dbad52ea76b7ecef",
+        "android_client_info": {
+          "package_name": "com.example.smart_mat_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTbfj3jpGWBPk7mJ7QKZVH7WeZm0ATuZc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

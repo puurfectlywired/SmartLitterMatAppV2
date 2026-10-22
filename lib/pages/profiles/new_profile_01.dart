@@ -3,29 +3,26 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/registration_header.dart';
 import '../../theme/app_colours.dart';
-
+import '../../models/cat_registration.dart';
 import 'new_profile_02.dart';
 
 ////////////////////////////////////////////NEW PROFILE PAGE 01//////////////////////////////////////////
-class NewProfilePage extends StatefulWidget {
-  const NewProfilePage({
+class NewProfilePage01 extends StatefulWidget {
+  const NewProfilePage01({
     super.key,
-    this.initialName = '',
-    this.initialGender,
-    this.initialBirthday,
+    this.registration,
   });
 
-  final String initialName;
-  final String? initialGender;
-  final DateTime? initialBirthday;
+  final CatRegistration? registration;
 
   @override
-  State<NewProfilePage> createState() => _NewProfilePageState();
+  State<NewProfilePage01> createState() => _NewProfilePage01State();
 }
 
 ////////////////////////////////////////////NEW PROFILE PAGE STATE//////////////////////////////////////////
-class _NewProfilePageState extends State<NewProfilePage> {
+class _NewProfilePage01State extends State<NewProfilePage01> {
 
+  late final CatRegistration registration;
   // TEXT CONTROLLERS
   final TextEditingController nameController = TextEditingController();
   final TextEditingController birthdayController = TextEditingController();
@@ -37,9 +34,14 @@ class _NewProfilePageState extends State<NewProfilePage> {
   void initState() {
     super.initState();
 
-    nameController.text = widget.initialName;
-    selectedGender = widget.initialGender;
-    selectedBirthday = widget.initialBirthday;
+    registration = widget.registration ?? CatRegistration();
+
+    nameController.text = registration.name;
+
+    selectedGender =
+        registration.sex.isEmpty ? null : registration.sex;
+
+    selectedBirthday = registration.birthday;
 
     if (selectedBirthday != null) {
       birthdayController.text = _formatDate(selectedBirthday!);
@@ -115,15 +117,18 @@ class _NewProfilePageState extends State<NewProfilePage> {
       return;
     }
 
+    // SAVE INFORMATION TO REGISTRATION MODEL
+    registration.name = nameController.text.trim();
+    registration.sex = selectedGender!;
+    registration.birthday = selectedBirthday;
+
     // NAVIGATE TO PAGE 2
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             NewProfilePage02(
-              initialName: nameController.text.trim(),
-              initialGender: selectedGender!,
-              initialBirthday: selectedBirthday!,
+              registration: registration,
             ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,

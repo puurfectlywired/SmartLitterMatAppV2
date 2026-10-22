@@ -1,4 +1,4 @@
-
+//represents the user information stored in firebase
 
 class UserProfile {
   final String firstName;

@@ -6,23 +6,17 @@ import 'dart:io';
 
 import '../../widgets/registration_header.dart';
 import '../../theme/app_colours.dart';
-
+import '../../models/cat_registration.dart';
 import 'new_profile_04.dart';
 
 ////////////////////////////////////////////NEW PROFILE PAGE 03//////////////////////////////////////////
 class NewProfilePage03 extends StatefulWidget {
   const NewProfilePage03({
     super.key,
-    this.initialName = '',
-    this.initialGender,
-    this.initialBirthday,
-    this.initialWeight,
+    required this.registration,
   });
 
-  final String initialName;
-  final String? initialGender;
-  final DateTime? initialBirthday;
-  final double? initialWeight;
+  final CatRegistration registration;
 
   @override
   State<NewProfilePage03> createState() => _NewProfilePage03State();
@@ -38,36 +32,37 @@ class _NewProfilePage03State extends State<NewProfilePage03> {
     try {
       final ImagePicker picker = ImagePicker();
 
+      // SELECT IMAGE
       final XFile? image = await picker.pickImage(
         source: ImageSource.gallery,
       );
 
       if (image == null) return;
 
-      final CroppedFile? croppedImage =
-          await ImageCropper().cropImage(
+      // CROP IMAGE
+      final croppedImage = await ImageCropper().cropImage(
         sourcePath: image.path,
-
-        aspectRatio: const CropAspectRatio(
-          ratioX: 1,
-          ratioY: 1,
-        ),
 
         uiSettings: [
           IOSUiSettings(
             title: 'Adjust Photo',
+            cropStyle: CropStyle.circle,
             aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
           ),
 
           AndroidUiSettings(
             toolbarTitle: 'Adjust Photo',
+            cropStyle: CropStyle.circle,
             lockAspectRatio: true,
+            initAspectRatio: CropAspectRatioPreset.square,
           ),
         ],
       );
 
       if (croppedImage == null || !mounted) return;
 
+      // SAVE SELECTED IMAGE
       setState(() {
         selectedImage = File(croppedImage.path);
       });
@@ -88,16 +83,30 @@ class _NewProfilePage03State extends State<NewProfilePage03> {
   ////////////////////////////////////////////CONTINUE//////////////////////////////////////////
   void _continue() {
 
+    // SAVE SELECTED IMAGE TO REGISTRATION MODEL
+    widget.registration.imagePath = selectedImage?.path;
+
+    // CHECK REQUIRED INFORMATION
+    if (widget.registration.name.trim().isEmpty ||
+        widget.registration.sex.isEmpty ||
+        widget.registration.birthday == null ||
+        widget.registration.weight == null) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Some profile information is missing.'),
+        ),
+      );
+      return;
+    }
+
+    // NAVIGATE TO PAGE 4
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             NewProfilePage04(
-              initialName: widget.initialName,
-              initialGender: widget.initialGender!,
-              initialBirthday: widget.initialBirthday!,
-              initialWeight: widget.initialWeight!,
-              initialImagePath: selectedImage?.path,
+              registration: widget.registration,
             ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,

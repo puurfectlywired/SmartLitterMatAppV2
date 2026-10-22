@@ -1,8 +1,15 @@
 
 import 'package:flutter/material.dart';
 
+//pages
 import 'start_journey.dart';
-import '../../models/user_profile.dart';
+
+//models
+import '../../models/user_registration.dart';   //holds user registration data
+
+//services
+import '../../services/auth_service.dart';
+
 
 
 
@@ -12,7 +19,7 @@ class CreatePassword extends StatefulWidget {
     super.key,
     required this.user});
 
-  final UserProfile user;
+  final UserRegistration user;
 
   @override
   State<CreatePassword> createState() => _CreatePasswordState();
@@ -26,6 +33,10 @@ class _CreatePasswordState extends State<CreatePassword> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
   final FocusNode passwordFocusNode = FocusNode();
+  
+  //firebase authentication
+  final AuthService _authService = AuthService();
+  bool isRegistering = false;
 
   Color get highlightColor =>
       Theme.of(context).colorScheme.primary;
@@ -367,20 +378,64 @@ Widget passwordRequirement(String text, bool isMet) {
                   SizedBox(
                     width: 300,
                     child: ElevatedButton(
-                      onPressed: canContinue
-                          ? () {
-                              Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                  transitionDuration: Duration.zero,
-                                  reverseTransitionDuration: Duration.zero,
-                                  pageBuilder: (context, animation, secondaryAnimation) =>
-                                      StartJourney(user: widget.user),
-                                ),
-                              );
+                      onPressed: (canContinue && !isRegistering)
+                          ? () async {
+
+                              // Prevent multiple registration attempts
+                              setState(() {
+                                isRegistering = true;
+                              });
+
+                              try {
+
+                                // Save password to registration model
+                                widget.user.password = passwordController.text;
+
+                                // Create Firebase account
+                                await _authService.registerUser(
+                                  name: '${widget.user.firstName} ${widget.user.lastName}',
+                                  email: widget.user.email,
+                                  password: widget.user.password,
+                                );
+
+                                if (!mounted) return;
+
+                                // Navigate to registration page 3
+                                Navigator.pushReplacement(
+                                  context,
+                                  PageRouteBuilder(
+                                    transitionDuration: Duration.zero,
+                                    reverseTransitionDuration: Duration.zero,
+                                    pageBuilder: (_, __, ___) =>
+                                        StartJourney(user: widget.user),
+                                  ),
+                                );
+
+                              } catch (e) {
+
+                                if (!mounted) return;
+
+                                // Display Firebase registration error
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Registration failed: $e'),
+                                  ),
+                                );
+
+                              } finally {
+
+                                if (mounted) {
+                                  setState(() {
+                                    isRegistering = false;
+                                  });
+                                }
+                              }
                             }
                           : null,
-                      child: const Text('Continue'),
+
+                      child: Text(
+                        isRegistering ? 'Creating Account...' : 'Continue',
+                      ),
                     ),
                   ),
 
