@@ -4,7 +4,7 @@ import 'package:video_player/video_player.dart';
 //import 'package:google_fonts/google_fonts.dart';
 
 import '../pages/login.dart';
-import 'registration/create_username.dart';
+import 'user_registration/create_username.dart';
 
 ///////////////////////////////////////////WELCOME PAGE//////////////////////////////////////////
 class WelcomePage extends StatefulWidget {

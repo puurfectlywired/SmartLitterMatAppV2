@@ -8,6 +8,7 @@ import '../../widgets/registration_header.dart';
 import '../../theme/app_colours.dart';
 import '../../models/cat_registration.dart';
 import 'new_profile_04.dart';
+import '../../services/local_image_service.dart';
 
 ////////////////////////////////////////////NEW PROFILE PAGE 03//////////////////////////////////////////
 class NewProfilePage03 extends StatefulWidget {
@@ -28,57 +29,69 @@ class _NewProfilePage03State extends State<NewProfilePage03> {
   File? selectedImage;
 
   ////////////////////////////////////////////PICK IMAGE//////////////////////////////////////////
-  Future<void> _pickImage() async {
-    try {
-      final ImagePicker picker = ImagePicker();
 
-      // SELECT IMAGE
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-      );
+////////////////////////////////////////////PICK IMAGE//////////////////////////////////////////
+Future<void> _pickImage() async {
+  try {
+    final ImagePicker picker = ImagePicker();
 
-      if (image == null) return;
+    // SELECT IMAGE
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
 
-      // CROP IMAGE
-      final croppedImage = await ImageCropper().cropImage(
-        sourcePath: image.path,
+    if (image == null) return;
 
-        uiSettings: [
-          IOSUiSettings(
-            title: 'Adjust Photo',
-            cropStyle: CropStyle.circle,
-            aspectRatioLockEnabled: true,
-            resetAspectRatioEnabled: false,
-          ),
+    // CROP IMAGE
+    final croppedImage = await ImageCropper().cropImage(
+      sourcePath: image.path,
 
-          AndroidUiSettings(
-            toolbarTitle: 'Adjust Photo',
-            cropStyle: CropStyle.circle,
-            lockAspectRatio: true,
-            initAspectRatio: CropAspectRatioPreset.square,
-          ),
-        ],
-      );
-
-      if (croppedImage == null || !mounted) return;
-
-      // SAVE SELECTED IMAGE
-      setState(() {
-        selectedImage = File(croppedImage.path);
-      });
-
-    } catch (e) {
-      debugPrint('IMAGE PICKER ERROR: $e');
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not select image.'),
+      uiSettings: [
+        IOSUiSettings(
+          title: 'Adjust Photo',
+          cropStyle: CropStyle.circle,
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
         ),
-      );
-    }
+
+        AndroidUiSettings(
+          toolbarTitle: 'Adjust Photo',
+          cropStyle: CropStyle.circle,
+          lockAspectRatio: true,
+          initAspectRatio: CropAspectRatioPreset.square,
+        ),
+      ],
+    );
+
+    if (croppedImage == null || !mounted) return;
+
+    // SAVE IMAGE TO APP'S DOCUMENTS DIRECTORY
+    final savedImagePath = await LocalImageService.saveCatImage(
+      croppedImage.path,
+    );
+
+    if (!mounted) return;
+
+    // UPDATE SELECTED IMAGE
+    setState(() {
+      selectedImage = File(savedImagePath);
+    });
+
+    debugPrint('CAT IMAGE SAVED TO: $savedImagePath');
+
+  } catch (e) {
+    debugPrint('IMAGE PICKER ERROR: $e');
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not select image.'),
+      ),
+    );
   }
+}
+
 
   ////////////////////////////////////////////CONTINUE//////////////////////////////////////////
   void _continue() {

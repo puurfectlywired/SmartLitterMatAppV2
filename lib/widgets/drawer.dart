@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 
 import '../pages/home.dart'; 
-import '../pages/profiles/all_profiles.dart';
+import '../pages/cat_profiles/all_profiles.dart';
 import '../pages/settings.dart';
 //import '../pages/test_API.dart';
 import '../pages/login.dart';
 import '../pages/alerts/all_alerts.dart';
-import '../pages/test_Firebase.dart';
+//import '../pages/test_Firebase.dart';
 
 /////////////////////////////////////////MY DRAWER//////////////////////////////////////////
 class MyDrawer extends StatelessWidget {
@@ -141,13 +141,13 @@ class MyDrawer extends StatelessWidget {
             //leading: const Icon(Icons.home),
             title: const Text('Test'),
             onTap: () {
-              Navigator.pushReplacement(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => 
-                    const TestFirebasePage(),
-                ),
-              );
+              // Navigator.pushReplacement(
+              //   context,
+              //   PageRouteBuilder(
+              //     pageBuilder: (context, animation, secondaryAnimation) => 
+              //       const TestFirebasePage(),
+              //   ),
+              // );
             },
           ),
 

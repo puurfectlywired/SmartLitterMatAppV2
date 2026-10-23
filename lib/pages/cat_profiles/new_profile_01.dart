@@ -164,13 +164,11 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                 color: colorScheme.surface,
                 child: const RegistrationHeader(
                   progress: 0.25,
+                  showBackButton: false,
                 ),
               ),
             ),
           ),
-
-
-          //const SizedBox(height: 20),
 
           // INTRODUCTION
           const Text(

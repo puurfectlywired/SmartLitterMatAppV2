@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../pages/home.dart';
-import '../pages/profiles/all_profiles.dart';
+import '../pages/cat_profiles/all_profiles.dart';
 import '../pages/alerts/all_alerts.dart';
 import '../pages/devices.dart';
 
@@ -11,9 +11,11 @@ class MyBottomNavBar extends StatelessWidget {
   const MyBottomNavBar({
     super.key,
     this.selectedIndex,
+    this.allowReselect = false,
   });
 
   final int? selectedIndex;
+  final bool allowReselect;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,7 @@ class MyBottomNavBar extends StatelessWidget {
 
     // NAVIGATION FUNCTION
     void navigateTo(int index) {
-      if (index == selectedIndex) return;
+      if (index == selectedIndex && !allowReselect) return;
 
       Widget page;
 

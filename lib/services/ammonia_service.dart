@@ -1,12 +1,15 @@
 
-
 import '../models/ammonia_model.dart';
 
+//////////////////////////////////////////AMMONIA SERVICE//////////////////////////////////////////
 class AmmoniaService {
 
+  //////////////////////////////////////////GET AMMONIA ALERTS//////////////////////////////////////////
   static Future<List<AmmoniaAlert>> getAlerts() async {
 
-    // TODO: Replace with cloud backend data retrieval.
-    return [];
+    // TEMPORARY: NO ALERTS AVAILABLE
+    // Replace with Firebase data retrieval later.
+
+    return <AmmoniaAlert>[];
   }
 }

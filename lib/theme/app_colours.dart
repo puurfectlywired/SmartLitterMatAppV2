@@ -8,9 +8,15 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color registrationProgress;
   final Color selectedGender;
   
+  //full profile page
   final Color catCardTitle;
   final Color catCardSubtitle;
   final Color catCardIcon;
+
+  // BLE PAIRING PAGE
+  final Color bleIconBackground;
+  final Color bleIcon;
+  //final Color bleAccent;
 
   const AppColors({
     required this.registrationHeader,
@@ -20,6 +26,10 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.catCardTitle,
     required this.catCardSubtitle,
     required this.catCardIcon,
+
+    required this.bleIconBackground,
+    required this.bleIcon,
+    //required this.bleAccent,
   });
 
   @override
@@ -27,9 +37,15 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? registrationHeader,
     Color? registrationProgress,
     Color? selectedGender,
+    
     Color? catCardTitle,
     Color? catCardSubtitle,
     Color? catCardIcon,
+
+    Color? bleIconBackground,
+    Color? bleIcon,
+    //Color? bleAccent,
+
   }) {
     return AppColors(
       registrationHeader:
@@ -42,6 +58,10 @@ class AppColors extends ThemeExtension<AppColors> {
       catCardTitle: catCardTitle ?? this.catCardTitle,
       catCardSubtitle: catCardSubtitle ?? this.catCardSubtitle,
       catCardIcon: catCardIcon ?? this.catCardIcon,
+
+      bleIconBackground: bleIconBackground ?? this.bleIconBackground,
+      bleIcon: bleIcon ?? this.bleIcon,
+      //bleAccent: bleAccent ?? this.bleAccent,
     );
   }
 
@@ -83,6 +103,21 @@ class AppColors extends ThemeExtension<AppColors> {
         other.catCardIcon,
         t,
       )!,
+      bleIconBackground: Color.lerp(
+        bleIconBackground,
+        other.bleIconBackground,
+        t,
+      )!,
+      bleIcon: Color.lerp(
+        bleIcon,
+        other.bleIcon,
+        t,
+      )!,
+      // bleAccent: Color.lerp(
+      //   bleAccent,
+      //   other.bleAccent,
+      //   t,
+      // )!,
     );
   }
 }
@@ -131,7 +166,6 @@ class AppTheme {
     ),
 
     // CUSTOM REGISTRATION COLOURS
-    // CUSTOM APP COLOURS - LIGHT MODE
     extensions: const [
       AppColors(
         registrationHeader: Color(0xFFF2B3CB),
@@ -142,6 +176,11 @@ class AppTheme {
         catCardTitle: Color(0xFF242124),
         catCardSubtitle: Color(0xFF666168),
         catCardIcon: Color(0xFFB66D89),
+
+        // BLE PAIRING PAGE
+        bleIconBackground: Color(0xFFF2B3CB), //temp
+        bleIcon: Color(0xFFFFFFFF),
+        //bleAccent: Color(0xFFB66D89),
       ),
     ],
 
@@ -254,6 +293,11 @@ class AppTheme {
         catCardTitle: Color(0xFFF3EDF0),
         catCardSubtitle: Color(0xFFAAAAB2),
         catCardIcon: Color(0xFFE5A3BD),
+
+        // BLE PAIRING PAGE
+        bleIconBackground: Color(0xFFE5A3BD),
+        bleIcon: Color(0xFF17191D),
+        //bleAccent: Color(0xFFE5A3BD),
       ),
     ],
 

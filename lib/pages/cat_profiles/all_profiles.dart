@@ -57,11 +57,14 @@ class _ProfilesPageState extends State<ProfilesPage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: const MyAppBar(
-        title: 'Profiles'
+        title: 'Profiles',
+        showBackButton: false,
         ),
       endDrawer: const MyDrawer(),
       
@@ -146,7 +149,8 @@ class _ProfilesPageState extends State<ProfilesPage> {
 
   /////////////////////////////////////WITH PROFILES ADDED//////////////////////////
   Widget _buildProfilesList() {
-    final appColors = Theme.of(context).extension<AppColors>()!;
+    //final appColors = Theme.of(context).extension<AppColors>()!;
+    final appColors = Theme.of(context).extension<AppColors>(); //temp replace of ^
 
   return ListView.builder(
     // +1 is for the add another cat button
@@ -203,10 +207,9 @@ class _ProfilesPageState extends State<ProfilesPage> {
               vertical: 8,
             ),
 
+            
             // CAT IMAGE
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-
+            leading: ClipOval(
               child: SizedBox(
                 width: 55,
                 height: 55,
@@ -229,13 +232,59 @@ class _ProfilesPageState extends State<ProfilesPage> {
               ),
             ),
 
+
+            //temp replace of ^
+            // leading: ClipOval(
+            //   child: SizedBox(
+            //     width: 55,
+            //     height: 55,
+
+            //     child: cat.imagePath != null && cat.imagePath!.isNotEmpty
+            //         ? Image.file(
+            //             File(cat.imagePath!),
+            //             width: 55,
+            //             height: 55,
+            //             fit: BoxFit.cover,
+
+            //             // SHOW PLACEHOLDER IF IMAGE CANNOT LOAD
+            //             errorBuilder: (context, error, stackTrace) {
+            //               debugPrint('CAT IMAGE ERROR: $error');
+
+            //               return Container(
+            //                 color: Theme.of(context)
+            //                     .colorScheme.surfaceContainerHighest,
+
+            //                 child: Icon(
+            //                   Icons.pets,
+            //                   size: 30,
+            //                   color: Theme.of(context).colorScheme.primary,
+            //                 ),
+            //               );
+            //             },
+            //           )
+
+            //         // NO IMAGE SAVED
+            //         : Container(
+            //             color: Theme.of(context)
+            //                 .colorScheme.surfaceContainerHighest,
+
+            //             child: Icon(
+            //               Icons.pets,
+            //               size: 30,
+            //               color: Theme.of(context).colorScheme.primary,
+            //             ),
+            //           ),
+            //   ),
+            // ),
+
+
             // CAT NAME
             title: Text(
               cat.name,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: appColors.catCardTitle,
+                //color: appColors.catCardTitle,
               ),
             ),
 
@@ -244,14 +293,16 @@ class _ProfilesPageState extends State<ProfilesPage> {
               'Age: ${cat.age} years   Weight: ${displayWeight(cat.weight)}',
               style: TextStyle(
                 fontSize: 14,
-                color: appColors.catCardSubtitle,
+                //color: appColors.catCardSubtitle,
               ),
             ),
 
             // ARROW
             trailing: Icon(
               Icons.chevron_right,
-              color: appColors.catCardIcon,
+              //color: appColors.catCardIcon,
+              color: appColors?.catCardIcon ??
+    Theme.of(context).colorScheme.primary,            //temp replace
             ),
 
             // OPEN FULL PROFILE

@@ -72,6 +72,7 @@ class _AlertsPageState extends State<AlertsPage> {
       // APP BAR
       appBar: const MyAppBar(
         title: 'Alerts',
+        showBackButton: false,
       ),
 
       endDrawer: const MyDrawer(),

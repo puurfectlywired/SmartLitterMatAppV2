@@ -21,7 +21,7 @@ class _DevicesPageState extends State<DevicesPage> {
       
       appBar: const MyAppBar(
         title: 'Devices',
-        showBackButton: true,
+        showBackButton: false,
         showHamburgerMenu: true,
         ),
       endDrawer: const MyDrawer(),

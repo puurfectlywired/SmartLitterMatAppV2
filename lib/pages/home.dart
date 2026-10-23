@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'profiles/new_profile_01.dart';
+import 'cat_profiles/new_profile_01.dart';
 import 'devices.dart';
 
 import '../widgets/app_bar.dart';

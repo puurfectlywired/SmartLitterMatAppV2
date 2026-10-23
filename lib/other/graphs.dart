@@ -157,7 +157,8 @@ class WeeklyVisitsChart extends StatelessWidget {
   }
 }
 
-//////////////////////////////////////////CUURENT STATUS///////////////////////////
+
+//////////////////////////////////////////CURRENT STATUS///////////////////////////
 class CurrentStatusCard extends StatelessWidget {
   final CatProfile cat;
 
@@ -168,130 +169,122 @@ class CurrentStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 12),
       padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 5,
+        horizontal: 15,
+        vertical: 25,
       ),
 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(25),
       ),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
 
-          const Text(
-            'Current Status',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
+          // WEIGHT
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  displayWeight(cat.weight),
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                    color: colors.primary,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Weight',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
 
-          const SizedBox(height: 14),
+          // DIVIDER
+          Container(
+            height: 45,
+            width: 1,
+            color: colors.outlineVariant,
+          ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-
-              // WEIGHT
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      displayWeight(cat.weight),
-                      style: const TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Weight',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+          // VISITS TODAY
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  '#',
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                    color: colors.primary,
+                  ),
                 ),
-              ),
 
-              Container(
-                height: 38,
-                width: 1,
-                color: Colors.grey[300],
-              ),
+                const SizedBox(height: 8),
 
-              // VISITS TODAY
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      //'${status.visitCount}',
-                      '#',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Visits Today',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Visits Today',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
-              ),
+              ],
+            ),
+          ),
 
-              Container(
-                height: 38,
-                width: 1,
-                color: Colors.grey[300],
-              ),
+          // DIVIDER
+          Container(
+            height: 45,
+            width: 1,
+            color: colors.outlineVariant,
+          ),
 
-              // LAST VISIT
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      //'${status.dailyAverage}',
-                      '#',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Daily Avg.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+          // DAILY AVERAGE
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  '#',
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                    color: colors.primary,
+                  ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Daily Avg.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 }
+
+
 
 //////////////////////////////////////////WEIGHT TREND GRAPH/////////////////////////
 class WeightTrendCard extends StatelessWidget {
@@ -305,7 +298,9 @@ class WeightTrendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    //hardcoded for demo
+    final colors = Theme.of(context).colorScheme;
+
+    // HARDCODED FOR DEMO
     final weightData = [
       8.70,
       8.85,
@@ -317,108 +312,92 @@ class WeightTrendCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 12),
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(25),
       ),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // HEADER
+          // GRAPH HEADER
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-
-              Text(
-                'Weight Trend ($weightUnit)',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
               Text(
                 'Last 7 days',
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+                  fontSize: 13,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
             ],
           ),
 
-          // const SizedBox(height: 4),
-
-          // const Text(
-          //   '8.8 lb',
-          //   style: TextStyle(
-          //     fontSize: 22,
-          //     fontWeight: FontWeight.bold,
-          //   ),
-          // ),
-
           const SizedBox(height: 30),
 
+          // GRAPH
           SizedBox(
-            height: 115,
+            height: 160,
             child: LineChart(
-              
               LineChartData(
+                minX: 0,
+                maxX: 6,
                 minY: 8.2,
                 maxY: 9.4,
 
+                // GRID LINES
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
                   horizontalInterval: 0.2,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: colors.outlineVariant,
+                      strokeWidth: 1,
+                    );
+                  },
                 ),
 
+                // REMOVE BORDER
                 borderData: FlBorderData(
                   show: false,
                 ),
 
+                // AXIS LABELS
                 titlesData: FlTitlesData(
 
                   topTitles: const AxisTitles(
-                    sideTitles:
-                        SideTitles(showTitles: false),
+                    sideTitles: SideTitles(showTitles: false),
                   ),
 
                   rightTitles: const AxisTitles(
-                    sideTitles:
-                        SideTitles(showTitles: false),
+                    sideTitles: SideTitles(showTitles: false),
                   ),
 
+                  // Y AXIS
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 35,
                       interval: 0.2,
 
-                      // graph has one decimal point
                       getTitlesWidget: (value, meta) {
                         return Text(
                           value.toStringAsFixed(1),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
+                            color: colors.onSurfaceVariant,
                           ),
                         );
-                      }
+                      },
                     ),
                   ),
 
+                  // X AXIS
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -428,26 +407,20 @@ class WeightTrendCard extends StatelessWidget {
                       getTitlesWidget: (value, meta) {
 
                         const days = [
-                          'M',
-                          'T',
-                          'W',
-                          'T',
-                          'F',
-                          'S',
-                          'S',
+                          'M', 'T', 'W', 'T', 'F', 'S', 'S',
                         ];
 
                         final index = value.toInt();
 
-                        if (index < 0 ||
-                            index >= days.length) {
+                        if (index < 0 || index >= days.length) {
                           return const SizedBox();
                         }
 
                         return Text(
                           days[index],
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
+                            color: colors.onSurfaceVariant,
                           ),
                         );
                       },
@@ -455,6 +428,7 @@ class WeightTrendCard extends StatelessWidget {
                   ),
                 ),
 
+                // GRAPH LINE
                 lineBarsData: [
                   LineChartBarData(
 
@@ -468,15 +442,24 @@ class WeightTrendCard extends StatelessWidget {
 
                     isCurved: true,
                     barWidth: 3,
+                    color: colors.primary,
 
-                    dotData: const FlDotData(
+                    // DATA POINTS
+                    dotData: FlDotData(
                       show: true,
+                      getDotPainter: (spot, percent, bar, index) {
+                        return FlDotCirclePainter(
+                          radius: 4,
+                          color: colors.primary,
+                          strokeWidth: 0,
+                        );
+                      },
                     ),
 
+                    // SHADED AREA
                     belowBarData: BarAreaData(
                       show: true,
-                      color: const Color(0xFFF2D5DD)
-                          .withValues(alpha: 0.35),
+                      color: colors.primary.withValues(alpha: 0.12),
                     ),
                   ),
                 ],
@@ -488,6 +471,7 @@ class WeightTrendCard extends StatelessWidget {
     );
   }
 }
+
 
 //////////////////////////////////////////ALERT CARD////////////////////////////////
 class AlertCard extends StatelessWidget {

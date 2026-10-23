@@ -7,9 +7,11 @@ class RegistrationHeader extends StatelessWidget {
   const RegistrationHeader({
     super.key,
     this.progress = 0.25,
+    this.showBackButton = true,
   });
 
   final double progress;
+  final bool showBackButton;
 
   @override
   Widget build(BuildContext context) {
@@ -41,32 +43,33 @@ class RegistrationHeader extends StatelessWidget {
           ),
 
           // BACK ARROW
-          Positioned(
-            top: 20,
-            left: 15,
+          if (showBackButton)
+            Positioned(
+              top: 20,
+              left: 15,
 
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: colors.onPrimary,
-                size: 28,
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: colors.onPrimary,
+                  size: 28,
+                ),
+
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
-
-              onPressed: () {
-                Navigator.pop(context);
-              },
             ),
-          ),
 
           // CAT IMAGE
           Positioned(
-            top: 65,
+            top: 50,
             right: 25,
 
             child: Image.asset(
-              'assets/images/PUUR_V4.png',
-              width: 100,
-              height: 100,
+              'assets/images/PUUR_v4.png',
+              width: 80,
+              height: 80,
               fit: BoxFit.contain,
               cacheWidth: 300,
               errorBuilder: (context, error, stackTrace) {
