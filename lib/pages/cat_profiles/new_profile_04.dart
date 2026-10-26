@@ -6,8 +6,8 @@ import 'dart:io';
 import 'all_profiles.dart';
 
 //models
-import '../../models/cat_profile.dart';
-import '../../models/cat_registration.dart';
+import '../../models/cat_profile_model.dart';
+import '../../models/cat_registration_model.dart';
 
 //services
 import '../../services/cat_profile_service.dart';

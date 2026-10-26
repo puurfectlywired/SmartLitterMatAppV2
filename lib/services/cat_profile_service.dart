@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 //models
-import '../models/cat_profile.dart';
+import '../models/cat_profile_model.dart';
 
 
 ///////////////////////////////////////////CAT PROFILE SERVICE///////////////////////////////////////////

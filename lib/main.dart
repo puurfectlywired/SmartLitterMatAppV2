@@ -8,6 +8,7 @@ import 'pages/welcome.dart';
 
 //themes
 import 'theme/app_colours.dart';
+import 'theme/theme_controller.dart';
 
 
 Future<void> main() async {
@@ -16,6 +17,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await ThemeController.loadTheme();
 
   runApp(const MyApp());
 }
@@ -27,19 +30,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Puurfectly WIRED',
 
-      // FOLLOW DEVICE APPEARANCE
-      themeMode: ThemeMode.system,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.themeMode,
 
-      // APP THEMES
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      builder: (context, selectedTheme, child) {
 
-      // HOME
-      home: const WelcomePage(),
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Puurfectly WIRED',
+
+          // system by default
+          themeMode: selectedTheme,
+
+          // APP THEMES
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+
+          home: const WelcomePage(),
+        );
+      },
     );
   }
 }

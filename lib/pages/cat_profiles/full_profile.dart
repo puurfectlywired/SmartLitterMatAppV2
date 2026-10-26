@@ -13,7 +13,7 @@ import '../report.dart';
 import '../BLE/BLE_pairing.dart';
 
 //models
-import '../../models/cat_profile.dart';
+import '../../models/cat_profile_model.dart';
 
 //services
 import '../../services/cat_profile_service.dart';

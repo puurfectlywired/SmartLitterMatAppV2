@@ -6,7 +6,7 @@ import 'dart:io';
 
 import '../../widgets/registration_header.dart';
 import '../../theme/app_colours.dart';
-import '../../models/cat_registration.dart';
+import '../../models/cat_registration_model.dart';
 import 'new_profile_04.dart';
 import '../../services/local_image_service.dart';
 
@@ -231,48 +231,57 @@ Future<void> _pickImage() async {
 
           const SizedBox(height: 65),
 
-          // BUTTONS
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 35),
+          
+// BUTTONS
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 35),
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
 
-                // UPLOAD PHOTO BUTTON
-                SizedBox(
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: _pickImage,
-                    child: Text(
-                      selectedImage == null
-                          ? 'Upload Photo'
-                          : 'Change Photo',
-                    ),
-                  ),
-                ),
+      // MAIN BUTTON
+      SizedBox(
+        height: 55,
+        child: ElevatedButton(
+          onPressed: selectedImage == null
+              ? _pickImage
+              : _continue,
 
-                const SizedBox(height: 25),
-
-                // SKIP / CONTINUE BUTTON
-                TextButton(
-                  onPressed: _continue,
-                  child: Text(
-                    selectedImage == null
-                        ? 'Skip >'
-                        : 'Continue >',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-              ],
-            ),
+          child: Text(
+            selectedImage == null
+                ? 'Upload Photo'
+                : 'Continue',
           ),
+        ),
+      ),
+
+      const SizedBox(height: 10),
+
+      // SECONDARY BUTTON
+      TextButton(
+        onPressed: selectedImage == null
+            ? _continue
+            : _pickImage,
+
+        child: Text(
+          selectedImage == null
+              ? 'Skip >'
+              : 'Change Photo',
+
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.primary,
+          ),
+        ),
+      ),
+
+      const SizedBox(height: 40),
+    ],
+  ),
+),
+
         ],
       ),
     );

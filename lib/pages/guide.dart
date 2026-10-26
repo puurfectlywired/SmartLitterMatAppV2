@@ -4,23 +4,23 @@ import '../widgets/app_bar.dart';
 import '../widgets/drawer.dart';
 import '../widgets/bottom_nav_bar.dart';
 
-////////////////////////////////////////////DEVICES PAGE//////////////////////////////////////////
-class DevicesPage extends StatefulWidget {
-  const DevicesPage({super.key});
+////////////////////////////////////////////Guide PAGE//////////////////////////////////////////
+class GuidePage extends StatefulWidget {
+  const GuidePage({super.key});
 
   @override
-  State<DevicesPage> createState() => _DevicesPageState();
+  State<GuidePage> createState() => _GuidePageState();
 }
 
-////////////////////////////////////////////DEVICES PAGE STATE//////////////////////////////////////////
-class _DevicesPageState extends State<DevicesPage> {
+////////////////////////////////////////////Guide PAGE STATE//////////////////////////////////////////
+class _GuidePageState extends State<GuidePage> {
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       
       appBar: const MyAppBar(
-        title: 'Devices',
+        title: 'User Guide',
         showBackButton: false,
         showHamburgerMenu: true,
         ),
@@ -31,7 +31,7 @@ class _DevicesPageState extends State<DevicesPage> {
       ),
 
       bottomNavigationBar: const MyBottomNavBar(
-        selectedIndex: 1,
+        selectedIndex: 3,
       ),
     );
   }

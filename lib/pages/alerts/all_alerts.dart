@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../../models/cat_profile.dart';
+import '../../models/cat_profile_model.dart';
 import '../../models/ammonia_model.dart';
 
 import '../../services/cat_profile_service.dart';
@@ -141,7 +141,7 @@ class _AlertsPageState extends State<AlertsPage> {
       ),
 
       bottomNavigationBar: const MyBottomNavBar(
-        selectedIndex: 3,
+        selectedIndex: 2,
       ),
     );
   }

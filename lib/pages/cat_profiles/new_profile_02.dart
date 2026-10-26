@@ -1,11 +1,18 @@
 
 import 'package:flutter/material.dart';
 
+//pages
+import 'new_profile_03.dart';
+
+//models
+import '../../models/cat_registration_model.dart';
+
+//other
 import '../../other/global_variables.dart';
 import '../../widgets/registration_header.dart';
 import '../../theme/app_colours.dart';
-import '../../models/cat_registration.dart';
-import 'new_profile_03.dart';
+
+
 
 ////////////////////////////////////////////NEW PROFILE PAGE 02//////////////////////////////////////////
 class NewProfilePage02 extends StatefulWidget {
@@ -40,6 +47,28 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
     weightController.dispose();
     super.dispose();
   }
+
+
+  // CANCEL CAT REGISTRATION
+  // void _cancelRegistration() {
+  //   Navigator.of(context).popUntil((route) {
+  //     return route.settings.name == '/' || route.isFirst;
+  //   });
+  // }
+
+
+  // CANCEL CAT REGISTRATION
+  void _cancelRegistration() {
+    int pagesToClose = 2;
+
+    Navigator.of(context).popUntil((route) {
+      if (pagesToClose == 0) return true;
+      pagesToClose--;
+      return false;
+    });
+  }
+
+
 
   ////////////////////////////////////////////NEXT PAGE//////////////////////////////////////////
   void _nextPage() {
@@ -213,14 +242,12 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
                 ),
 
                 const SizedBox(height: 15),
-
+                
                 // CANCEL BUTTON
                 SizedBox(
                   height: 55,
                   child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: _cancelRegistration,
                     child: const Text('Cancel'),
                   ),
                 ),

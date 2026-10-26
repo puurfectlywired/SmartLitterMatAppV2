@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import '../pages/home.dart'; 
 import '../pages/cat_profiles/all_profiles.dart';
 import '../pages/settings.dart';
-//import '../pages/test_API.dart';
 import '../pages/login.dart';
 import '../pages/alerts/all_alerts.dart';
-//import '../pages/test_Firebase.dart';
+import '../pages/settings/login_info.dart';
+import '../pages/guide.dart';
 
 /////////////////////////////////////////MY DRAWER//////////////////////////////////////////
 class MyDrawer extends StatelessWidget {
@@ -22,7 +22,50 @@ class MyDrawer extends StatelessWidget {
 
           const SizedBox(height: 100),
 
-          //NAVIGATION SUBHEADING
+          //ACCOUNT SUBHEADING
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ),
+            child: Row(
+              children: [
+                const Text(
+                  'ACCOUNT',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                const Expanded(
+                  child: Divider(
+                    thickness: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // login info button
+          ListTile(
+            //leading: const Icon(Icons.home),
+            title: const Text('Login Information'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => 
+                    const LoginInfoPage(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 30),
+
+          //ACCOUNT SUBHEADING
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -48,22 +91,21 @@ class MyDrawer extends StatelessWidget {
             ),
           ),
 
-          //HOME BUTTON
           ListTile(
-            //leading: const Icon(Icons.home),
+            //leading: const Icon(Icons.pets),
             title: const Text('Home'),
             onTap: () {
               Navigator.pushReplacement(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) => 
-                    const HomePage(title: 'Puurfectly WIRED'),
+                    const HomePage(title: ''),
                 ),
               );
             },
           ),
 
-          //PROFILES BUTTON
+          // login info button
           ListTile(
             //leading: const Icon(Icons.pets),
             title: const Text('Cats'),
@@ -78,7 +120,6 @@ class MyDrawer extends StatelessWidget {
             },
           ),
 
-          //ALERTS BUTTON
           ListTile(
             //leading: const Icon(Icons.pets),
             title: const Text('Alerts'),
@@ -93,7 +134,6 @@ class MyDrawer extends StatelessWidget {
             },
           ),
 
-          //SETTINGS BUTTON
           ListTile(
             //leading: const Icon(Icons.settings),
             title: const Text('Settings'),
@@ -110,7 +150,7 @@ class MyDrawer extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          //NAVIGATION SUBHEADING
+          //RESOURCES SUBHEADING
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -118,7 +158,7 @@ class MyDrawer extends StatelessWidget {
             child: Row(
               children: [
                 const Text(
-                  'TEST',
+                  'RESOURCES',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -136,18 +176,19 @@ class MyDrawer extends StatelessWidget {
             ),
           ),
 
-          //TEST BUTTON
+          // USER GUIDE BUTTON
           ListTile(
-            //leading: const Icon(Icons.home),
-            title: const Text('Test'),
+            title: const Text('User Guide'),
             onTap: () {
-              // Navigator.pushReplacement(
-              //   context,
-              //   PageRouteBuilder(
-              //     pageBuilder: (context, animation, secondaryAnimation) => 
-              //       const TestFirebasePage(),
-              //   ),
-              // );
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const GuidePage(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
             },
           ),
 

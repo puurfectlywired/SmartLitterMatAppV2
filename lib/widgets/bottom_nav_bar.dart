@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../pages/home.dart';
 import '../pages/cat_profiles/all_profiles.dart';
 import '../pages/alerts/all_alerts.dart';
-import '../pages/devices.dart';
+import '../pages/guide.dart';
 
 /////////////////////////////////////MY BOTTOM NAV BAR//////////////////////////////////////////////
 class MyBottomNavBar extends StatelessWidget {
@@ -36,13 +36,13 @@ class MyBottomNavBar extends StatelessWidget {
           page = const HomePage(title: 'Puurfectly WIRED');
           break;
         case 1:
-          page = const DevicesPage();
-          break;
-        case 2:
           page = const ProfilesPage();
           break;
-        case 3:
+        case 2:
           page = const AlertsPage();
+          break;
+        case 3:
+          page = const GuidePage();
           break;
         default:
           return;
@@ -105,9 +105,9 @@ class MyBottomNavBar extends StatelessWidget {
         child: Row(
           children: [
             navItem(0, Icons.home, 'Home'),
-            navItem(1, Icons.devices, 'Devices'),
-            navItem(2, Icons.pets, 'Cats'),
-            navItem(3, Icons.notifications, 'Alerts'),
+            navItem(1, Icons.pets, 'Cats'),
+            navItem(2, Icons.notifications, 'Alerts'),
+            navItem(3, Icons.menu_book, 'Guide'),
           ],
         ),
       ),

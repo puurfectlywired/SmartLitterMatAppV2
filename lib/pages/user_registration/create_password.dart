@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'start_journey.dart';
 
 //models
-import '../../models/user_registration.dart';   //holds user registration data
+import '../../models/user_registration_model.dart';   //holds user registration data
 
 //services
 import '../../services/auth_service.dart';
@@ -184,7 +184,7 @@ Widget passwordRequirement(String text, bool isMet) {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 30,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.normal,
                     ),
                   ),
 
@@ -393,8 +393,10 @@ Widget passwordRequirement(String text, bool isMet) {
 
                                 // Create Firebase account
                                 await _authService.registerUser(
-                                  name: '${widget.user.firstName} ${widget.user.lastName}',
+                                  firstName: widget.user.firstName,
+                                  lastName: widget.user.lastName,
                                   email: widget.user.email,
+                                  username: widget.user.username,
                                   password: widget.user.password,
                                 );
 

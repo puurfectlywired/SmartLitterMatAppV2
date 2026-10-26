@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../home.dart';
 
 //models
-import '../../models/user_registration.dart';
+import '../../models/user_registration_model.dart';
 
 
 ////////////////////////////////////////////START JOURNEY PAGE//////////////////////////////////////////

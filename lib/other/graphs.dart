@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-import '../models/cat_profile.dart';
+import '../models/cat_profile_model.dart';
 import '../other/global_variables.dart';
 //import '../services/cat_service.dart';
 

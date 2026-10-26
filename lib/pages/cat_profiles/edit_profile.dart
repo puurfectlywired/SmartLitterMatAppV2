@@ -8,7 +8,7 @@ import 'package:image_cropper/image_cropper.dart';
 import '../../services/local_image_service.dart';
 
 // MODELS
-import '../../models/cat_profile.dart';
+import '../../models/cat_profile_model.dart';
 
 // SERVICES
 import '../../services/cat_profile_service.dart';

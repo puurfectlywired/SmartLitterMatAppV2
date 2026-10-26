@@ -6,7 +6,7 @@ import 'dart:async';
 import '../../theme/app_colours.dart';
 
 //models
-import '../../models/cat_profile.dart';
+import '../../models/cat_profile_model.dart';
 
 //services
 import '../../services/BLE_pairing_service.dart';

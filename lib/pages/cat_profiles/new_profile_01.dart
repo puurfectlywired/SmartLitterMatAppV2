@@ -2,8 +2,9 @@
 import 'package:flutter/material.dart';
 
 import '../../widgets/registration_header.dart';
+import '../../widgets/selection_button.dart';
 import '../../theme/app_colours.dart';
-import '../../models/cat_registration.dart';
+import '../../models/cat_registration_model.dart';
 import 'new_profile_02.dart';
 
 ////////////////////////////////////////////NEW PROFILE PAGE 01//////////////////////////////////////////
@@ -83,6 +84,13 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
       birthdayController.text = _formatDate(pickedDate);
     });
   }
+
+
+  // CANCEL CAT REGISTRATION
+  void _cancelRegistration() {
+    Navigator.of(context).pop();
+  }
+
 
   ////////////////////////////////////////////NEXT PAGE//////////////////////////////////////////
   void _nextPage() {
@@ -233,15 +241,36 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                 Row(
                   children: [
 
+                    // MALE BUTTON
                     Expanded(
-                      child: _genderButton('Male'),
+                      child: SelectionButton(
+                        label: 'Male',
+                        selected: selectedGender == 'Male',
+
+                        onPressed: () {
+                          setState(() {
+                            selectedGender = 'Male';
+                          });
+                        },
+                      ),
                     ),
 
                     const SizedBox(width: 20),
 
+                    // FEMALE BUTTON
                     Expanded(
-                      child: _genderButton('Female'),
+                      child: SelectionButton(
+                        label: 'Female',
+                        selected: selectedGender == 'Female',
+
+                        onPressed: () {
+                          setState(() {
+                            selectedGender = 'Female';
+                          });
+                        },
+                      ),
                     ),
+
                   ],
                 ),
 
@@ -260,7 +289,7 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                   controller: birthdayController,
                   readOnly: true,
                   onTap: _selectBirthday,
-
+ 
                   decoration: InputDecoration(
                     hintText: 'Select Birthday',
                     border: const OutlineInputBorder(),
@@ -287,14 +316,12 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                 ),
 
                 const SizedBox(height: 15),
-
+                
                 // CANCEL BUTTON
                 SizedBox(
                   height: 55,
                   child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: _cancelRegistration,
                     child: const Text('Cancel'),
                   ),
                 ),
@@ -307,89 +334,4 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
       ),
     );
   }
-
-  ////////////////////////////////////////////GENDER BUTTON//////////////////////////////////////////
-  Widget _genderButton(String gender) {
-
-    final bool selected = selectedGender == gender;
-
-    final buttonStyle = ElevatedButtonTheme.of(context).style;
-
-    final selectedColor = buttonStyle?.backgroundColor
-        ?.resolve(<WidgetState>{}) ??
-        Theme.of(context).colorScheme.primary;
-
-    final selectedTextColor = buttonStyle?.foregroundColor
-        ?.resolve(<WidgetState>{}) ??
-        Theme.of(context).colorScheme.onPrimary;
-
-    return SizedBox(
-      height: 55,
-
-      child: OutlinedButton(
-        onPressed: () {
-          setState(() {
-            selectedGender = gender;
-          });
-        },
-
-      style: OutlinedButton.styleFrom(
-        backgroundColor: selected
-            ? selectedColor
-            : Theme.of(context).colorScheme.surfaceContainer,
-
-        foregroundColor: selected
-            ? selectedTextColor
-            : Theme.of(context).colorScheme.onSurface,
-
-        side: BorderSide(
-          color: selected
-              ? selectedColor
-              : Theme.of(context).colorScheme.outline,
-        ),
-
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-      ),
-
-        child: Text(
-          gender,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
 }
-
-////////////////////////////////////////////CURVED HEADER//////////////////////////////////////////
-// class _CurvedHeaderClipper extends CustomClipper<Path> {
-
-//   @override
-//   Path getClip(Size size) {
-
-//     final path = Path();
-
-//     path.lineTo(0, size.height * 0.82);
-
-//     path.quadraticBezierTo(
-//       size.width * 0.55,
-//       size.height * 0.60,
-//       size.width,
-//       size.height * 0.98,
-//     );
-
-//     path.lineTo(size.width, 0);
-//     path.close();
-
-//     return path;
-//   }
-
-//   @override
-//   bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
-//     return false;
-//   }
-// }
