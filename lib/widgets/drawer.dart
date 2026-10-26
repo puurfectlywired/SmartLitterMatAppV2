@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 
 import '../pages/home.dart'; 
 import '../pages/cat_profiles/all_profiles.dart';
-import '../pages/settings.dart';
+import '../pages/settings/settings.dart';
 import '../pages/login.dart';
 import '../pages/alerts/all_alerts.dart';
 import '../pages/settings/login_info.dart';
 import '../pages/guide.dart';
+import '../pages/settings/account_overview.dart';
 
 /////////////////////////////////////////MY DRAWER//////////////////////////////////////////
 class MyDrawer extends StatelessWidget {
@@ -51,13 +52,13 @@ class MyDrawer extends StatelessWidget {
           // login info button
           ListTile(
             //leading: const Icon(Icons.home),
-            title: const Text('Login Information'),
+            title: const Text('Account Overview'),
             onTap: () {
               Navigator.pushReplacement(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) => 
-                    const LoginInfoPage(),
+                    const AccountOverviewPage(),
                 ),
               );
             },

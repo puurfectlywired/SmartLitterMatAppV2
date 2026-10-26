@@ -2,19 +2,20 @@
 import 'package:flutter/material.dart';
 
 // GLOBAL VARIABLES
-import '../other/global_variables.dart';
+import '../../other/global_variables.dart';
 
 // THEME
-import '../theme/theme_controller.dart';
+import '../../theme/theme_controller.dart';
 
 // PAGES
-import 'settings/login_info.dart';
+import 'login_info.dart';
+import 'account_overview.dart';
 
 // WIDGETS
-import '../widgets/app_bar.dart';
-import '../widgets/drawer.dart';
-import '../widgets/bottom_nav_bar.dart';
-import '../widgets/selection_button.dart';
+import '../../widgets/app_bar.dart';
+import '../../widgets/drawer.dart';
+import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/selection_button.dart';
 
 
 ////////////////////////////////////////////SETTINGS PAGE//////////////////////////////////////////
@@ -220,6 +221,34 @@ class _SettingsPageState extends State<SettingsPage> {
 
               ////////////////////////////////////////////ACCOUNT//////////////////////////////////////////
               _sectionHeading('Account'),
+
+              const SizedBox(height: 20),
+
+              _settingsContainer(
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+
+                  leading: Icon(
+                    Icons.person_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+
+                  title: const Text(
+                    'Account Overview',
+                    style: TextStyle(fontSize: 16),
+                  ),
+
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                  ),
+
+                  onTap: () {
+                    navigateTo(
+                      const AccountOverviewPage(),
+                    );
+                  },
+                ),
+              ),
 
               const SizedBox(height: 20),
 

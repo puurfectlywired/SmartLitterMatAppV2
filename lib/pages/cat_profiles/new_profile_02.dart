@@ -7,6 +7,9 @@ import 'new_profile_03.dart';
 //models
 import '../../models/cat_registration_model.dart';
 
+//services
+import '../../services/cat_registration_nav_service.dart';
+
 //other
 import '../../other/global_variables.dart';
 import '../../widgets/registration_header.dart';
@@ -50,23 +53,23 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
 
 
   // CANCEL CAT REGISTRATION
-  // void _cancelRegistration() {
-  //   Navigator.of(context).popUntil((route) {
-  //     return route.settings.name == '/' || route.isFirst;
-  //   });
-  // }
+  void _cancelRegistration() {
+    Navigator.of(context).popUntil((route) {
+      return route.settings.name == '/' || route.isFirst;
+    });
+  }
 
 
   // CANCEL CAT REGISTRATION
-  void _cancelRegistration() {
-    int pagesToClose = 2;
+  // void _cancelRegistration() {
+  //   int pagesToClose = 2;
 
-    Navigator.of(context).popUntil((route) {
-      if (pagesToClose == 0) return true;
-      pagesToClose--;
-      return false;
-    });
-  }
+  //   Navigator.of(context).popUntil((route) {
+  //     if (pagesToClose == 0) return true;
+  //     pagesToClose--;
+  //     return false;
+  //   });
+  // }
 
 
 
@@ -94,13 +97,10 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
     // NAVIGATE TO PAGE 3
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            NewProfilePage03(
-              registration: widget.registration,
-            ),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
+      catRegistrationRoute(
+        page: NewProfilePage03(
+          registration: widget.registration,
+        ),
       ),
     );
   }
@@ -138,7 +138,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
           ),
 
           // INTRODUCTION
-          const Text(
+          Text(
             'Almost there!',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -147,7 +147,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 10),
 
           Text(
             "Let's learn a little more about ${widget.registration.name}",
@@ -158,7 +158,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
             ),
           ),
 
-          const SizedBox(height: 65),
+          SizedBox(height: 50),
 
           // WEIGHT INFORMATION
           Padding(
@@ -169,15 +169,19 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
               children: [
 
                 // WEIGHT LABEL
-                const Text(
-                  'How much does your cat weigh?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
+                SizedBox(
+                    width: 300,
+                    child: Text(
+                      'How much does your cat weigh?',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 25),
+                SizedBox(height: 10),
 
                 // WEIGHT INPUT
                 TextField(
@@ -194,11 +198,11 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                SizedBox(height: 10),
 
                 // EXPLANATION
                 Text(
-                  'This gives us a starting point for tracking changes in your cat\'s weight over time.',
+                  'This gives us a starting point for tracking changes in ${widget.registration.name}\'s weight over time.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -206,18 +210,22 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
                   ),
                 ),
 
-              const SizedBox(height: 45),
+              SizedBox(height: 45),
 
               // BREED LABEL
-              const Text(
-                'What breed is your cat?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
+              SizedBox(
+                width: 300,
+                child: Text(
+                  'What breed is your cat?',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 25),
+              SizedBox(height: 10),
 
               // BREED INPUT
               TextField(
@@ -230,7 +238,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
                 ),
               ),
 
-              const SizedBox(height: 65),
+              SizedBox(height: 50),
 
                 // NEXT BUTTON
                 SizedBox(
@@ -241,7 +249,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
                   ),
                 ),
 
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
                 
                 // CANCEL BUTTON
                 SizedBox(
@@ -252,7 +260,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                SizedBox(height: 30),
               ],
             ),
           ),

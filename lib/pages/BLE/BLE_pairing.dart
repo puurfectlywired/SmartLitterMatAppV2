@@ -1,12 +1,17 @@
 
 import 'package:flutter/material.dart';
+import 'dart:async';
+
+//firebase
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:async';
+
+//themes
 import '../../theme/app_colours.dart';
 
 //models
 import '../../models/cat_profile_model.dart';
+import '../../models/ble_tag_model.dart';
 
 //services
 import '../../services/BLE_pairing_service.dart';
@@ -38,8 +43,9 @@ class _BlePairingPageState extends State<BlePairingPage> {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
     firebaseTestSubscription;
 
-  // ble tags
-  List<Map<String, String>> availableTags = [];
+
+  // BLE TAGS from model
+  List<BleTag> availableTags = [];
 
   String? selectedTagId;
 
@@ -50,10 +56,21 @@ class _BlePairingPageState extends State<BlePairingPage> {
     _startFirebaseListener();
   }
 
-  //sends request and listens for a response
+
+  // SCAN FOR NEAREST BEACON THROUGH RASPBERRY PI
   Future<void> _startFirebaseScan() async {
+
+    if (scanStatus == 'sending' ||
+        scanStatus == 'pending' ||
+        scanStatus == 'scanning' ||
+        scanStatus == 'pairing') {
+      return;
+    }
+
     try {
       await scanSubscription?.cancel();
+
+      if (!mounted) return;
 
       setState(() {
         scanStatus = 'sending';
@@ -62,9 +79,9 @@ class _BlePairingPageState extends State<BlePairingPage> {
         availableTags.clear();
       });
 
-      // REPLACE WITH THE ACTUAL MAT ID
       final requestId = await BlePairingService.requestScan(
         catId: widget.cat.id,
+        catName: widget.cat.name,
         deviceId: 'mat001',
       );
 
@@ -75,44 +92,91 @@ class _BlePairingPageState extends State<BlePairingPage> {
         scanStatus = 'pending';
       });
 
-      debugPrint('BLE SCAN REQUEST SENT: $requestId');
+      debugPrint('BLE SCAN REQUEST: $requestId');
 
-      // LISTEN FOR UPDATES FROM THE RASPBERRY PI
-      scanSubscription =
-          BlePairingService.watchRequest(requestId).listen(
-        (snapshot) {
-          if (!mounted || !snapshot.exists) return;
+      scanSubscription = BlePairingService.watchRequest(
+        requestId: requestId,
+        deviceId: 'mat001',
+      ).listen((snapshot) {
 
-          final data = snapshot.data();
-          if (data == null) return;
+        if (!mounted || !snapshot.exists) return;
 
-          final status = data['status'] as String? ?? 'pending';
+        final data = snapshot.data();
+        if (data == null) return;
+
+        final status = data['status'] as String? ?? 'pending';
+        final response = data['response']?.toString() ?? '';
+
+        debugPrint('BLE SCAN STATUS: $status');
+        debugPrint('BLE SCAN RESPONSE: $response');
+        debugPrint('BLE MAC: ${data['mac']}');
+        debugPrint('BLE RSSI: ${data['rssi']}');
+
+        if (status == 'found') {
+
+          final mac = data['mac'];
+
+          if (mac is! String || mac.isEmpty) {
+            setState(() {
+              scanStatus = 'failed';
+            });
+            return;
+          }
+
+          final beacon = BleTag.fromMap(data);
+
+          setState(() {
+            scanStatus = 'found';
+            availableTags = [beacon];
+            selectedTagId = null;
+          });
+
+        } else if (status == 'not_found' ||
+                   status == 'failed' ||
+                   status == 'cancelled') {
+
+          setState(() {
+            scanStatus = status;
+            availableTags.clear();
+            selectedTagId = null;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                response.isNotEmpty
+                    ? response
+                    : 'BLE scan $status',
+              ),
+            ),
+          );
+
+        } else {
 
           setState(() {
             scanStatus = status;
           });
+        }
 
-          debugPrint('BLE SCAN STATUS: $status');
-          debugPrint('DETECTED TAGS: ${data['detectedTags']}');
-        },
-        onError: (error) {
-          debugPrint('BLE SCAN LISTENER ERROR: $error');
+      }, onError: (error) {
 
-          if (mounted) {
-            setState(() {
-              scanStatus = 'error';
-            });
-          }
-        },
-      );
+        debugPrint('BLE SCAN LISTENER ERROR: $error');
+
+        if (mounted) {
+          setState(() {
+            scanStatus = 'failed';
+          });
+        }
+      });
 
     } catch (e) {
+
       debugPrint('BLE SCAN REQUEST ERROR: $e');
 
       if (!mounted) return;
 
       setState(() {
-        scanStatus = 'error';
+        scanStatus = 'failed';
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -124,6 +188,7 @@ class _BlePairingPageState extends State<BlePairingPage> {
   }
 
 
+
   //dispose of 
   @override
   void dispose() {
@@ -133,38 +198,187 @@ class _BlePairingPageState extends State<BlePairingPage> {
   }
 
 
-  // TEMPORARY PAIRING FUNCTION
-  void _pairTag() {
-    if (selectedTagId == null) return;
 
-    final selectedTag = availableTags.firstWhere(
-      (tag) => tag['id'] == selectedTagId,
-    );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${selectedTag['name']} selected for ${widget.cat.name} (demo only)',
+  // CONFIRM SELECTED BEACON WITH RASPBERRY PI
+  Future<void> _pairTag() async {
+
+    final tagId = selectedTagId;
+
+    if (tagId == null || scanStatus != 'found') {
+      return;
+    }
+
+    // THE PI CURRENTLY ACCEPTS ONLY THESE CAT NAMES
+    const supportedCats = {'zeusu', 'okja', 'kujza'};
+
+    if (!supportedCats.contains(
+        widget.cat.name.trim().toLowerCase())) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'The Smart Mat currently accepts only '
+            'zeusu, okja, or kujza.',
+          ),
         ),
-      ),
-    );
+      );
+
+      return;
+    }
+
+    try {
+      // STOP LISTENING TO THE PREVIOUS SCAN REQUEST
+      await scanSubscription?.cancel();
+
+      if (!mounted) return;
+
+      setState(() {
+        scanStatus = 'pairing';
+      });
+
+      // SEND CONFIRM COMMAND
+      final requestId = await BlePairingService.requestPair(
+        catId: widget.cat.id,
+        catName: widget.cat.name,
+        deviceId: 'mat001',
+        tagId: tagId,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        activeRequestId = requestId;
+      });
+
+      debugPrint('BLE CONFIRM REQUEST: $requestId');
+
+      bool resultHandled = false;
+
+      scanSubscription = BlePairingService.watchRequest(
+        requestId: requestId,
+        deviceId: 'mat001',
+      ).listen((snapshot) async {
+
+        if (!mounted || !snapshot.exists || resultHandled) {
+          return;
+        }
+
+        final data = snapshot.data();
+        if (data == null) return;
+
+        final status = data['status'] as String? ?? 'pending';
+        final response = data['response']?.toString() ?? '';
+
+        debugPrint('BLE PAIRING STATUS: $status');
+        debugPrint('BLE PAIRING RESPONSE: $response');
+
+        if (status == 'paired') {
+
+          resultHandled = true;
+
+          try {
+            // VERIFY THE PI CONFIRMED THE EXPECTED MAC
+            final confirmedMac = data['mac']?.toString();
+
+            if (confirmedMac == null ||
+                confirmedMac.toUpperCase() !=
+                    tagId.toUpperCase()) {
+              throw Exception(
+                'Pi confirmed an unexpected beacon.',
+              );
+            }
+
+            // SAVE PAIRING TO FIREBASE CAT PROFILE
+            await BlePairingService.savePairedTag(
+              catId: widget.cat.id,
+              deviceId: 'mat001',
+              tagId: tagId,
+            );
+
+            if (!mounted) return;
+
+            setState(() {
+              scanStatus = 'paired';
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'BLE beacon paired successfully!',
+                ),
+              ),
+            );
+
+          } catch (e) {
+
+            if (!mounted) return;
+
+            setState(() {
+              scanStatus = 'failed';
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Pi pairing succeeded, but saving '
+                  'the cat profile failed: $e',
+                ),
+              ),
+            );
+          }
+
+        } else if (status == 'failed' ||
+                   status == 'cancelled') {
+
+          resultHandled = true;
+
+          if (!mounted) return;
+
+          setState(() {
+            scanStatus = status;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                response.isNotEmpty
+                    ? response
+                    : 'BLE pairing failed.',
+              ),
+            ),
+          );
+        }
+
+      }, onError: (error) {
+
+        debugPrint('BLE PAIRING LISTENER ERROR: $error');
+
+        if (mounted) {
+          setState(() {
+            scanStatus = 'failed';
+          });
+        }
+      });
+
+    } catch (e) {
+
+      if (!mounted) return;
+
+      setState(() {
+        scanStatus = 'failed';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Pairing error: $e'),
+        ),
+      );
+    }
   }
 
-  // // TEMPORARY SCANNING FUNCTION
-  // void _scanForTags() {
-  //   setState(() {
-  //     selectedTagId = null;
-  //   });
 
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(
-  //       content: Text('Scanning for BLE tags (demo only)'),
-  //     ),
-  //   );
-  // }
-
-
-//TEST TEMP FIREBASE LISTENER
+//FIREBASE LISTENER
 void _startFirebaseListener() {
 
   firebaseTestSubscription?.cancel();
@@ -190,6 +404,12 @@ void _startFirebaseListener() {
     debugPrint('FIREBASE LISTENER ERROR: $error');
   });
 }
+
+
+
+
+
+
 
 
   @override
@@ -341,7 +561,9 @@ void _startFirebaseListener() {
                     final bleRssi =
                         data?['ble_rssi'];
 
-                    if (bleStatus != 'connected' || bleMac == null) {
+                    if ((bleStatus != 'paired' &&
+                        bleStatus != 'connected') ||
+                        bleMac == null) {
                       return const SizedBox.shrink();
                     }
 
@@ -350,7 +572,9 @@ void _startFirebaseListener() {
                       children: [
 
                         Text(
-                          'Connected Tag',
+                          bleStatus == 'connected'
+                            ? 'Connected Tag'
+                            : 'Paired Tag',
                           style: TextStyle(
                             fontSize: 19,
                             fontWeight: FontWeight.bold,
@@ -447,10 +671,11 @@ void _startFirebaseListener() {
 
               const SizedBox(height: 15),
 
-              //TAG LIST
+              
+              // TAG LIST
               ...availableTags.map((tag) {
 
-                final isSelected = selectedTagId == tag['id'];
+                final isSelected = selectedTagId == tag.id;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -460,7 +685,7 @@ void _startFirebaseListener() {
 
                     onTap: () {
                       setState(() {
-                        selectedTagId = tag['id'];
+                        selectedTagId = tag.id;
                       });
                     },
 
@@ -482,6 +707,7 @@ void _startFirebaseListener() {
                       child: Row(
                         children: [
 
+                          // BLUETOOTH ICON
                           Container(
                             width: 48,
                             height: 48,
@@ -500,13 +726,16 @@ void _startFirebaseListener() {
 
                           const SizedBox(width: 15),
 
+                          // TAG INFORMATION
                           Expanded(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+
                               children: [
 
                                 Text(
-                                  tag['name']!,
+                                  tag.name,
                                   style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
@@ -517,7 +746,9 @@ void _startFirebaseListener() {
                                 const SizedBox(height: 5),
 
                                 Text(
-                                  tag['signal']!,
+                                  tag.rssi != null
+                                      ? 'Signal: ${tag.rssi} dBm'
+                                      : 'Signal unavailable',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: colors.onSurfaceVariant,
@@ -527,6 +758,7 @@ void _startFirebaseListener() {
                             ),
                           ),
 
+                          // SELECTION INDICATOR
                           Icon(
                             isSelected
                                 ? Icons.check_circle
@@ -543,6 +775,7 @@ void _startFirebaseListener() {
                 );
               }),
 
+
               const SizedBox(height: 25),
 
               //PAIR BUTTON
@@ -550,16 +783,21 @@ void _startFirebaseListener() {
                 height: 50,
 
                 child: ElevatedButton.icon(
-                  onPressed: selectedTagId == null
-                      ? null
-                      : _pairTag,
+                  onPressed: selectedTagId != null &&
+                        scanStatus == 'found'
+                    ? _pairTag
+                    : null,
 
                   icon: const Icon(
                     Icons.link,
                     size: 20,
                   ),
 
-                  label: const Text('Pair Selected Tag'),
+                  label: Text(
+                    scanStatus == 'pairing'
+                        ? 'Pairing...'
+                        : 'Pair Selected Tag',
+                  ),
                 ),
               ),
 
@@ -570,12 +808,12 @@ void _startFirebaseListener() {
                 height: 50,
 
                 child: OutlinedButton.icon(
-                  onPressed:
-                    scanStatus == 'pending' ||
-                    scanStatus == 'scanning' ||
-                    scanStatus == 'sending'
-                      ? null
-                      : _startFirebaseScan,
+                  onPressed: scanStatus == 'sending' ||
+                            scanStatus == 'pending' ||
+                            scanStatus == 'scanning' ||
+                            scanStatus == 'pairing'
+                        ? null
+                        : _startFirebaseScan,
 
                   icon: const Icon(
                     Icons.refresh,
@@ -584,58 +822,14 @@ void _startFirebaseListener() {
 
                   label: Text(
                     scanStatus == 'sending' ||
-                    scanStatus == 'pending'
+                            scanStatus == 'pending'
                         ? 'Waiting for Raspberry Pi...'
                         : scanStatus == 'scanning'
-                            ? 'Scanning...'
+                            ? 'Scanning for Beacons...'
                             : 'Scan for Tags',
                   ),
                 ),
               ),
-
-              //TEST FIREBASE BUTTON
-              //const SizedBox(height: 12),
-
-              // SizedBox(
-              //   height: 50,
-              //   child: OutlinedButton.icon(
-              //     onPressed: () async {
-              //       try {
-              //         final data =
-              //             await BlePairingService.testFirebaseConnection();
-
-              //         if (!context.mounted) return;
-
-              //         ScaffoldMessenger.of(context).showSnackBar(
-              //           SnackBar(
-              //             content: Text(
-              //               'Firebase connected! Status: ${data['status']}',
-              //             ),
-              //           ),
-              //         );
-
-              //       } catch (e) {
-              //         debugPrint('FIREBASE TEST ERROR: $e');
-
-              //         if (!context.mounted) return;
-
-              //         ScaffoldMessenger.of(context).showSnackBar(
-              //           SnackBar(
-              //             content: Text('Firebase connection failed: $e'),
-              //           ),
-              //         );
-              //       }
-              //     },
-
-              //     icon: const Icon(Icons.cloud_done),
-
-              //     label: const Text('Test Firebase Connection'),
-              //   ),
-              // ),
-
-
-
-              //const SizedBox(height: 30),
             ],
           ),
         ),

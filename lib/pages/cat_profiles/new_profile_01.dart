@@ -6,6 +6,7 @@ import '../../widgets/selection_button.dart';
 import '../../theme/app_colours.dart';
 import '../../models/cat_registration_model.dart';
 import 'new_profile_02.dart';
+import '../../services/cat_registration_nav_service.dart';
 
 ////////////////////////////////////////////NEW PROFILE PAGE 01//////////////////////////////////////////
 class NewProfilePage01 extends StatefulWidget {
@@ -131,19 +132,17 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
     registration.birthday = selectedBirthday;
 
     // NAVIGATE TO PAGE 2
+   
+    // NAVIGATE TO PAGE 2
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            NewProfilePage02(
-              registration: registration,
-            ),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
+      catRegistrationRoute(
+        page: NewProfilePage02(
+          registration: registration,
+        ),
       ),
     );
   }
-
 
   ////////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
   @override
@@ -179,7 +178,7 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
           ),
 
           // INTRODUCTION
-          const Text(
+          Text(
             'Meow!',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -188,9 +187,9 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
 
-          const Text(
+          Text(
             "Let's kick things off with the basics",
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -199,7 +198,7 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
             ),
           ),
 
-          const SizedBox(height: 45),
+          SizedBox(height: 45),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -209,13 +208,19 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
               children: [
 
                 // NAME
-                const Text(
-                  'Name',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18),
-                ),
+                SizedBox(
+                    width: 300,
+                    child: Text(
+                      'What\'s your cat\'s name?',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 10),
 
                 TextField(
                   controller: nameController,
@@ -227,16 +232,16 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                   ),
                 ),
 
-                const SizedBox(height: 35),
+                SizedBox(height: 20),
 
                 // GENDER
-                const Text(
+                Text(
                   'Gender',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 18),
                 ),
 
-                const SizedBox(height: 25),
+                SizedBox(height: 20),
 
                 Row(
                   children: [
@@ -255,7 +260,7 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                       ),
                     ),
 
-                    const SizedBox(width: 20),
+                    SizedBox(width: 20),
 
                     // FEMALE BUTTON
                     Expanded(
@@ -274,16 +279,22 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                   ],
                 ),
 
-                const SizedBox(height: 50),
+                SizedBox(height: 50),
 
                 // BIRTHDAY
-                const Text(
-                  "When is your cat's birthday?",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18),
-                ),
+                SizedBox(
+                    width: 300,
+                    child: Text(
+                      'When is your cat\'s birthday?',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ),
 
-                const SizedBox(height: 25),
+                SizedBox(height: 10),
 
                 TextField(
                   controller: birthdayController,
@@ -304,7 +315,7 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                   ),
                 ),
 
-                const SizedBox(height: 60),
+                SizedBox(height: 60),
 
                 // NEXT BUTTON
                 SizedBox(
@@ -315,7 +326,7 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                   ),
                 ),
 
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
                 
                 // CANCEL BUTTON
                 SizedBox(
@@ -326,7 +337,7 @@ class _NewProfilePage01State extends State<NewProfilePage01> {
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                SizedBox(height: 30),
               ],
             ),
           ),

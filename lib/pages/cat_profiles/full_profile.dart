@@ -433,7 +433,7 @@ class _FullProfilePageState extends State<FullProfilePage> {
                         );
                       },
                       icon: const Icon(Icons.description),
-                      label: const Text('View Report'),
+                      label: const Text('Generate Report'),
                     ),
                   ),
 
@@ -509,14 +509,12 @@ class _FullProfilePageState extends State<FullProfilePage> {
                       label: const Text('Delete Profile'),
                     ),
                   ),
-
                   const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
         ],
-        
       ),
 
       //BOTTOM NAVIGATION

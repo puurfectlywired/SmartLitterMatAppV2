@@ -77,68 +77,76 @@ class _AlertsPageState extends State<AlertsPage> {
 
       endDrawer: const MyDrawer(),
 
-      body: Column(
-        children: [
+      
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : loadError != null
+              ? Center(
+                  child: Text(loadError!),
+                )
+              : Column(
+                  children: [
+                    const SizedBox(height: 20),
 
-          const SizedBox(height: 20),
+                    // AMMONIA AND CAT PROFILE TABS
+                    LayoutBuilder(
+                      builder: (context, constraints) {
 
-          // AMMONIA AND CAT PROFILE TABS
-          LayoutBuilder(
-            builder: (context, constraints) {
+                        final int tabCount = catProfiles.length + 1;
 
-              final int tabCount = catProfiles.length + 1;
+                        const double minTabWidth = 100;
 
-              const double minTabWidth = 100;
+                        final double tabWidth =
+                            constraints.maxWidth / tabCount;
 
-              final double tabWidth =
-                  constraints.maxWidth / tabCount;
+                        final double effectiveTabWidth =
+                            tabWidth < minTabWidth
+                                ? minTabWidth
+                                : tabWidth;
 
-              final double effectiveTabWidth =
-                  tabWidth < minTabWidth
-                      ? minTabWidth
-                      : tabWidth;
+                        return SizedBox(
+                          height: 60,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
 
-              return SizedBox(
-                height: 60,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
+                                // AMMONIA TAB
+                                SizedBox(
+                                  width: effectiveTabWidth,
+                                  child: _alertTab(
+                                    title: 'Ammonia',
+                                    catId: null,
+                                  ),
+                                ),
 
-                      // AMMONIA TAB
-                      SizedBox(
-                        width: effectiveTabWidth,
-                        child: _alertTab(
-                          title: 'Ammonia',
-                          catId: null,
-                        ),
-                      ),
-
-                      // CAT PROFILE TABS
-                      ...catProfiles.map(
-                        (cat) => SizedBox(
-                          width: effectiveTabWidth,
-                          child: _alertTab(
-                            title: cat.name,
-                            catId: cat.id,
+                                // CAT PROFILE TABS
+                                ...catProfiles.map(
+                                  (cat) => SizedBox(
+                                    width: effectiveTabWidth,
+                                    child: _alertTab(
+                                      title: cat.name,
+                                      catId: cat.id,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ALERT CONTENT
+                    Expanded(
+                      child: _buildAlertContent(),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 20),
-
-          // ALERT CONTENT
-          Expanded(
-            child: _buildAlertContent(),
-          ),
-        ],
-      ),
 
       bottomNavigationBar: const MyBottomNavBar(
         selectedIndex: 2,
@@ -146,20 +154,9 @@ class _AlertsPageState extends State<AlertsPage> {
     );
   }
 
+
   ////////////////////////////////////////////ALERT CONTENT//////////////////////////////////////////
   Widget _buildAlertContent() {
-
-    if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (loadError != null) {
-      return Center(
-        child: Text(loadError!),
-      );
-    }
 
     // Ammonia alerts are currently the only implemented alert type.
     // Cat-specific alert data can be added through another service.
@@ -173,8 +170,8 @@ class _AlertsPageState extends State<AlertsPage> {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: visibleAlerts.length,
-      itemBuilder: (context, index) {
 
+      itemBuilder: (context, index) {
         final alert = visibleAlerts[index];
 
         return Card(
@@ -195,6 +192,7 @@ class _AlertsPageState extends State<AlertsPage> {
       },
     );
   }
+
 
   ////////////////////////////////////////////EMPTY PAGE//////////////////////////////////////////
   Widget _buildEmptyPage() {

@@ -108,6 +108,7 @@ class _CreateUsernameState extends State<CreateUsername> {
                   SizedBox(
                     width: 300,
                     child: TextField(
+                      textCapitalization: TextCapitalization.words,
                       controller: firstNameController,
                       decoration: InputDecoration(
                         labelText: 'First Name',
@@ -122,6 +123,7 @@ class _CreateUsernameState extends State<CreateUsername> {
                   SizedBox(
                     width: 300,
                     child: TextField(
+                      textCapitalization: TextCapitalization.words,
                       controller: lastNameController,
                       decoration: InputDecoration(
                         labelText: 'Last Name',

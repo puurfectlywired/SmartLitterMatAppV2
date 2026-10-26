@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../settings/change_password.dart';
+
 import '../login.dart';
 
 ////////////////////////////////////LOGIN INFORMATION PAGE////////////////////////////////////
@@ -67,34 +69,19 @@ class _LoginInfoPageState
     }
   }
 
-  // SEND PASSWORD RESET EMAIL
-  Future<void> resetPassword() async {
-    final user = _auth.currentUser;
-    if (user?.email == null) return;
-
-    try {
-      await _auth.sendPasswordResetEmail(
-        email: user!.email!,
-      );
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password reset email sent'),
-        ),
-      );
-
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to send reset email'),
-        ),
-      );
-    }
+  // CHANGE PASSWORD
+  void resetPassword() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const ChangePasswordPage(),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
+
 
   // LOG OUT
   Future<void> logOut() async {

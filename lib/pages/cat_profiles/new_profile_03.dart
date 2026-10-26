@@ -9,6 +9,8 @@ import '../../theme/app_colours.dart';
 import '../../models/cat_registration_model.dart';
 import 'new_profile_04.dart';
 import '../../services/local_image_service.dart';
+import '../../services/cat_registration_nav_service.dart';
+
 
 ////////////////////////////////////////////NEW PROFILE PAGE 03//////////////////////////////////////////
 class NewProfilePage03 extends StatefulWidget {
@@ -28,73 +30,72 @@ class _NewProfilePage03State extends State<NewProfilePage03> {
 
   File? selectedImage;
 
+
   ////////////////////////////////////////////PICK IMAGE//////////////////////////////////////////
+  Future<void> _pickImage() async {
+    try {
+      final ImagePicker picker = ImagePicker();
 
-////////////////////////////////////////////PICK IMAGE//////////////////////////////////////////
-Future<void> _pickImage() async {
-  try {
-    final ImagePicker picker = ImagePicker();
+      // SELECT IMAGE
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+      );
 
-    // SELECT IMAGE
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
+      if (image == null) return;
 
-    if (image == null) return;
+      // CROP IMAGE
+      final croppedImage = await ImageCropper().cropImage(
+        sourcePath: image.path,
 
-    // CROP IMAGE
-    final croppedImage = await ImageCropper().cropImage(
-      sourcePath: image.path,
+        uiSettings: [
+          IOSUiSettings(
+            title: 'Adjust Photo',
+            cropStyle: CropStyle.circle,
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
 
-      uiSettings: [
-        IOSUiSettings(
-          title: 'Adjust Photo',
-          cropStyle: CropStyle.circle,
-          aspectRatioLockEnabled: true,
-          resetAspectRatioEnabled: false,
+          AndroidUiSettings(
+            toolbarTitle: 'Adjust Photo',
+            cropStyle: CropStyle.circle,
+            lockAspectRatio: true,
+            initAspectRatio: CropAspectRatioPreset.square,
+          ),
+        ],
+      );
+
+      if (croppedImage == null || !mounted) return;
+
+      // SAVE IMAGE TO APP'S DOCUMENTS DIRECTORY
+      final savedImagePath = await LocalImageService.saveCatImage(
+        croppedImage.path,
+      );
+
+      if (!mounted) return;
+
+      // UPDATE SELECTED IMAGE
+      setState(() {
+        selectedImage = File(savedImagePath);
+      });
+
+      debugPrint('CAT IMAGE SAVED TO: $savedImagePath');
+
+    } catch (e) {
+      debugPrint('IMAGE PICKER ERROR: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not select image.'),
         ),
-
-        AndroidUiSettings(
-          toolbarTitle: 'Adjust Photo',
-          cropStyle: CropStyle.circle,
-          lockAspectRatio: true,
-          initAspectRatio: CropAspectRatioPreset.square,
-        ),
-      ],
-    );
-
-    if (croppedImage == null || !mounted) return;
-
-    // SAVE IMAGE TO APP'S DOCUMENTS DIRECTORY
-    final savedImagePath = await LocalImageService.saveCatImage(
-      croppedImage.path,
-    );
-
-    if (!mounted) return;
-
-    // UPDATE SELECTED IMAGE
-    setState(() {
-      selectedImage = File(savedImagePath);
-    });
-
-    debugPrint('CAT IMAGE SAVED TO: $savedImagePath');
-
-  } catch (e) {
-    debugPrint('IMAGE PICKER ERROR: $e');
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Could not select image.'),
-      ),
-    );
+      );
+    }
   }
-}
 
 
-  ////////////////////////////////////////////CONTINUE//////////////////////////////////////////
-  void _continue() {
+  ////////////////////////////////////////////NEXT PAGE/////////////////////////////////////////
+  void _nextPage() {
 
     // SAVE SELECTED IMAGE TO REGISTRATION MODEL
     widget.registration.imagePath = selectedImage?.path;
@@ -116,13 +117,10 @@ Future<void> _pickImage() async {
     // NAVIGATE TO PAGE 4
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            NewProfilePage04(
-              registration: widget.registration,
-            ),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
+      catRegistrationRoute(
+        page: NewProfilePage04(
+          registration: widget.registration,
+        ),
       ),
     );
   }
@@ -160,7 +158,7 @@ Future<void> _pickImage() async {
           ),
 
           // INTRODUCTION
-          const Text(
+          Text(
             'Say Cheese!',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -169,9 +167,9 @@ Future<void> _pickImage() async {
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 10),
 
-          const Text(
+          Text(
             "Time to upload your cat's cutest photo!",
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -180,7 +178,7 @@ Future<void> _pickImage() async {
             ),
           ),
 
-          const SizedBox(height: 35),
+          SizedBox(height: 35),
 
           Text(
             'Choose a PNG or JPG photo',
@@ -191,7 +189,7 @@ Future<void> _pickImage() async {
             ),
           ),
 
-          const SizedBox(height: 55),
+          SizedBox(height: 55),
 
           // PROFILE PHOTO
           Center(
@@ -229,59 +227,56 @@ Future<void> _pickImage() async {
             ),
           ),
 
-          const SizedBox(height: 65),
+          SizedBox(height: 65),
+   
+          // BUTTONS
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 35),
 
-          
-// BUTTONS
-Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 35),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
 
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
+                // MAIN BUTTON
+                SizedBox(
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: selectedImage == null
+                        ? _pickImage
+                        : _nextPage,
 
-      // MAIN BUTTON
-      SizedBox(
-        height: 55,
-        child: ElevatedButton(
-          onPressed: selectedImage == null
-              ? _pickImage
-              : _continue,
+                    child: Text(
+                      selectedImage == null
+                          ? 'Upload Photo'
+                          : 'Continue',
+                    ),
+                  ),
+                ),
 
-          child: Text(
-            selectedImage == null
-                ? 'Upload Photo'
-                : 'Continue',
+                const SizedBox(height: 10),
+
+                // SECONDARY BUTTON
+                TextButton(
+                  onPressed: selectedImage == null
+                      ? _nextPage
+                      : _pickImage,
+
+                  child: Text(
+                    selectedImage == null
+                        ? 'Skip >'
+                        : 'Change Photo',
+
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
-        ),
-      ),
-
-      const SizedBox(height: 10),
-
-      // SECONDARY BUTTON
-      TextButton(
-        onPressed: selectedImage == null
-            ? _continue
-            : _pickImage,
-
-        child: Text(
-          selectedImage == null
-              ? 'Skip >'
-              : 'Change Photo',
-
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.primary,
-          ),
-        ),
-      ),
-
-      const SizedBox(height: 40),
-    ],
-  ),
-),
-
         ],
       ),
     );

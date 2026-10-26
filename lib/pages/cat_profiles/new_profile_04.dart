@@ -11,6 +11,7 @@ import '../../models/cat_registration_model.dart';
 
 //services
 import '../../services/cat_profile_service.dart';
+import '../../services/cat_registration_nav_service.dart';
 
 //other
 import '../../widgets/registration_header.dart';
@@ -166,6 +167,12 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
     );
   }
 
+  // CANCEL CAT REGISTRATION
+  void _cancelRegistration() {
+    if (isSaving) return;
+
+    cancelCatRegistration(context);
+  }
 
   ////////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
   @override
@@ -199,7 +206,7 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
           ),
 
           // INTRODUCTION
-          const Text(
+          Text(
             'Looking Good!',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -208,9 +215,9 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 10),
 
-          const Text(
+          Text(
             "Let's make sure everything is correct",
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -219,7 +226,7 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
             ),
           ),
 
-          const SizedBox(height: 35),
+          SizedBox(height: 35),
 
           // PROFILE PHOTO
           Center(
@@ -245,7 +252,7 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
             ),
           ),
 
-          const SizedBox(height: 35),
+          SizedBox(height: 35),
 
           // PROFILE INFORMATION
           Padding(
@@ -310,7 +317,7 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
             ),
           ),
 
-          const SizedBox(height: 45),
+          SizedBox(height: 45),
 
           // BUTTONS
           Padding(
@@ -331,20 +338,18 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
                   ),
                 ),
 
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
 
-                // BACK BUTTON
+                // CANCEL BUTTON
                 SizedBox(
                   height: 55,
                   child: OutlinedButton(
-                    onPressed: isSaving
-                        ? null
-                        : () => Navigator.pop(context),
-                    child: const Text('Go Back'),
+                    onPressed: isSaving ? null : _cancelRegistration,
+                    child: const Text('Cancel'),
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                SizedBox(height: 30),
               ],
             ),
           ),
@@ -352,6 +357,4 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
       ),
     );
   }
-
-
 }

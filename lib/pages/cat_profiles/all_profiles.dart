@@ -11,6 +11,7 @@ import '../../models/cat_profile_model.dart';
 
 //services
 import '../../services/cat_profile_service.dart';
+import '../../services/cat_registration_nav_service.dart';
 
 //themes
 import '../../other/global_variables.dart';
@@ -64,44 +65,63 @@ class _ProfilesPageState extends State<ProfilesPage> {
     }
   }
 
+
+//////////////////////////////////////ADD CAT PROFILE//////////////////////////////////////////
+Future<void> _addCatProfile() async {
+
+  // OPEN CAT REGISTRATION
+  await Navigator.push(
+    context,
+    catRegistrationRoute(
+      page: const NewProfilePage01(),
+    ),
+  );
+
+  if (!mounted) return;
+
+  // REFRESH CAT PROFILES AFTER RETURNING
+  await _loadCatProfiles();
+}
+
+
   //////////////////////////////////////ADD CAT PROFILE//////////////////////////////////////////
-  Future<void> _addCatProfile() async {
+  // Future<void> _addCatProfile() async {
 
-    final newCat = await Navigator.push<CatProfile>(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const NewProfilePage01(),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
+  //   final newCat = await Navigator.push<CatProfile>(
+  //     context,
+  //     PageRouteBuilder(
+  //       pageBuilder: (context, animation, secondaryAnimation) =>
+  //           const NewProfilePage01(),
+  //       transitionDuration: Duration.zero,
+  //       reverseTransitionDuration: Duration.zero,
+  //     ),
+  //   );
 
-    if (!mounted) return;
+  //   if (!mounted) return;
 
-    // Keep existing behavior when registration returns a cat.
-    if (newCat != null) {
-      try {
-        await ProfileService.addProfile(newCat);
+  //   // Keep existing behavior when registration returns a cat.
+  //   if (newCat != null) {
+  //     try {
+  //       await ProfileService.addProfile(newCat);
 
-      } catch (e) {
-        debugPrint('ERROR ADDING CAT: $e');
+  //     } catch (e) {
+  //       debugPrint('ERROR ADDING CAT: $e');
 
-        if (!mounted) return;
+  //       if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not save cat profile.'),
-          ),
-        );
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text('Could not save cat profile.'),
+  //         ),
+  //       );
 
-        return;
-      }
-    }
+  //       return;
+  //     }
+  //   }
 
-    // Refresh profiles after returning from registration.
-    await _loadCatProfiles();
-  }
+  //   // Refresh profiles after returning from registration.
+  //   await _loadCatProfiles();
+  // }
 
   //////////////////////////////////////ADD CAT BUTTON//////////////////////////////////////////
   Widget _buildAddCatButton() {
