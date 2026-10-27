@@ -58,9 +58,6 @@ class _FullProfilePageState extends State<FullProfilePage> {
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
-    
-    // TEMPORARY BLE STATUS FOR TESTING
-    const BleTagStatus bleStatus = BleTagStatus.unpaired;
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -236,151 +233,100 @@ class _FullProfilePageState extends State<FullProfilePage> {
 
                       const SizedBox(width: 12),
 
-                      //BLE STATUS BUTTON - connected to firebase
-                      // Expanded(
-                      //   child: SizedBox(
-                      //     height: 50,
-
-                      //     child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                      //       stream: FirebaseAuth.instance.currentUser == null
-                      //           ? null
-                      //           : FirebaseFirestore.instance
-                      //               .collection('users')
-                      //               .doc(FirebaseAuth.instance.currentUser!.uid)
-                      //               .collection('cats')
-                      //               .doc(cat.id)
-                      //               .snapshots(),
-
-                      //       builder: (context, snapshot) {
-
-                      //         final data = snapshot.data?.data();
-
-                      //         final statusString =
-                      //             data?['ble_status'] as String? ?? 'unpaired';
-
-                      //         final BleTagStatus bleStatus =
-                      //             switch (statusString) {
-                      //           'connected' => BleTagStatus.connected,
-                      //           'disconnected' => BleTagStatus.disconnected,
-                      //           _ => BleTagStatus.unpaired,
-                      //         };
-
-                      //         final bool connected =
-                      //             bleStatus == BleTagStatus.connected;
-
-                      //         return connected
-                      //             ? ElevatedButton.icon(
-                      //                 onPressed: () {
-                      //                   Navigator.push(
-                      //                     context,
-                      //                     PageRouteBuilder(
-                      //                       pageBuilder: (_, __, ___) =>
-                      //                           BlePairingPage(cat: cat),
-                      //                       transitionDuration: Duration.zero,
-                      //                       reverseTransitionDuration: Duration.zero,
-                      //                     ),
-                      //                   );
-                      //                 },
-                      //                 icon: const Icon(
-                      //                   Icons.bluetooth_connected,
-                      //                   size: 18,
-                      //                 ),
-                      //                 label: const Text(
-                      //                   'Connected',
-                      //                   style: TextStyle(fontSize: 13),
-                      //                 ),
-                      //               )
-                      //             : OutlinedButton.icon(
-                      //                 onPressed: () {
-                      //                   Navigator.push(
-                      //                     context,
-                      //                     PageRouteBuilder(
-                      //                       pageBuilder: (_, __, ___) =>
-                      //                           BlePairingPage(cat: cat),
-                      //                       transitionDuration: Duration.zero,
-                      //                       reverseTransitionDuration: Duration.zero,
-                      //                     ),
-                      //                   );
-                      //                 },
-                      //                 icon: Icon(
-                      //                   bleStatus == BleTagStatus.disconnected
-                      //                       ? Icons.bluetooth_disabled
-                      //                       : Icons.bluetooth,
-                      //                   size: 18,
-                      //                 ),
-                      //                 label: Text(
-                      //                   bleStatus == BleTagStatus.disconnected
-                      //                       ? 'Disconnected'
-                      //                       : 'Pair BLE Tag',
-                      //                   style: const TextStyle(fontSize: 13),
-                      //                 ),
-                      //               );
-                      //       },
-                      //     ),
-                      //   ),
-                      // ),
-
-
-                      // BLE TAG BUTTON - hard coded for demo
+                      // BLE STATUS BUTTON - CONNECTED TO FIREBASE
                       Expanded(
                         child: SizedBox(
                           height: 50,
 
-                          child: bleStatus == BleTagStatus.connected
+                          child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                            stream: FirebaseAuth.instance.currentUser == null
+                                ? null
+                                : FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(FirebaseAuth.instance.currentUser!.uid)
+                                    .collection('cats')
+                                    .doc(cat.id)
+                                    .snapshots(),
 
-                              // CONNECTED BUTTON
-                              ? ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (_, __, ___) =>
-                                            BlePairingPage(cat: cat),
-                                        transitionDuration: Duration.zero,
-                                        reverseTransitionDuration: Duration.zero,
-                                      ),
-                                    );
-                                  },
+                            builder: (context, snapshot) {
 
-                                  icon: const Icon(
-                                    Icons.bluetooth_connected,
-                                    size: 18,
+                              // READ BLE STATUS FROM FIREBASE
+                              final data = snapshot.data?.data();
+
+                              final String bleStatus =
+                                  data?['ble_status'] as String? ?? 'unpaired';
+
+                              // BUTTON TEXT
+                              final String buttonText;
+
+                              // BUTTON ICON
+                              final IconData buttonIcon;
+
+                              switch (bleStatus) {
+
+                                case 'connected':
+                                  buttonText = 'Connected';
+                                  buttonIcon = Icons.bluetooth_connected;
+                                  break;
+
+                                case 'paired':
+                                  buttonText = 'Paired';
+                                  buttonIcon = Icons.bluetooth;
+                                  break;
+
+                                default:
+                                  buttonText = 'Unpaired';
+                                  buttonIcon = Icons.bluetooth_disabled;
+                              }
+
+                              // OPEN BLE PAIRING PAGE
+                              void openBlePairingPage() {
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (_, __, ___) =>
+                                        BlePairingPage(cat: cat),
+                                    transitionDuration: Duration.zero,
+                                    reverseTransitionDuration: Duration.zero,
                                   ),
+                                );
+                              }
 
-                                  label: const Text(
-                                    'Connected',
-                                    style: TextStyle(fontSize: 13),
-                                  ),
-                                )
+                              // CONNECTED OR PAIRED BUTTON
+                              if (bleStatus == 'connected' ||
+                                  bleStatus == 'paired') {
 
-                              // UNPAIRED OR DISCONNECTED BUTTON
-                              : OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (_, __, ___) =>
-                                            BlePairingPage(cat: cat),
-                                        transitionDuration: Duration.zero,
-                                        reverseTransitionDuration: Duration.zero,
-                                      ),
-                                    );
-                                  },
+                                return ElevatedButton.icon(
+                                  onPressed: openBlePairingPage,
 
                                   icon: Icon(
-                                    bleStatus == BleTagStatus.disconnected
-                                        ? Icons.bluetooth_disabled
-                                        : Icons.bluetooth,
+                                    buttonIcon,
                                     size: 18,
                                   ),
 
                                   label: Text(
-                                    bleStatus == BleTagStatus.disconnected
-                                        ? 'Disconnected'
-                                        : 'Unpaired',
+                                    buttonText,
                                     style: const TextStyle(fontSize: 13),
                                   ),
+                                );
+                              }
+
+                              // UNPAIRED BUTTON
+                              return OutlinedButton.icon(
+                                onPressed: openBlePairingPage,
+
+                                icon: Icon(
+                                  buttonIcon,
+                                  size: 18,
                                 ),
+
+                                label: Text(
+                                  buttonText,
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
 

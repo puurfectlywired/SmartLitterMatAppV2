@@ -186,4 +186,31 @@ class BlePairingService {
 
     debugPrint('BLE TAG SAVED TO CAT PROFILE');
   }
+
+  // REMOVE BLE PAIRING FROM CAT PROFILE
+  static Future<void> unpairTag({
+    required String catId,
+  }) async {
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    await _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('cats')
+        .doc(catId)
+        .update({
+          'ble_mac': FieldValue.delete(),
+          'ble_device_id': FieldValue.delete(),
+          'ble_status': 'unpaired',
+          'ble_paired_at': FieldValue.delete(),
+        });
+
+    debugPrint('BLE TAG REMOVED FROM CAT PROFILE');
+  }
+
 }

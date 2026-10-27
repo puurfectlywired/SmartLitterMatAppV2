@@ -264,13 +264,20 @@ class _LoginInfoPageState
 
                       // LOG OUT
                       Center(
-                        child: TextButton(
+                        child: TextButton.icon(
                           onPressed: logOut,
-                          child: Text(
+
+                          icon: Icon(
+                            Icons.logout,
+                            size: 24,
+                            color: colors.primary,
+                          ),
+
+                          label: Text(
                             'Log Out',
                             style: TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.normal,
                               color: colors.primary,
                             ),
                           ),

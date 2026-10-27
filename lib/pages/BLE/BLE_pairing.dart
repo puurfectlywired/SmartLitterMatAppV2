@@ -406,12 +406,48 @@ void _startFirebaseListener() {
 }
 
 
+  // UNPAIR BLE TAG FROM CAT PROFILE
+  Future<void> _unpairTag() async {
+
+    try {
+
+      await BlePairingService.unpairTag(
+        catId: widget.cat.id,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        selectedTagId = null;
+        availableTags.clear();
+        scanStatus = 'idle';
+        activeRequestId = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'BLE tag removed from cat profile.',
+          ),
+        ),
+      );
+
+    } catch (e) {
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not remove BLE tag: $e'),
+        ),
+      );
+    }
+  }
 
 
 
 
-
-
+//////////////////////////////////////////BUILD PAGE///////////////////////////////////
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -639,6 +675,31 @@ void _startFirebaseListener() {
                           ),
                         ),
 
+                        const SizedBox(height: 16),
+
+                        // UNPAIR TAG BUTTON
+                        OutlinedButton.icon(
+                          onPressed: _unpairTag,
+
+                          icon: const Icon(
+                            Icons.link_off,
+                            size: 20,
+                          ),
+
+                          label: const Text('Unpair Tag'),
+
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.primary,
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                        ),
+
                         const SizedBox(height: 35),
                       ],
                     );
@@ -713,13 +774,13 @@ void _startFirebaseListener() {
                             height: 48,
 
                             decoration: BoxDecoration(
-                              color: colors.primaryContainer,
+                              color: appColors.bleIconBackground,
                               borderRadius: BorderRadius.circular(15),
                             ),
 
                             child: Icon(
                               Icons.bluetooth,
-                              color: colors.onPrimaryContainer,
+                              color: appColors.bleIcon,
                               size: 25,
                             ),
                           ),
