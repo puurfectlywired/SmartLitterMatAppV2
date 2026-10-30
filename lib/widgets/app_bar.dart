@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../pages/home.dart';
+import '../views/home.dart';
 
 ////////////////////////////////////////MY APP BAR//////////////////////////////////////////
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {

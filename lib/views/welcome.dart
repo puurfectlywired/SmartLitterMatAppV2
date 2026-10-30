@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 //import 'package:google_fonts/google_fonts.dart';
 
-import '../pages/login.dart';
+import 'login.dart';
 import 'user_registration/create_username.dart';
 
 ///////////////////////////////////////////WELCOME PAGE//////////////////////////////////////////

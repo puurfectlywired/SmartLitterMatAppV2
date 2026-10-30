@@ -1,10 +1,10 @@
 
 import 'package:flutter/material.dart';
 
-import '../pages/home.dart';
-import '../pages/cat_profiles/all_profiles.dart';
-import '../pages/alerts/all_alerts.dart';
-import '../pages/guide.dart';
+import '../views/home.dart';
+import '../views/cat_profiles/all_profiles.dart';
+import '../views/alerts/all_alerts.dart';
+import '../views/guide.dart';
 
 /////////////////////////////////////MY BOTTOM NAV BAR//////////////////////////////////////////////
 class MyBottomNavBar extends StatelessWidget {

@@ -8,7 +8,6 @@ import '../../other/global_variables.dart';
 import '../../theme/theme_controller.dart';
 
 // PAGES
-import 'login_info.dart';
 import 'account_overview.dart';
 
 // WIDGETS
@@ -245,34 +244,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   onTap: () {
                     navigateTo(
                       const AccountOverviewPage(),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              _settingsContainer(
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-
-                  leading: Icon(
-                    Icons.person_outline,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-
-                  title: const Text(
-                    'Login Information',
-                    style: TextStyle(fontSize: 16),
-                  ),
-
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                  ),
-
-                  onTap: () {
-                    navigateTo(
-                      const LoginInfoPage(),
                     );
                   },
                 ),

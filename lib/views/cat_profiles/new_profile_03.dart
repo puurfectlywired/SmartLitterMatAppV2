@@ -170,7 +170,7 @@ class _NewProfilePage03State extends State<NewProfilePage03> {
           SizedBox(height: 10),
 
           Text(
-            "Time to upload your cat's cutest photo!",
+            "Time to upload ${widget.registration.name}'s cutest photo!",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 17,

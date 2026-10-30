@@ -141,15 +141,15 @@ class _BlePairingPageState extends State<BlePairingPage> {
             selectedTagId = null;
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                response.isNotEmpty
-                    ? response
-                    : 'BLE scan $status',
-              ),
-            ),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(
+          //     content: Text(
+          //       response.isNotEmpty
+          //           ? response
+          //           : 'BLE scan $status',
+          //     ),
+          //   ),
+          // );
 
         } else {
 
@@ -179,11 +179,11 @@ class _BlePairingPageState extends State<BlePairingPage> {
         scanStatus = 'failed';
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not start BLE scan: $e'),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text('Could not start BLE scan: $e'),
+      //   ),
+      // );
     }
   }
 
@@ -215,14 +215,14 @@ class _BlePairingPageState extends State<BlePairingPage> {
     if (!supportedCats.contains(
         widget.cat.name.trim().toLowerCase())) {
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'The Smart Mat currently accepts only '
-            'zeusu, okja, or kujza.',
-          ),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text(
+      //       'The Smart Mat currently accepts only '
+      //       'zeusu, okja, or kujza.',
+      //     ),
+      //   ),
+      // );
 
       return;
     }
@@ -302,13 +302,13 @@ class _BlePairingPageState extends State<BlePairingPage> {
               scanStatus = 'paired';
             });
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'BLE beacon paired successfully!',
-                ),
-              ),
-            );
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   const SnackBar(
+            //     content: Text(
+            //       'BLE beacon paired successfully!',
+            //     ),
+            //   ),
+            // );
 
           } catch (e) {
 
@@ -318,14 +318,14 @@ class _BlePairingPageState extends State<BlePairingPage> {
               scanStatus = 'failed';
             });
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Pi pairing succeeded, but saving '
-                  'the cat profile failed: $e',
-                ),
-              ),
-            );
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   SnackBar(
+            //     content: Text(
+            //       'Pi pairing succeeded, but saving '
+            //       'the cat profile failed: $e',
+            //     ),
+            //   ),
+            // );
           }
 
         } else if (status == 'failed' ||
@@ -339,15 +339,15 @@ class _BlePairingPageState extends State<BlePairingPage> {
             scanStatus = status;
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                response.isNotEmpty
-                    ? response
-                    : 'BLE pairing failed.',
-              ),
-            ),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(
+          //     content: Text(
+          //       response.isNotEmpty
+          //           ? response
+          //           : 'BLE pairing failed.',
+          //     ),
+          //   ),
+          // );
         }
 
       }, onError: (error) {
@@ -369,11 +369,11 @@ class _BlePairingPageState extends State<BlePairingPage> {
         scanStatus = 'failed';
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Pairing error: $e'),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text('Pairing error: $e'),
+      //   ),
+      // );
     }
   }
 
@@ -413,6 +413,8 @@ void _startFirebaseListener() {
 
       await BlePairingService.unpairTag(
         catId: widget.cat.id,
+        catName: widget.cat.name,
+        deviceId: 'mat001',
       );
 
       if (!mounted) return;
@@ -424,23 +426,23 @@ void _startFirebaseListener() {
         activeRequestId = null;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'BLE tag removed from cat profile.',
-          ),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text(
+      //       'BLE tag removed from cat profile.',
+      //     ),
+      //   ),
+      // );
 
     } catch (e) {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not remove BLE tag: $e'),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text('Could not remove BLE tag: $e'),
+      //   ),
+      // );
     }
   }
 

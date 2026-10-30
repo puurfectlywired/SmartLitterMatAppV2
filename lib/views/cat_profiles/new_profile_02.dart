@@ -172,7 +172,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
                 SizedBox(
                     width: 300,
                     child: Text(
-                      'How much does your cat weigh?',
+                      'How much does ${widget.registration.name} weigh?',
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 15,
@@ -216,7 +216,7 @@ class _NewProfilePage02State extends State<NewProfilePage02> {
               SizedBox(
                 width: 300,
                 child: Text(
-                  'What breed is your cat?',
+                  'What breed is ${widget.registration.name}?',
                   textAlign: TextAlign.left,
                   style: TextStyle(
                     fontSize: 15,

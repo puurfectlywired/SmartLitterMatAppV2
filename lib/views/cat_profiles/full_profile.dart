@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 //pages
 import 'all_profiles.dart';
-import 'edit_profile.dart';
+import 'edit_cat_profile.dart';
 import '../report.dart';
 import '../BLE/BLE_pairing.dart';
 
@@ -465,7 +465,7 @@ class _FullProfilePageState extends State<FullProfilePage> {
 
       //BOTTOM NAVIGATION
       bottomNavigationBar: const MyBottomNavBar(
-        selectedIndex: 2,
+        selectedIndex: 1,
         allowReselect: true,
       ),
     );

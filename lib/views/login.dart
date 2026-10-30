@@ -1,10 +1,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:smart_litter_mat/pages/user_registration/create_username.dart';
+import 'package:smart_litter_mat/views/user_registration/create_username.dart';
 
 //pages
-import '../pages/home.dart';
+import 'home.dart';
 
 //services
 import '../services/auth_service.dart';

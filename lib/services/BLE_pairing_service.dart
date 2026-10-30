@@ -187,30 +187,74 @@ class BlePairingService {
     debugPrint('BLE TAG SAVED TO CAT PROFILE');
   }
 
-  // REMOVE BLE PAIRING FROM CAT PROFILE
+
+  // UNPAIR BLE TAG FROM RASPBERRY PI AND CAT PROFILE
   static Future<void> unpairTag({
     required String catId,
+    required String catName,
+    required String deviceId,
   }) async {
 
-    final user = FirebaseAuth.instance.currentUser;
+    final user = _currentUser;
 
-    if (user == null) {
-      throw Exception('User is not logged in.');
-    }
-
-    await _firestore
+    // FIRESTORE REFERENCES
+    final catRef = _firestore
         .collection('users')
         .doc(user.uid)
         .collection('cats')
-        .doc(catId)
-        .update({
-          'ble_mac': FieldValue.delete(),
-          'ble_device_id': FieldValue.delete(),
-          'ble_status': 'unpaired',
-          'ble_paired_at': FieldValue.delete(),
-        });
+        .doc(catId);
+
+    final commandRef = _firestore
+        .collection('device_commands')
+        .doc(deviceId);
+
+    // GENERATE UNIQUE REQUEST ID
+    final requestId = _newRequestId();
+
+    // SEND UNPAIR COMMAND TO RASPBERRY PI
+    await commandRef.update({
+      'command': 'unpair',
+      'request_id': requestId,
+      'status': 'pending',
+      'cat': catName.trim().toLowerCase(),
+      'cat_id': catId,
+    });
+
+    debugPrint('BLE UNPAIR REQUEST SENT: $requestId');
+
+    // WAIT FOR RASPBERRY PI RESPONSE
+    final response = await watchRequest(
+      requestId: requestId,
+      deviceId: deviceId,
+    )
+        .firstWhere((snapshot) {
+          final status = snapshot.data()?['status'];
+
+          return status == 'unpaired' ||
+              status == 'failed';
+        })
+        .timeout(const Duration(seconds: 30));
+
+    final data = response.data();
+
+    if (data?['status'] != 'unpaired') {
+      throw Exception(
+        data?['response'] ?? 'BLE unpairing failed.',
+      );
+    }
+
+    debugPrint('BLE TAG UNPAIRED ON RASPBERRY PI');
+
+    // REMOVE BLE INFORMATION FROM CAT PROFILE
+    await catRef.update({
+      'ble_mac': FieldValue.delete(),
+      'ble_device_id': FieldValue.delete(),
+      'ble_status': 'unpaired',
+      'ble_paired_at': FieldValue.delete(),
+    });
 
     debugPrint('BLE TAG REMOVED FROM CAT PROFILE');
   }
+
 
 }

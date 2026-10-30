@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                           SizedBox(height: 8),
 
                           Text(
-                            'slogan/mission statement here',
+                            'A little more insight. A lot more PUURs.',
                           ),
                         ],
                       ),

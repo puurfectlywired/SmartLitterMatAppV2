@@ -247,8 +247,11 @@ Future<void> _selectProfilePhoto() async {
 
           //const SizedBox(height: 12),
 
-          const Text(
-            "Let's update your cat's information",
+          Text(
+            //keep it populated with the name?
+            "Let's update ${widget.cat.name}'s information",
+            //or not because the name can be changed?
+            //"Let's update your cat's information",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 17,
