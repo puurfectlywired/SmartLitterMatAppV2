@@ -158,7 +158,7 @@ Future<void> _addCatProfile() async {
 
     return Scaffold(
       appBar: const MyAppBar(
-        title: 'Profiles',
+        title: 'All Profiles',
         showBackButton: false,
       ),
 

@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:smart_litter_mat/views/history/weight_alert_history.dart';
 
 import '../views/home.dart'; 
 import '../views/cat_profiles/all_profiles.dart';
@@ -8,6 +9,8 @@ import '../views/login.dart';
 import '../views/alerts/all_alerts.dart';
 import '../views/guide.dart';
 import '../views/settings/account_overview.dart';
+import '../views/history/clean_alert_history.dart';
+import '../views/history/report_history.dart';
 
 /////////////////////////////////////////MY DRAWER//////////////////////////////////////////
 class MyDrawer extends StatelessWidget {
@@ -138,13 +141,13 @@ class MyDrawer extends StatelessWidget {
 
             // AMMONIA BUTTON
             ListTile(
-              title: const Text('Cleaning History'),  //rename
+              title: const Text('Cleaning Alerts'),  //rename
               onTap: () {
                 Navigator.pushReplacement(
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                        const GuidePage(),
+                        const AmmoniaAlertHistoryPage(),
                     transitionDuration: Duration.zero,
                     reverseTransitionDuration: Duration.zero,
                   ),
@@ -154,13 +157,13 @@ class MyDrawer extends StatelessWidget {
 
             // WEIGHT ALERT BUTTON
             ListTile(
-              title: const Text('Weight Changes'),    //rename - weight change alerts?
+              title: const Text('Weight Alerts'),    //rename - weight change alerts?
               onTap: () {
                 Navigator.pushReplacement(
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                        const GuidePage(),
+                        const WeightAlertHistoryPage(),
                     transitionDuration: Duration.zero,
                     reverseTransitionDuration: Duration.zero,
                   ),
@@ -176,7 +179,7 @@ class MyDrawer extends StatelessWidget {
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                        const GuidePage(),
+                        const ReportHistoryPage(),
                     transitionDuration: Duration.zero,
                     reverseTransitionDuration: Duration.zero,
                   ),

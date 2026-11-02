@@ -256,7 +256,9 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
 
-      bottomNavigationBar: const MyBottomNavBar(),
+      bottomNavigationBar: const MyBottomNavBar(
+        selectedIndex: 3,
+      ),
     );
   }
 

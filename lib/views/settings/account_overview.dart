@@ -346,7 +346,7 @@ class _AccountOverviewPageState extends State<AccountOverviewPage> {
                           title: const Text(
                             'Reset Password',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -367,7 +367,7 @@ class _AccountOverviewPageState extends State<AccountOverviewPage> {
                           title: const Text(
                             'Delete Account',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -395,7 +395,7 @@ class _AccountOverviewPageState extends State<AccountOverviewPage> {
                             label: Text(
                               'Log Out',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.normal,
                                 color: colors.primary,
                               ),

@@ -33,6 +33,7 @@ class _CreateUsernameState extends State<CreateUsername> {
     firstNameController.dispose();
     lastNameController.dispose();
     emailController.dispose();
+    usernameController.dispose();
     super.dispose();
   }
 
@@ -62,10 +63,20 @@ class _CreateUsernameState extends State<CreateUsername> {
             ),
 
             // SCROLLABLE BODY
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+            SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+
+              padding: const EdgeInsets.only(
+                top: 80,
+                bottom: 40,
+                left: 20,
+                right: 20,
+              ),
+
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
 
                   // Logo above title
                   Image.asset(
@@ -221,6 +232,7 @@ class _CreateUsernameState extends State<CreateUsername> {
                   ),
                 ],
               ),
+            ),
             ),
           ]
         ),

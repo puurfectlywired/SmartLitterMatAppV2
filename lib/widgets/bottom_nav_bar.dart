@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../views/home.dart';
 import '../views/cat_profiles/all_profiles.dart';
 import '../views/alerts/all_alerts.dart';
-import '../views/guide.dart';
+import '../views/settings/settings.dart';
 
 /////////////////////////////////////MY BOTTOM NAV BAR//////////////////////////////////////////////
 class MyBottomNavBar extends StatelessWidget {
@@ -42,7 +42,7 @@ class MyBottomNavBar extends StatelessWidget {
           page = const AlertsPage();
           break;
         case 3:
-          page = const GuidePage();
+          page = const SettingsPage();
           break;
         default:
           return;
@@ -107,7 +107,7 @@ class MyBottomNavBar extends StatelessWidget {
             navItem(0, Icons.home, 'Home'),
             navItem(1, Icons.pets, 'Cats'),
             navItem(2, Icons.notifications, 'Alerts'),
-            navItem(3, Icons.menu_book, 'Guide'),
+            navItem(3, Icons.settings, 'Settings'),
           ],
         ),
       ),

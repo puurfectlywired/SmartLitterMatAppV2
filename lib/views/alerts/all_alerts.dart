@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../models/cat_profile_model.dart';
 import '../../models/ammonia_model.dart';
 
@@ -106,6 +108,133 @@ class _AlertsPageState extends State<AlertsPage> {
         isLoading = false;
       });
     }
+  }
+
+
+  //////////////////////////////////////////AMMONIA CALIBRATION//////////////////////////////////////////
+
+bool isCalibrating = false;
+
+// SEND CALIBRATION COMMAND TO FIREBASE
+Future<void> _requestAmmoniaCalibration() async {
+
+  if (isCalibrating) return;
+
+  setState(() {
+    isCalibrating = true;
+  });
+
+  try {
+
+    await FirebaseFirestore.instance
+        .collection('device_commands')
+        .doc('mat001')
+        .set({
+          'command': 'calibrate',
+          'request_id': FirebaseFirestore.instance
+              .collection('device_commands')
+              .doc()
+              .id,
+          'status': 'pending',
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Ammonia recalibration requested. '
+          'The cycle will take approximately 5 minutes.',
+        ),
+      ),
+    );
+
+  } catch (e) {
+
+    debugPrint('AMMONIA CALIBRATION ERROR: $e');
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Unable to request ammonia recalibration.',
+        ),
+      ),
+    );
+
+  } finally {
+
+    if (mounted) {
+      setState(() {
+        isCalibrating = false;
+      });
+    }
+  }
+}
+
+
+  // CONFIRM LITTER BOX CLEANING
+  Future<void> _confirmLitterBoxCleaning() async {
+
+    if (isCalibrating) return;
+
+    final colors = Theme.of(context).colorScheme;
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+
+      builder: (dialogContext) => AlertDialog(
+
+        backgroundColor: colors.surfaceContainerHigh,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+
+        title: const Text(
+          'Litter Box Cleaned?',
+          textAlign: TextAlign.center,
+        ),
+
+        content: const Text(
+          'Have you cleaned the litter box?\n\n'
+          'Confirming will request a new ammonia baseline '
+          'calibration, which takes approximately 5 minutes.',
+          textAlign: TextAlign.center,
+        ),
+
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+
+        actions: [
+
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, false);
+            },
+            child: const Text('Cancel'),
+          ),
+
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, true);
+            },
+
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.primary,
+              foregroundColor: colors.onPrimary,
+            ),
+
+            child: const Text('Yes, Cleaned'),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || confirmed != true) return;
+
+    await _requestAmmoniaCalibration();
   }
 
 
@@ -238,7 +367,14 @@ class _AlertsPageState extends State<AlertsPage> {
 
         final alert = visibleAlerts[index];
 
-        return Container(
+        return InkWell(
+          onTap: isCalibrating
+              ? null
+              : _confirmLitterBoxCleaning,
+
+          borderRadius: BorderRadius.circular(25),
+
+          child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 20,
@@ -315,9 +451,10 @@ class _AlertsPageState extends State<AlertsPage> {
               ),
             ],
           ),
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
   }
 
   ////////////////////////////////////////////EMPTY PAGE//////////////////////////////////////////

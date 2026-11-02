@@ -229,6 +229,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
     return Scaffold(
       backgroundColor: colors.surface,
+      resizeToAvoidBottomInset: true,   //use on all pages??
 
       appBar: const MyAppBar(
         title: 'Change Password',
@@ -238,9 +239,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 30,
+          keyboardDismissBehavior:
+              ScrollViewKeyboardDismissBehavior.onDrag,
+
+          padding: const EdgeInsets.only(
+            top: 30,
+            bottom: 60,
+            left: 20,
+            right: 20,
           ),
 
           child: Center(

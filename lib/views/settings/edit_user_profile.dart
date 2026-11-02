@@ -84,11 +84,11 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
       originalEmail = user.email ?? '';
       emailController.text = originalEmail;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not load all account information.'),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Could not load all account information.'),
+      //   ),
+      // );
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -104,11 +104,11 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
     final user = _auth.currentUser;
 
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You must be logged in to edit your account.'),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('You must be logged in to edit your account.'),
+      //   ),
+      // );
       return;
     }
 
@@ -123,11 +123,11 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
         username.isEmpty ||
         email.isEmpty) {
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please complete all account fields.'),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Please complete all account fields.'),
+      //   ),
+      // );
       return;
     }
 
@@ -136,11 +136,11 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
     );
 
     if (!emailPattern.hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid email address.'),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Please enter a valid email address.'),
+      //   ),
+      // );
       return;
     }
 
@@ -168,24 +168,24 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
 
         if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Account information saved. '
-              'Check your new email address for a verification link. '
-              'Your login email will change after verification.',
-            ),
-            duration: Duration(seconds: 6),
-          ),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(
+        //     content: Text(
+        //       'Account information saved. '
+        //       'Check your new email address for a verification link. '
+        //       'Your login email will change after verification.',
+        //     ),
+        //     duration: Duration(seconds: 6),
+        //   ),
+        // );
       } else {
         if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account information updated successfully.'),
-          ),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(
+        //     content: Text('Account information updated successfully.'),
+        //   ),
+        // );
       }
 
       // RETURN TO ACCOUNT OVERVIEW
@@ -217,13 +217,13 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Could not complete the account update.',
-          ),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text(
+      //       'Could not complete the account update.',
+      //     ),
+      //   ),
+      // );
 
     } finally {
       if (mounted) {
