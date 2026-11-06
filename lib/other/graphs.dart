@@ -6,156 +6,264 @@ import '../models/cat_profile_model.dart';
 import '../other/global_variables.dart';
 //import '../services/cat_service.dart';
 
-//line: 270, 243
 
-//////////////////////////////////////////WEEKLY VISITS GRAPH//////////////////////////
-class WeeklyVisitsChart extends StatelessWidget {
+
+
+//////////////////////////////////////////WEEKLY VISITS GRAPH//////////////////////////////////////////
+class WeeklyVisitsChart extends StatefulWidget {
   const WeeklyVisitsChart({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Hard-coded demo data
-    final visits = [2.0, 4.0, 3.0, 5.0, 4.0, 7.0, 6.0];
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  State<WeeklyVisitsChart> createState() =>
+      _WeeklyVisitsChartState();
+}
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+  //////////////////////////////////////////WEEKLY VISITS STATE//////////////////////////////////////////
+  class _WeeklyVisitsChartState extends State<WeeklyVisitsChart> {
 
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    String selectedRange = '7D';
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    @override
+    Widget build(BuildContext context) {
 
-          // TITLE
-          const Text(
-            'Litter Box Visits',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+      final colors = Theme.of(context).colorScheme;
 
-          const SizedBox(height: 4),
+      // HARDCODED DATA FOR DEMO
+      // 7D = DAILY, 30D/90D = WEEKLY, 1Y = MONTHLY
+      final Map<String, List<int>> datasets = {
+        '7D': [2, 4, 3, 5, 4, 7, 6],
+        '30D': [25, 29, 27, 32, 8],
+        '90D': [25, 28, 30, 27, 31, 29, 33, 30, 28, 32, 29, 34, 24],
+        '1Y': [118, 125, 121, 130, 126, 134, 129, 137, 132, 128, 140, 135],
+      };
 
-          Text(
-            'Last 7 days',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
+      final visits = datasets[selectedRange]!;
 
-          const SizedBox(height: 25),
+      final labels = selectedRange == '7D'
+          ? ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+          : selectedRange == '1Y'
+              ? ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
+              : List.generate(visits.length, (i) => '${i + 1}');
 
-          // GRAPH
-          SizedBox(
-            height: 200,
-            child: LineChart(
-              LineChartData(
+      final maxValue = visits.reduce((a, b) => a > b ? a : b);
 
-                minY: 0,
-                maxY: 10,
+      final interval = selectedRange == '7D'
+          ? 2.0
+          : selectedRange == '1Y'
+              ? 40.0
+              : 10.0;
 
-                gridData: const FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
+      final maxY = ((maxValue / interval).ceil() + 1) * interval;
+
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+
+        decoration: BoxDecoration(
+          color: colors.surfaceContainer,
+          borderRadius: BorderRadius.circular(25),
+        ),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            // TIME RANGE DROPDOWN
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GraphRangeDropdown(
+                  value: selectedRange,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedRange = value;
+                    });
+                  },
                 ),
+              ],
+            ),
 
-                borderData: FlBorderData(
-                  show: false,
-                ),
+            const SizedBox(height: 30),
 
-                // X AND Y LABELS
-                titlesData: FlTitlesData(
+            // BAR GRAPH
+            SizedBox(
+              height: 160,
+              child: BarChart(
+                BarChartData(
+                  minY: 0,
+                  maxY: maxY,
+                  alignment: BarChartAlignment.spaceAround,
 
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+                  // GRID LINES
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: interval,
+                    getDrawingHorizontalLine: (value) {
+                      return FlLine(
+                        color: colors.outlineVariant,
+                        strokeWidth: 1,
+                      );
+                    },
                   ),
 
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  borderData: FlBorderData(show: false),
 
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 30,
-                      interval: 2,
+                  // AXIS LABELS
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
                     ),
-                  ),
 
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 30,
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
 
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
+                    // Y AXIS
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 35,
+                        interval: interval,
 
-                        if (index < 0 || index >= days.length) {
-                          return const SizedBox();
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            days[index],
-                            style: const TextStyle(
-                              fontSize: 11,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: colors.onSurfaceVariant,
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-                // DATA
-                lineBarsData: [
-                  LineChartBarData(
-
-                    spots: List.generate(
-                      visits.length,
-                      (index) => FlSpot(
-                        index.toDouble(),
-                        visits[index],
+                          );
+                        },
                       ),
                     ),
 
-                    isCurved: true,
-                    barWidth: 3,
+                    // X AXIS
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 22,
+                        interval: 1,
 
-                    dotData: const FlDotData(
-                      show: true,
-                    ),
+                        getTitlesWidget: (value, meta) {
 
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: const Color(0xFFF2D5DD)
-                          .withValues(alpha: 0.35),
+                          final index = value.toInt();
+
+                          if (index < 0 ||
+                              index >= labels.length ||
+                              value != index.toDouble()) {
+                            return const SizedBox.shrink();
+                          }
+
+                          // REDUCE LABEL CROWDING FOR 90 DAYS
+                          if (selectedRange == '90D' && index.isOdd) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Text(
+                            labels[index],
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: colors.onSurfaceVariant,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ],
+
+                  // BAR DATA
+                  barGroups: List.generate(
+                    visits.length,
+                    (index) {
+                      return BarChartGroupData(
+                        x: index,
+                        barRods: [
+                          BarChartRodData(
+                            toY: visits[index].toDouble(),
+                            width: selectedRange == '90D' ? 10 : 18,
+                            color: colors.primary,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(5),
+                              topRight: Radius.circular(5),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  barTouchData: BarTouchData(
+                    enabled: false,
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }
   }
-}
+
+
+
+  //////////////////////////////////////////GRAPH TIME RANGE DROPDOWN//////////////////////////////////////////
+  class GraphRangeDropdown extends StatelessWidget {
+
+    final String value;
+    final ValueChanged<String> onChanged;
+
+    const GraphRangeDropdown({
+      super.key,
+      required this.value,
+      required this.onChanged,
+    });
+
+    @override
+    Widget build(BuildContext context) {
+
+      final colors = Theme.of(context).colorScheme;
+
+      const ranges = {
+        '7D': 'Last 7 days',
+        '30D': 'Last 30 days',
+        '90D': 'Last 90 days',
+        '1Y': 'Last year',
+      };
+
+      return DropdownButton<String>(
+        value: value,
+        underline: const SizedBox.shrink(),
+        isDense: true,
+        dropdownColor: colors.surfaceContainer,
+
+        icon: Icon(
+          Icons.keyboard_arrow_down,
+          color: colors.onSurfaceVariant,
+          size: 19,
+        ),
+
+        style: TextStyle(
+          fontSize: 13,
+          color: colors.onSurfaceVariant,
+        ),
+
+        items: ranges.entries.map((entry) {
+          return DropdownMenuItem<String>(
+            value: entry.key,
+            child: Text(entry.value),
+          );
+        }).toList(),
+
+        onChanged: (newValue) {
+          if (newValue != null) {
+            onChanged(newValue);
+          }
+        },
+      );
+    }
+  }
+
 
 
 //////////////////////////////////////////CURRENT STATUS///////////////////////////
@@ -286,8 +394,10 @@ class CurrentStatusCard extends StatelessWidget {
 
 
 
-//////////////////////////////////////////WEIGHT TREND GRAPH/////////////////////////
-class WeightTrendCard extends StatelessWidget {
+
+//////////////////////////////////////////WEIGHT TREND GRAPH//////////////////////////////////////////
+class WeightTrendCard extends StatefulWidget {
+
   final CatProfile cat;
 
   const WeightTrendCard({
@@ -296,19 +406,45 @@ class WeightTrendCard extends StatelessWidget {
   });
 
   @override
+  State<WeightTrendCard> createState() =>
+      _WeightTrendCardState();
+}
+
+//////////////////////////////////////////WEIGHT TREND STATE//////////////////////////////////////////
+class _WeightTrendCardState extends State<WeightTrendCard> {
+
+  String selectedRange = '7D';
+
+  @override
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
 
-    // HARDCODED FOR DEMO
-    final weightData = [
-      8.70,
-      8.85,
-      9.10,
-      9.10,
-      9.15,
-      9.20,
-    ];
+    // HARDCODED WEIGHT DATA FOR DEMO
+    final Map<String, List<double>> datasets = {
+      '7D': [8.70, 8.85, 9.10, 9.10, 9.15, 9.20, 9.15],
+      '30D': [8.55, 8.68, 8.75, 8.92, 9.10],
+      '90D': [8.40, 8.48, 8.51, 8.60, 8.58, 8.69, 8.74, 8.80, 8.83, 8.91, 9.00, 9.08, 9.20],
+      '1Y': [7.80, 7.95, 8.10, 8.15, 8.30, 8.42, 8.50, 8.62, 8.74, 8.85, 9.05, 9.20],
+    };
+
+    final weightData = datasets[selectedRange]!;
+
+    final labels = selectedRange == '7D'
+        ? ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+        : selectedRange == '1Y'
+            ? ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
+            : List.generate(weightData.length, (i) => '${i + 1}');
+
+    // DYNAMIC Y AXIS
+    final minWeight =
+        weightData.reduce((a, b) => a < b ? a : b);
+
+    final maxWeight =
+        weightData.reduce((a, b) => a > b ? a : b);
+
+    final minY = ((minWeight - 0.2) * 5).floor() / 5;
+    final maxY = ((maxWeight + 0.2) * 5).ceil() / 5;
 
     return Container(
       width: double.infinity,
@@ -323,31 +459,34 @@ class WeightTrendCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // GRAPH HEADER
+          // TIME RANGE DROPDOWN
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                'Last 7 days',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: colors.onSurfaceVariant,
-                ),
+              GraphRangeDropdown(
+                value: selectedRange,
+                onChanged: (value) {
+                  setState(() {
+                    selectedRange = value;
+                  });
+                },
               ),
             ],
           ),
 
           const SizedBox(height: 30),
 
-          // GRAPH
+          // LINE GRAPH
           SizedBox(
             height: 160,
             child: LineChart(
               LineChartData(
                 minX: 0,
-                maxX: 6,
-                minY: 8.2,
-                maxY: 9.4,
+                maxX: selectedRange == '7D'
+                    ? 6
+                    : (weightData.length - 1).toDouble(),
+                minY: minY,
+                maxY: maxY,
 
                 // GRID LINES
                 gridData: FlGridData(
@@ -362,14 +501,10 @@ class WeightTrendCard extends StatelessWidget {
                   },
                 ),
 
-                // REMOVE BORDER
-                borderData: FlBorderData(
-                  show: false,
-                ),
+                borderData: FlBorderData(show: false),
 
                 // AXIS LABELS
                 titlesData: FlTitlesData(
-
                   topTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
@@ -406,18 +541,21 @@ class WeightTrendCard extends StatelessWidget {
 
                       getTitlesWidget: (value, meta) {
 
-                        const days = [
-                          'M', 'T', 'W', 'T', 'F', 'S', 'S',
-                        ];
-
                         final index = value.toInt();
 
-                        if (index < 0 || index >= days.length) {
-                          return const SizedBox();
+                        if (index < 0 ||
+                            index >= labels.length ||
+                            value != index.toDouble()) {
+                          return const SizedBox.shrink();
+                        }
+
+                        // REDUCE LABEL CROWDING FOR 90 DAYS
+                        if (selectedRange == '90D' && index.isOdd) {
+                          return const SizedBox.shrink();
                         }
 
                         return Text(
-                          days[index],
+                          labels[index],
                           style: TextStyle(
                             fontSize: 10,
                             color: colors.onSurfaceVariant,
@@ -471,6 +609,7 @@ class WeightTrendCard extends StatelessWidget {
     );
   }
 }
+
 
 
 //////////////////////////////////////////ALERT CARD////////////////////////////////

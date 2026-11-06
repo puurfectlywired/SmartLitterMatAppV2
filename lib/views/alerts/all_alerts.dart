@@ -451,7 +451,7 @@ class _AlertsPageState extends State<AlertsPage> {
                   children: [
 
                     Text(
-                      'Elevated Ammonia Detected',
+                      'Time to clean!',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
@@ -474,13 +474,15 @@ class _AlertsPageState extends State<AlertsPage> {
 
                     const SizedBox(height: 5),
 
+                    // ALERT DATE
                     Text(
-                      alert.timestamp.toLocal().toString(),
+                      'Detected: ${_formatDate(alert.timestamp)}',
                       style: TextStyle(
                         fontSize: 13,
                         color: colors.onSurfaceVariant,
                       ),
                     ),
+
                   ],
                 ),
               ),
@@ -490,6 +492,28 @@ class _AlertsPageState extends State<AlertsPage> {
       );
     },
   );
+  }
+
+  //////////////////////////////////////////FORMAT DATE//////////////////////////////////////////
+  String _formatDate(DateTime date) {
+
+    final localDate = date.toLocal();
+
+    final year = localDate.year;
+    final month = localDate.month.toString().padLeft(2, '0');
+    final day = localDate.day.toString().padLeft(2, '0');
+
+    final hour = localDate.hour % 12 == 0
+        ? 12
+        : localDate.hour % 12;
+
+    final minute =
+        localDate.minute.toString().padLeft(2, '0');
+
+    final period =
+        localDate.hour >= 12 ? 'PM' : 'AM';
+
+    return '$year-$month-$day  $hour:$minute $period';
   }
 
   ////////////////////////////////////////////EMPTY PAGE//////////////////////////////////////////

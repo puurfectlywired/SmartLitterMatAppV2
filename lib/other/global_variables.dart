@@ -21,7 +21,7 @@ double storeWeight(double enteredWeight) {
 //convert weight unit, assuming internally stored as Kg
 String displayWeight(double weightKg) {
   if (weightUnit == 'kg') {
-    return '${(weightKg / 2.20462).toStringAsFixed(1)} lb';
+    return '${(weightKg / 2.20462).toStringAsFixed(1)} kg';
   } 
   else if (weightUnit == 'g') {
     return '${(weightKg * 453.59237).toStringAsFixed(0)} g';

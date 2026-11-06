@@ -156,7 +156,7 @@ class _AmmoniaAlertHistoryPageState extends State<AmmoniaAlertHistoryPage> {
 
                 // ALERT TITLE
                 Text(
-                  'Elevated Ammonia Detected',
+                  'Time to clean!',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,

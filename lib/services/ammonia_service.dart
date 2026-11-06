@@ -2,10 +2,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-//temporary? all alerts will be in the user profile in future\
-import 'dart:async';
+// //temporary? all alerts will be in the user profile in future\
+// import 'dart:async';
 
 import '../models/ammonia_model.dart';
+
+
 
 //////////////////////////////////////////AMMONIA SERVICE//////////////////////////////////////////
 class AmmoniaService {
@@ -15,15 +17,25 @@ class AmmoniaService {
 
   static const String deviceId = 'mat001';
 
-  ////////////////////////////////////////////ALERT COLLECTION//////////////////////////////////////////
+
+  //////////////////////////////////////////ACTIVE ALERT COLLECTION//////////////////////////////////////////
   static CollectionReference<Map<String, dynamic>>
       get _alertsCollection {
 
+    // CURRENT FIREBASE USER
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    // USER'S ACTIVE AMMONIA ALERTS
     return _firestore
-        .collection('device_status')
-        .doc(deviceId)
-        .collection('alerts');
+        .collection('users')
+        .doc(user.uid)
+        .collection('active_alerts');
   }
+
 
   ////////////////////////////////////////////GET ALL ALERTS//////////////////////////////////////////
   static Future<List<AmmoniaAlert>> getAlerts() async {
@@ -54,8 +66,89 @@ class AmmoniaService {
 
 
   //////////////////////////////////////////LISTEN FOR ACTIVE ALERTS//////////////////////////////////////////
+  // static Stream<List<AmmoniaAlert>> watchAlerts() {
+
+  //   final user = FirebaseAuth.instance.currentUser;
+
+  //   if (user == null) {
+  //     return Stream.error(
+  //       Exception('User is not logged in.'),
+  //     );
+  //   }
+
+  //   final controller =
+  //       StreamController<List<AmmoniaAlert>>();
+
+  //   List<AmmoniaAlert> allAlerts = [];
+  //   Set<String> cleanedIds = {};
+
+  //   bool alertsLoaded = false;
+  //   bool historyLoaded = false;
+
+  //   void updateAlerts() {
+
+  //     if (!alertsLoaded || !historyLoaded) return;
+
+  //     final activeAlerts = allAlerts
+  //         .where((alert) => !cleanedIds.contains(alert.id))
+  //         .toList();
+
+  //     if (!controller.isClosed) {
+  //       controller.add(activeAlerts);
+  //     }
+  //   }
+
+  //   final alertSubscription = _alertsCollection
+  //       .orderBy('created_at', descending: true)
+  //       .snapshots()
+  //       .listen(
+  //         (snapshot) {
+
+  //           allAlerts = snapshot.docs
+  //               .map((doc) => AmmoniaAlert.fromFirestore(doc))
+  //               .toList();
+
+  //           alertsLoaded = true;
+  //           updateAlerts();
+  //         },
+  //         onError: controller.addError,
+  //       );
+
+  //   final historySubscription = _firestore
+  //       .collection('users')
+  //       .doc(user.uid)
+  //       .collection('alert_history')
+  //       .snapshots()
+  //       .listen(
+  //         (snapshot) {
+
+  //           cleanedIds = snapshot.docs
+  //               .map((doc) => doc.id)
+  //               .toSet();
+
+  //           historyLoaded = true;
+  //           updateAlerts();
+  //         },
+  //         onError: controller.addError,
+  //       );
+
+  //   controller.onCancel = () async {
+  //     await alertSubscription.cancel();
+  //     await historySubscription.cancel();
+  //   };
+
+  //   return controller.stream;
+  // }
+
+
+
+
+
+
+  //////////////////////////////////////////LISTEN FOR ACTIVE ALERTS//////////////////////////////////////////
   static Stream<List<AmmoniaAlert>> watchAlerts() {
 
+    // CURRENT FIREBASE USER
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
@@ -64,74 +157,17 @@ class AmmoniaService {
       );
     }
 
-    final controller =
-        StreamController<List<AmmoniaAlert>>();
-
-    List<AmmoniaAlert> allAlerts = [];
-    Set<String> cleanedIds = {};
-
-    bool alertsLoaded = false;
-    bool historyLoaded = false;
-
-    void updateAlerts() {
-
-      if (!alertsLoaded || !historyLoaded) return;
-
-      final activeAlerts = allAlerts
-          .where((alert) => !cleanedIds.contains(alert.id))
-          .toList();
-
-      if (!controller.isClosed) {
-        controller.add(activeAlerts);
-      }
-    }
-
-    final alertSubscription = _alertsCollection
+    // LISTEN TO USER'S ACTIVE ALERTS
+    return _alertsCollection
         .orderBy('created_at', descending: true)
         .snapshots()
-        .listen(
-          (snapshot) {
+        .map((snapshot) {
 
-            allAlerts = snapshot.docs
-                .map((doc) => AmmoniaAlert.fromFirestore(doc))
-                .toList();
-
-            alertsLoaded = true;
-            updateAlerts();
-          },
-          onError: controller.addError,
-        );
-
-    final historySubscription = _firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('clean_alert_history')
-        .snapshots()
-        .listen(
-          (snapshot) {
-
-            cleanedIds = snapshot.docs
-                .map((doc) => doc.id)
-                .toSet();
-
-            historyLoaded = true;
-            updateAlerts();
-          },
-          onError: controller.addError,
-        );
-
-    controller.onCancel = () async {
-      await alertSubscription.cancel();
-      await historySubscription.cancel();
-    };
-
-    return controller.stream;
+          return snapshot.docs
+              .map((doc) => AmmoniaAlert.fromFirestore(doc))
+              .toList();
+        });
   }
-
-
-
-
-
 
 
 
@@ -164,60 +200,65 @@ class AmmoniaService {
     return commandRef.id;
   }
 
-  //////////////////////////////////////////MOVE ALERT TO USER CLEAN HISTORY//////////////////////////////////////////
+
+  //////////////////////////////////////////MOVE ALERT TO HISTORY//////////////////////////////////////////
   static Future<void> moveAlertToCleanHistory(String alertId) async {
 
-    // CURRENT FIREBASE USER
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
       throw Exception('User is not logged in.');
     }
 
-    // ORIGINAL AMMONIA ALERT
+    // ORIGINAL ACTIVE ALERT
     final alertRef = _firestore
-        .collection('device_status')
-        .doc(deviceId)
-        .collection('alerts')
+        .collection('users')
+        .doc(user.uid)
+        .collection('active_alerts')
         .doc(alertId);
 
-    // USER'S CLEAN ALERT HISTORY
+    // USER'S ALERT HISTORY
     final historyRef = _firestore
         .collection('users')
         .doc(user.uid)
-        .collection('clean_alert_history')
+        .collection('alert_history')
         .doc(alertId);
 
-    // GET ORIGINAL ALERT
-    final alertSnapshot = await alertRef.get();
-
-    if (!alertSnapshot.exists) {
-      throw Exception('Alert no longer exists.');
-    }
-
-    final alertData = alertSnapshot.data()!;
-
-    
-    // SAVE ALERT TO USER HISTORY
-    // an alert can only be added to the user's history once
-
+    // MOVE ALERT USING A TRANSACTION
     await _firestore.runTransaction((transaction) async {
 
-      final existingHistory = await transaction.get(historyRef);
+      final alertSnapshot = await transaction.get(alertRef);
+      final historySnapshot = await transaction.get(historyRef);
 
       // PREVENT DUPLICATE HISTORY ENTRIES
-      if (existingHistory.exists) {
+      if (historySnapshot.exists) {
+
+        if (alertSnapshot.exists) {
+          transaction.delete(alertRef);
+        }
+
         return;
       }
 
+      if (!alertSnapshot.exists) {
+        throw Exception('Alert no longer exists.');
+      }
+
+      final alertData = alertSnapshot.data()!;
+
+      // SAVE ALERT TO HISTORY
       transaction.set(historyRef, {
         ...alertData,
         'status': 'cleaned',
         'cleaned_at': FieldValue.serverTimestamp(),
       });
-    });
 
+      // REMOVE ORIGINAL ACTIVE ALERT
+      transaction.delete(alertRef);
+    });
   }
+
+
 
 
 
@@ -235,7 +276,7 @@ class AmmoniaService {
     return _firestore
         .collection('users')
         .doc(user.uid)
-        .collection('clean_alert_history')
+        .collection('alert_history')
         .orderBy('created_at', descending: true)
         .snapshots()
         .map((snapshot) {
@@ -245,7 +286,6 @@ class AmmoniaService {
               .toList();
         });
   }
-
 
 
 }

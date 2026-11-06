@@ -358,10 +358,25 @@ class _FullProfilePageState extends State<FullProfilePage> {
 
                   const SizedBox(height: 15),
 
+                  
                   //WEIGHT TREND CARD
                   WeightTrendCard(cat: cat),
 
+                  const SizedBox(height: 40),
+
+                  //WEEKLY VISITS TITLE
+                  _sectionTitle(
+                    context,
+                    'Litter Box Visits',
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  //WEEKLY VISITS CARD
+                  const WeeklyVisitsChart(),
+
                   const SizedBox(height: 35),
+
 
                   //VIEW REPORT BUTTON
                   SizedBox(
