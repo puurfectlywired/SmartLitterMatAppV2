@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../views/home.dart';
-import '../views/cat_profiles/all_profiles.dart';
+import '../views/profiles_cat/maintanence/all_cat_profiles.dart';
 import '../views/alerts/all_alerts.dart';
 import '../views/settings/settings.dart';
 

@@ -3,24 +3,24 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 //pages
-import 'new_profile_01.dart';
-import 'full_profile.dart';
+import '../registration/new_profile_01.dart';
+import 'full_cat_profile.dart';
 
 //models
-import '../../models/cat_profile_model.dart';
+import '../../../models/cat_profile_model.dart';
 
 //services
-import '../../services/cat_profile_service.dart';
-import '../../services/cat_registration_nav_service.dart';
+import '../../../services/cat_profile_service.dart';
+import '../../../services/cat_registration_nav_service.dart';
 
 //themes
-import '../../other/global_variables.dart';
-import '../../theme/app_colours.dart';
+import '../../../other/global_variables.dart';
+import '../../../theme/app_colours.dart';
 
 //widgets
-import '../../widgets/app_bar.dart';
-import '../../widgets/drawer.dart';
-import '../../widgets/bottom_nav_bar.dart';
+import '../../../widgets/app_bar.dart';
+import '../../../widgets/drawer.dart';
+import '../../../widgets/bottom_nav_bar.dart';
 
 ////////////////////////////////////////////PROFILES PAGE//////////////////////////////////////////
 class ProfilesPage extends StatefulWidget {

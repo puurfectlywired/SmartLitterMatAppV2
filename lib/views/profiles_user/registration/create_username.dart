@@ -7,7 +7,7 @@ import 'create_password.dart';                  //registration page 2
 
 //models
 //import '../../models/user_profile.dart';
-import '../../models/user_registration_model.dart';   //holds user registration data
+import '../../../models/user_registration_model.dart';   //holds user registration data
 
 
 

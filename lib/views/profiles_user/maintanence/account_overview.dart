@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../widgets/app_bar.dart';
+import '../../../widgets/app_bar.dart';
 import 'change_password.dart';
-import '../login.dart';
+import '../../login.dart';
 import 'edit_user_profile.dart';
 
 ////////////////////////////////////ACCOUNT OVERVIEW PAGE////////////////////////////////////

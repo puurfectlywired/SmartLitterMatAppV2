@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../services/alert_history_service.dart';
+import '../../models/ammonia_model.dart';
+import '../../services/ammonia_service.dart';
 
 import '../../widgets/app_bar.dart';
 import '../../widgets/drawer.dart';
@@ -39,19 +39,20 @@ class _AmmoniaAlertHistoryPageState extends State<AmmoniaAlertHistoryPage> {
     );
   }
 
+
   //////////////////////////////////////////HISTORY CONTENT//////////////////////////////////////////
   Widget _buildHistoryContent() {
 
-    final colors = Theme.of(context).colorScheme;
-
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: AlertHistoryService.watchAlertHistory(),
+    return StreamBuilder<List<AmmoniaAlert>>(
+      stream: AmmoniaService.watchCleanAlertHistory(),
 
       builder: (context, snapshot) {
 
         // ERROR LOADING HISTORY
         if (snapshot.hasError) {
-          debugPrint('ERROR LOADING CLEANING HISTORY: ${snapshot.error}');
+          debugPrint(
+            'ERROR LOADING CLEANING HISTORY: ${snapshot.error}',
+          );
 
           return _buildEmptyPage(
             title: 'Unable to Load History',
@@ -66,28 +67,8 @@ class _AmmoniaAlertHistoryPageState extends State<AmmoniaAlertHistoryPage> {
           );
         }
 
-        // ONLY DISPLAY RESOLVED AMMONIA ALERTS
-        final alerts = snapshot.data!.docs.where((doc) {
-
-          final data = doc.data();
-
-          return data['type'] == 'ammonia';
-
-        }).toList();
-
-        // SORT ALERTS BY DATE - NEWEST FIRST
-        alerts.sort((a, b) {
-
-          final aTime =
-              (a.data()['timestamp'] as Timestamp?)
-                  ?.toDate() ?? DateTime(1970);
-
-          final bTime =
-              (b.data()['timestamp'] as Timestamp?)
-                  ?.toDate() ?? DateTime(1970);
-
-          return bTime.compareTo(aTime);
-        });
+        // GET CLEANED AMMONIA ALERTS
+        final alerts = snapshot.data!;
 
         // NO PREVIOUS ALERTS
         if (alerts.isEmpty) {
@@ -111,30 +92,19 @@ class _AmmoniaAlertHistoryPageState extends State<AmmoniaAlertHistoryPage> {
 
           itemBuilder: (context, index) {
 
-            final data = alerts[index].data();
-
-            final percentIncrease =
-                (data['percentIncrease'] as num?)
-                    ?.toDouble();
-
-            final timestamp =
-                (data['timestamp'] as Timestamp?)
-                    ?.toDate();
-
-            final resolvedAt =
-                (data['resolvedAt'] as Timestamp?)
-                    ?.toDate();
+            final alert = alerts[index];
 
             return _buildHistoryCard(
-              percentIncrease: percentIncrease,
-              timestamp: timestamp,
-              resolvedAt: resolvedAt,
+              percentIncrease: alert.percentIncrease,
+              timestamp: alert.timestamp,
+              resolvedAt: alert.cleanedAt,
             );
           },
         );
       },
     );
   }
+
 
   //////////////////////////////////////////HISTORY CARD//////////////////////////////////////////
   Widget _buildHistoryCard({

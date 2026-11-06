@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../widgets/app_bar.dart';
+import '../../../widgets/app_bar.dart';
 
 ////////////////////////////////////////////CHANGE PASSWORD PAGE//////////////////////////////////////////
 class ChangePasswordPage extends StatefulWidget {

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 //pages
-import '../home.dart';
+import '../../home.dart';
 
 //models
-import '../../models/user_registration_model.dart';
+import '../../../models/user_registration_model.dart';
 
 
 ////////////////////////////////////////////START JOURNEY PAGE//////////////////////////////////////////

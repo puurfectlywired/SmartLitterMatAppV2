@@ -7,21 +7,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 //pages
-import 'all_profiles.dart';
+import 'all_cat_profiles.dart';
 import 'edit_cat_profile.dart';
-import '../report.dart';
-import '../BLE/BLE_pairing.dart';
+import '../../reports/report.dart';
+import '../../BLE/ble_pairing.dart';
 
 //models
-import '../../models/cat_profile_model.dart';
+import '../../../models/cat_profile_model.dart';
 
 //services
-import '../../services/cat_profile_service.dart';
+import '../../../services/cat_profile_service.dart';
 
 //other
-import '../../other/graphs.dart';
-import '../../widgets/drawer.dart';
-import '../../widgets/bottom_nav_bar.dart';
+import '../../../other/graphs.dart';
+import '../../../widgets/drawer.dart';
+import '../../../widgets/bottom_nav_bar.dart';
 
 //ble tag status
 enum BleTagStatus {

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/cat_profile_model.dart';
 import '../../models/ammonia_model.dart';
@@ -111,72 +111,69 @@ class _AlertsPageState extends State<AlertsPage> {
   }
 
 
+
+
   //////////////////////////////////////////AMMONIA CALIBRATION//////////////////////////////////////////
+  bool isCalibrating = false;
 
-bool isCalibrating = false;
+  // SEND CALIBRATION COMMAND TO FIREBASE
+  Future<bool> _requestAmmoniaCalibration() async {
 
-// SEND CALIBRATION COMMAND TO FIREBASE
-Future<void> _requestAmmoniaCalibration() async {
+    if (isCalibrating) return false;
 
-  if (isCalibrating) return;
+    setState(() {
+      isCalibrating = true;
+    });
 
-  setState(() {
-    isCalibrating = true;
-  });
+    try {
 
-  try {
+      // REQUEST RECALIBRATION THROUGH AMMONIA SERVICE
+      await AmmoniaService.requestAmmoniaCalibration();
 
-    await FirebaseFirestore.instance
-        .collection('device_commands')
-        .doc('mat001')
-        .set({
-          'command': 'calibrate',
-          'request_id': FirebaseFirestore.instance
-              .collection('device_commands')
-              .doc()
-              .id,
-          'status': 'pending',
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+      if (!mounted) return true;
 
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Ammonia recalibration requested. '
-          'The cycle will take approximately 5 minutes.',
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Ammonia recalibration requested. '
+            'The cycle will take approximately 5 minutes.',
+          ),
         ),
-      ),
-    );
+      );
 
-  } catch (e) {
+      return true;
 
-    debugPrint('AMMONIA CALIBRATION ERROR: $e');
+    } catch (e) {
 
-    if (!mounted) return;
+      debugPrint('AMMONIA CALIBRATION ERROR: $e');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Unable to request ammonia recalibration.',
-        ),
-      ),
-    );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Calibration error: $e'),
+            duration: const Duration(seconds: 8),
+          ),
+        );
+      }
 
-  } finally {
+      return false;
 
-    if (mounted) {
-      setState(() {
-        isCalibrating = false;
-      });
+    } finally {
+
+      if (mounted) {
+        setState(() {
+          isCalibrating = false;
+        });
+      }
     }
   }
-}
 
 
-  // CONFIRM LITTER BOX CLEANING
-  Future<void> _confirmLitterBoxCleaning() async {
+
+
+
+  //////////////////////////////////////////CONFIRM LITTER BOX CLEANING//////////////////////////////////////////
+  Future<void> _confirmLitterBoxCleaning(AmmoniaAlert alert) async {
 
     if (isCalibrating) return;
 
@@ -234,8 +231,45 @@ Future<void> _requestAmmoniaCalibration() async {
 
     if (!mounted || confirmed != true) return;
 
-    await _requestAmmoniaCalibration();
+    // SEND RECALIBRATION COMMAND
+    final calibrationRequested =
+        await _requestAmmoniaCalibration();
+
+    if (!calibrationRequested) return;
+
+    // SAVE SELECTED ALERT TO USER HISTORY
+    try {
+
+      await AmmoniaService.moveAlertToCleanHistory(alert.id);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Alert moved to Clean Alert History.',
+          ),
+        ),
+      );
+
+    } catch (e) {
+
+      debugPrint('AMMONIA HISTORY ERROR: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Recalibration requested, but the alert '
+            'could not be saved to history: $e',
+          ),
+          duration: const Duration(seconds: 8),
+        ),
+      );
+    }
   }
+
 
 
   ////////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
@@ -370,7 +404,8 @@ Future<void> _requestAmmoniaCalibration() async {
         return InkWell(
           onTap: isCalibrating
               ? null
-              : _confirmLitterBoxCleaning,
+              : () => _confirmLitterBoxCleaning(alert),
+
 
           borderRadius: BorderRadius.circular(25),
 

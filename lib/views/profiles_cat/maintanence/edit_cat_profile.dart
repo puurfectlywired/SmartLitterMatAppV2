@@ -5,16 +5,16 @@ import 'dart:io';
 //images
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
-import '../../services/local_image_service.dart';
+import '../../../services/local_image_service.dart';
 
 // MODELS
-import '../../models/cat_profile_model.dart';
+import '../../../models/cat_profile_model.dart';
 
 // SERVICES
-import '../../services/cat_profile_service.dart';
+import '../../../services/cat_profile_service.dart';
 
 // OTHER
-import '../../other/global_variables.dart';
+//import '../../../other/global_variables.dart';
 
 //////////////////////////////////////////EDIT PROFILE PAGE//////////////////////////////////////////
 class EditProfilePage extends StatefulWidget {

@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'start_journey.dart';
 
 //models
-import '../../models/user_registration_model.dart';   //holds user registration data
+import '../../../models/user_registration_model.dart';   //holds user registration data
 
 //services
-import '../../services/auth_service.dart';
+import '../../../services/auth_service.dart';
 
 
 

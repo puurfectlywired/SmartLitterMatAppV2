@@ -11,10 +11,10 @@ import '../../theme/app_colours.dart';
 
 //models
 import '../../models/cat_profile_model.dart';
-import '../../models/ble_tag_model.dart';
+import '../../models/ble_pairing_model.dart';
 
 //services
-import '../../services/BLE_pairing_service.dart';
+import '../../services/ble_pairing_service.dart';
 
 ///////////////////////////////////////////BLE PAIRING PAGE///////////////////////////////////////////
 class BlePairingPage extends StatefulWidget {

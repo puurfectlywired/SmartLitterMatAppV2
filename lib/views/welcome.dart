@@ -186,7 +186,7 @@
 import 'package:flutter/material.dart';
 
 import 'login.dart';
-import 'user_registration/create_username.dart';
+import 'profiles_user/registration/create_username.dart';
 
 ///////////////////////////////////////////WELCOME PAGE//////////////////////////////////////////
 class WelcomePage extends StatelessWidget {

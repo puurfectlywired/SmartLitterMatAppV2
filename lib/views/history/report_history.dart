@@ -97,8 +97,8 @@ class _ReportHistoryPageState extends State<ReportHistoryPage> {
                 ),
               ],
             ),
-    );
-  }
+      );
+    }
 
   //////////////////////////////////////////CAT PROFILE TABS//////////////////////////////////////////
   Widget _buildCatTabs() {

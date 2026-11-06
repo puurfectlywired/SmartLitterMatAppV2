@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:smart_litter_mat/views/user_registration/create_username.dart';
+import 'package:smart_litter_mat/views/profiles_user/registration/create_username.dart';
 
 //pages
 import 'home.dart';

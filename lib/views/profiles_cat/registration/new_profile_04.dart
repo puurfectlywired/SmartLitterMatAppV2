@@ -3,20 +3,20 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 //pages
-import 'all_profiles.dart';
+import '../maintanence/all_cat_profiles.dart';
 
 //models
-import '../../models/cat_profile_model.dart';
-import '../../models/cat_registration_model.dart';
+import '../../../models/cat_profile_model.dart';
+import '../../../models/cat_registration_model.dart';
 
 //services
-import '../../services/cat_profile_service.dart';
-import '../../services/cat_registration_nav_service.dart';
+import '../../../services/cat_profile_service.dart';
+import '../../../services/cat_registration_nav_service.dart';
 
 //other
-import '../../widgets/registration_header.dart';
-import '../../theme/app_colours.dart';
-import '../../other/global_variables.dart';
+import '../../../widgets/registration_header.dart';
+import '../../../theme/app_colours.dart';
+import '../../../other/global_variables.dart';
 
 
 ////////////////////////////////////////////NEW PROFILE PAGE 04//////////////////////////////////////////

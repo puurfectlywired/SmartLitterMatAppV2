@@ -215,7 +215,7 @@ class _WeightAlertHistoryPageState extends State<WeightAlertHistoryPage> {
   //////////////////////////////////////////HISTORY CONTENT//////////////////////////////////////////
   Widget _buildHistoryContent() {
 
-    final colors = Theme.of(context).colorScheme;
+    //final colors = Theme.of(context).colorScheme;
 
     // NO CAT PROFILES
     if (catProfiles.isEmpty || selectedCatId == null) {

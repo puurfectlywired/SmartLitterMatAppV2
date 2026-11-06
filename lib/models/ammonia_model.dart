@@ -11,6 +11,7 @@ class AmmoniaAlert {
   final String status;
   final DateTime timestamp;
   final DateTime? readingAt;
+  final DateTime? cleanedAt;
 
   const AmmoniaAlert({
     required this.id,
@@ -20,6 +21,7 @@ class AmmoniaAlert {
     required this.status,
     required this.timestamp,
     required this.readingAt,
+    this.cleanedAt,
   });
 
   ////////////////////////////////////////////CONVERT FIREBASE DATE//////////////////////////////////////////
@@ -69,6 +71,9 @@ class AmmoniaAlert {
 
       readingAt:
           _parseDate(data['reading_at']),
+
+      cleanedAt:
+          _parseDate(data['cleaned_at']),
     );
   }
 }
