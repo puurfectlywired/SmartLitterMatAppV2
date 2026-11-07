@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'dart:io';
+import '../../../other/cat_age_formatter.dart';
 
 //pages
 import '../registration/new_profile_01.dart';
@@ -11,7 +12,7 @@ import '../../../models/cat_profile_model.dart';
 
 //services
 import '../../../services/cat_profile_service.dart';
-import '../../../services/cat_registration_nav_service.dart';
+import '../../../services/cat_registration_service.dart';
 
 //themes
 import '../../../other/global_variables.dart';
@@ -299,7 +300,8 @@ Future<void> _addCatProfile() async {
 
               // CAT INFORMATION
               subtitle: Text(
-                'Age: ${cat.age} years   Weight: ${displayWeight(cat.weight)}',
+                'Age: ${formatCatAge(cat.birthday)}   '
+                'Weight: ${displayWeight(cat.weight)}',
                 style: TextStyle(
                   fontSize: 14,
                   color: Theme.of(context)

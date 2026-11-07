@@ -14,7 +14,7 @@ import '../models/cat_profile_model.dart';
 //services
 import '../services/user_data_service.dart';
 import '../services/cat_profile_service.dart';
-import '../services/cat_registration_nav_service.dart';
+import '../services/cat_registration_service.dart';
 
 //widgets
 import '../widgets/app_bar.dart';

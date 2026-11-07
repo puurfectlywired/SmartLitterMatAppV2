@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'dart:io';
+
 
 //firebase
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,6 +22,7 @@ import '../../../services/cat_profile_service.dart';
 
 //other
 import '../../../other/graphs.dart';
+import '../../../other/cat_age_formatter.dart';
 import '../../../widgets/drawer.dart';
 import '../../../widgets/bottom_nav_bar.dart';
 
@@ -53,6 +56,293 @@ class _FullProfilePageState extends State<FullProfilePage> {
     super.initState();
     cat = widget.cat;
   }
+
+
+  //////////////////////////////////////////SELECT REPORT DATE RANGE//////////////////////////////////////////
+  Future<void> _selectReportDateRange() async {
+
+    final now = DateTime.now();
+    final firstDate = DateTime(2020);
+    final lastDate = DateTime(now.year, now.month, now.day);
+
+    DateTime focusedDay = lastDate;
+    DateTime? startDate;
+    DateTime? endDate;
+
+    final selectedRange = await showDialog<DateTimeRange>(
+      context: context,
+
+      builder: (dialogContext) {
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+
+            final colors = Theme.of(context).colorScheme;
+
+            return Dialog(
+              backgroundColor: colors.surfaceContainerHigh,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                ),
+
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+
+                    // CALENDAR TITLE
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                      ),
+                      child: Text(
+                        'Select Report Date Range',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    // SELECTED DATE RANGE
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                      ),
+                      child: Text(
+                        startDate == null
+                            ? 'Select dates'
+                            : endDate == null
+                                ? '${startDate!.month}/${startDate!.day}/${startDate!.year} –'
+                                : '${startDate!.month}/${startDate!.day}/${startDate!.year} – ${endDate!.month}/${endDate!.day}/${endDate!.year}',
+                        style: TextStyle(
+                          fontSize: 26,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Divider(
+                      height: 1,
+                      color: colors.outlineVariant,
+                    ),
+
+                    // RANGE CALENDAR
+                    TableCalendar(
+                      firstDay: firstDate,
+                      lastDay: lastDate,
+                      focusedDay: focusedDay,
+
+                      rangeStartDay: startDate,
+                      rangeEndDay: endDate,
+                      rangeSelectionMode:
+                          RangeSelectionMode.toggledOn,
+
+                      calendarFormat: CalendarFormat.month,
+
+                      availableCalendarFormats: const {
+                        CalendarFormat.month: 'Month',
+                      },
+
+                      startingDayOfWeek:
+                          StartingDayOfWeek.sunday,
+
+                      // SELECT RANGE
+                      onRangeSelected: (
+                        start,
+                        end,
+                        focused,
+                      ) {
+
+                        setDialogState(() {
+                          startDate = start;
+                          endDate = end;
+                          focusedDay = focused;
+                        });
+                      },
+
+                      onPageChanged: (focused) {
+                        focusedDay = focused;
+                      },
+
+                      // MONTH HEADER
+                      headerStyle: HeaderStyle(
+                        titleCentered: false,
+                        formatButtonVisible: false,
+
+                        titleTextStyle: TextStyle(
+                          fontSize: 16,
+                          color: colors.onSurfaceVariant,
+                        ),
+
+                        leftChevronIcon: Icon(
+                          Icons.chevron_left,
+                          color: colors.onSurfaceVariant,
+                        ),
+
+                        rightChevronIcon: Icon(
+                          Icons.chevron_right,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+
+                      // CALENDAR APPEARANCE
+                      calendarStyle: CalendarStyle(
+                        outsideDaysVisible: false,
+
+                        defaultTextStyle: TextStyle(
+                          color: colors.onSurface,
+                        ),
+
+                        weekendTextStyle: TextStyle(
+                          color: colors.onSurface,
+                        ),
+
+                        disabledTextStyle: TextStyle(
+                          color: colors.onSurface.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
+
+                        // START AND END DATE CIRCLES
+                        rangeStartDecoration: BoxDecoration(
+                          color: colors.primary,
+                          shape: BoxShape.circle,
+                        ),
+
+                        rangeEndDecoration: BoxDecoration(
+                          color: colors.primary,
+                          shape: BoxShape.circle,
+                        ),
+
+                        rangeStartTextStyle: TextStyle(
+                          color: colors.onPrimary,
+                        ),
+
+                        rangeEndTextStyle: TextStyle(
+                          color: colors.onPrimary,
+                        ),
+
+                        // HIGHLIGHT DATES BETWEEN
+                        withinRangeDecoration:
+                            const BoxDecoration(
+                          shape: BoxShape.circle,
+                        ),
+
+                        withinRangeTextStyle: TextStyle(
+                          color: colors.onSurface,
+                        ),
+
+                        rangeHighlightColor:
+                            colors.primary.withValues(
+                          alpha: 0.20,
+                        ),
+
+                        todayDecoration: BoxDecoration(
+                          border: Border.all(
+                            color: colors.primary,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+
+                        todayTextStyle: TextStyle(
+                          color: colors.onSurface,
+                        ),
+                      ),
+
+                      daysOfWeekStyle: DaysOfWeekStyle(
+                        weekdayStyle: TextStyle(
+                          color: colors.onSurface,
+                        ),
+                        weekendStyle: TextStyle(
+                          color: colors.onSurface,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    // CANCEL AND GENERATE BUTTONS
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                      ),
+
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+
+                        children: [
+
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(dialogContext);
+                            },
+                            child: const Text('Cancel'),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          TextButton(
+                            onPressed:
+                                startDate != null && endDate != null
+                                    ? () {
+                                        Navigator.pop(
+                                          dialogContext,
+                                          DateTimeRange(
+                                            start: startDate!,
+                                            end: endDate!,
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (selectedRange == null || !mounted) {
+      return;
+    }
+
+    // OPEN REPORT
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => ReportPage(
+          cat: cat,
+          startDate: selectedRange.start,
+          endDate: selectedRange.end,
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +463,7 @@ class _FullProfilePageState extends State<FullProfilePage> {
 
                   //BREED, SEX, AGE
                   Text(
-                    '${cat.breed} • ${cat.sex} • ${cat.age} years',
+                    '${cat.breed} • ${cat.sex} • ${formatCatAge(cat.birthday)}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 15,
@@ -329,7 +619,6 @@ class _FullProfilePageState extends State<FullProfilePage> {
                           ),
                         ),
                       ),
-
                     ],
                   ),
 
@@ -378,22 +667,14 @@ class _FullProfilePageState extends State<FullProfilePage> {
                   const SizedBox(height: 35),
 
 
-                  //VIEW REPORT BUTTON
+                  //////////////////////////////////////////GENERATE REPORT BUTTON//////////////////////////////////////////
                   SizedBox(
                     height: 55,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (_, __, ___) =>
-                                const ReportPage(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        );
-                      },
+                      onPressed: _selectReportDateRange,
+
                       icon: const Icon(Icons.description),
+
                       label: const Text('Generate Report'),
                     ),
                   ),

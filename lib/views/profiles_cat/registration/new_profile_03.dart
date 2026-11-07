@@ -9,7 +9,7 @@ import '../../../theme/app_colours.dart';
 import '../../../models/cat_registration_model.dart';
 import 'new_profile_04.dart';
 import '../../../services/local_image_service.dart';
-import '../../../services/cat_registration_nav_service.dart';
+import '../../../services/cat_registration_service.dart';
 
 
 ////////////////////////////////////////////NEW PROFILE PAGE 03//////////////////////////////////////////

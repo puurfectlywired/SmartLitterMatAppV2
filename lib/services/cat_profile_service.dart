@@ -46,7 +46,7 @@ class ProfileService {
       return CatProfile(
         id: doc.id,
         name: data['name'] as String? ?? '',
-        age: (data['age'] as num?)?.toInt() ?? 0,
+        birthday: DateTime.parse(data['birthday'] as String),
         breed: data['breed'] as String? ?? '',
         sex: data['sex'] as String? ?? '',
         weight: (data['weight'] as num?)?.toDouble() ?? 0.0,
@@ -63,7 +63,7 @@ class ProfileService {
     //SAVE NEW CAT TO FIRESTORE
     await _cats.doc(cat.id).set({
       'name': cat.name,
-      'age': cat.age,
+      'birthday': cat.birthday.toIso8601String(),
       'breed': cat.breed,
       'sex': cat.sex,
       'weight': cat.weight,
@@ -79,7 +79,7 @@ class ProfileService {
     //UPDATE EXISTING CAT DOCUMENT
     await _cats.doc(cat.id).update({
       'name': cat.name,
-      'age': cat.age,
+      'birthday': cat.birthday.toIso8601String(),
       'breed': cat.breed,
       'sex': cat.sex,
       'weight': cat.weight,

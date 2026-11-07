@@ -15,6 +15,7 @@ import '../../../services/cat_profile_service.dart';
 
 // OTHER
 //import '../../../other/global_variables.dart';
+import '../../../other/cat_age_formatter.dart';
 
 //////////////////////////////////////////EDIT PROFILE PAGE//////////////////////////////////////////
 class EditProfilePage extends StatefulWidget {
@@ -33,7 +34,7 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   late final TextEditingController nameController;
   late final TextEditingController breedController;
-  late final TextEditingController ageController;
+  late DateTime selectedBirthday;
   late final TextEditingController weightController;
 
   late String selectedSex;
@@ -50,9 +51,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     nameController = TextEditingController(text: widget.cat.name);
     breedController = TextEditingController(text: widget.cat.breed);
-    ageController = TextEditingController(
-      text: widget.cat.age.toString(),
-    );
+    selectedBirthday = widget.cat.birthday;
     weightController = TextEditingController(
       text: widget.cat.weight.toString(),
     );
@@ -64,9 +63,36 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     nameController.dispose();
     breedController.dispose();
-    ageController.dispose();
     weightController.dispose();
     super.dispose();
+  }
+
+  //////////////////////////////////////////FORMAT DATE//////////////////////////////////////////
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+
+    return '$month/$day/${date.year}';
+  }
+
+  //////////////////////////////////////////SELECT BIRTHDAY//////////////////////////////////////////
+  Future<void> _selectBirthday() async {
+
+    final today = DateTime.now();
+
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: selectedBirthday,
+      firstDate: DateTime(1990),
+      lastDate: today,
+      helpText: 'Select Birthday',
+    );
+
+    if (selectedDate == null || !mounted) return;
+
+    setState(() {
+      selectedBirthday = selectedDate;
+    });
   }
 
   //////////////////////////////////////////SAVE CHANGES//////////////////////////////////////////
@@ -74,16 +100,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (isSaving) return;
 
     final name = nameController.text.trim();
-    final age = int.tryParse(ageController.text.trim());
     final weight = double.tryParse(weightController.text.trim());
 
     if (name.isEmpty ||
-        age == null ||
-        age < 0 ||
         weight == null ||
         !weight.isFinite ||
         weight <= 0 ||
-        selectedSex.isEmpty) {
+        selectedSex.isEmpty)  {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter valid profile information.'),
@@ -100,7 +123,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final updatedCat = CatProfile(
         id: widget.cat.id,
         name: name,
-        age: age,
+        birthday: selectedBirthday,
         breed: breedController.text.trim(),
         sex: selectedSex,
         weight: weight,
@@ -133,23 +156,41 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
+
   //////////////////////////////////////////EDIT FIELD//////////////////////////////////////////
   Widget _editField(
     String label,
     TextEditingController controller, {
     TextInputType keyboardType = TextInputType.text,
+    String? suffixText,
   }) {
     final colors = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
+
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+
+        // AUTOMATIC CAPITALIZATION FOR TEXT FIELDS
+        textCapitalization: keyboardType == TextInputType.text
+            ? TextCapitalization.words
+            : TextCapitalization.none,
+
         decoration: InputDecoration(
           labelText: label,
           filled: true,
           fillColor: colors.surface,
+
+          // WEIGHT UNIT
+          suffixText: suffixText,
+          suffixStyle: TextStyle(
+            fontSize: 16,
+            color: colors.onSurfaceVariant,
+          ),
+
+          // RESTORE ORIGINAL ROUNDED BORDERS
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide.none,
@@ -158,6 +199,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
     );
   }
+
 
 //////////////////////////////////////////SELECT PROFILE PHOTO//////////////////////////////////////////
 Future<void> _selectProfilePhoto() async {
@@ -338,11 +380,58 @@ Future<void> _selectProfilePhoto() async {
 
                 _editField('Breed', breedController),
 
-                _editField(
-                  'Age',
-                  ageController,
-                  keyboardType: TextInputType.number,
+                //BIRTHDAY
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+
+                  child: InkWell(
+                    onTap: isSaving ? null : _selectBirthday,
+
+                    borderRadius: BorderRadius.circular(15),
+
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: 'Birthday',
+                        filled: true,
+                        fillColor: colors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: Icon(
+                          Icons.calendar_today_outlined,
+                          color: colors.primary,
+                        ),
+                      ),
+
+                      child: Text(
+                        _formatDate(selectedBirthday),
+                        style: const TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
+
+                Padding(
+                padding: const EdgeInsets.only(
+                  left: 12,
+                  bottom: 8,
+                ),
+
+                child: Align(
+                  alignment: Alignment.centerLeft,
+
+                  child: Text(
+                    'Age: ${formatCatAge(selectedBirthday)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
 
                 _editField(
                   'Weight',
@@ -350,6 +439,7 @@ Future<void> _selectProfilePhoto() async {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  suffixText: 'lb',
                 ),
 
                 const SizedBox(height: 15),

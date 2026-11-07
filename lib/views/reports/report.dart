@@ -1,34 +1,82 @@
 
 import 'package:flutter/material.dart';
 
+import '../../models/cat_profile_model.dart';
+
 import '../../widgets/bottom_nav_bar.dart';
+import '../../other/cat_age_formatter.dart';
 
 
-/////////////////////////////////////////////REPORT PAGE/////////////////////////////////////////////
+//////////////////////////////////////////REPORT PAGE//////////////////////////////////////////
 class ReportPage extends StatelessWidget {
-  const ReportPage({super.key});
+
+  final CatProfile cat;
+
+  final DateTime startDate;
+  final DateTime endDate;
+
+  const ReportPage({
+    super.key,
+    required this.cat,
+    required this.startDate,
+    required this.endDate,
+  });
+
+
+
+
+  //////////////////////////////////////////FORMAT REPORT DATE//////////////////////////////////////////
+  String _formatReportDate(DateTime date) {
+
+    const months = [
+      'January', 'February', 'March', 'April',
+      'May', 'June', 'July', 'August',
+      'September', 'October', 'November', 'December',
+    ];
+
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
+    void showPdfPlaceholder() {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PDF generation is not available yet.'),
+        ),
+      );
+    }
+
     return Scaffold(
+      backgroundColor: colors.surface,
+
       appBar: AppBar(
-        title: const Text('Health Report'),
+        backgroundColor: colors.surface,
+        foregroundColor: colors.onSurface,
+        elevation: 0,
         centerTitle: true,
+
+        title: const Text(
+          'Health Report',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
 
         // SAVE AS PDF ICON
         actions: [
           IconButton(
-            icon: const Icon(Icons.picture_as_pdf),
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            color: colors.primary,
             tooltip: 'Save as PDF',
-            onPressed: () {
-              // PDF generation will be added later
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Report saved as PDF'),
-                ),
-              );
-            },
+            onPressed: showPdfPlaceholder,
           ),
 
           const SizedBox(width: 8),
@@ -36,7 +84,10 @@ class ReportPage extends StatelessWidget {
       ),
 
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 20,
+        ),
 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,78 +97,90 @@ class ReportPage extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.pets,
-                    size: 40,
-                  ),
 
-                  const SizedBox(height: 8),
+                  Container(
+                    width: 75,
+                    height: 75,
 
-                  const Text(
-                    'Olive',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+                    decoration: BoxDecoration(
+                      color: colors.surfaceContainerHigh,
+                      shape: BoxShape.circle,
+                    ),
+
+                    child: Icon(
+                      Icons.pets_rounded,
+                      size: 40,
+                      color: colors.primary,
                     ),
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 12),
+
+                  Text(
+                    cat.name,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: colors.onSurface,
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
 
                   Text(
                     'Health Report',
                     style: TextStyle(
-                      fontSize: 17,
-                      color: Colors.grey[700],
+                      fontSize: 16,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
 
                   Text(
-                    'September 1 – September 30, 2026',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    '${_formatReportDate(startDate)} – ${_formatReportDate(endDate)}',
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
             // CAT INFORMATION
             _ReportCard(
               title: 'Profile',
+
               child: Column(
-                children: const [
+                children: [
+
                   _ReportRow(
                     label: 'Breed',
-                    value: 'Domestic Shorthair',
+                    value: cat.breed,
                   ),
+
                   _ReportRow(
                     label: 'Sex',
-                    value: 'Female',
+                    value: cat.sex,
                   ),
+
                   _ReportRow(
                     label: 'Age',
-                    value: '14 years',
+                    value: formatCatAge(cat.birthday),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
 
             // SUMMARY
             _ReportCard(
               title: 'Summary',
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
+                children: [
 
                   _ReportStat(
-                    value: '8.8 lb',
+                    value: '${cat.weight.toStringAsFixed(1)} lb',
                     label: 'Current Weight',
                   ),
 
@@ -138,38 +201,39 @@ class ReportPage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
 
             // WEIGHT
             _ReportCard(
               title: 'Weight',
               child: Column(
-                children: const [
+                children: [
 
-                  _ReportRow(
+                  const _ReportRow(
                     label: 'Start of period',
                     value: '9.2 lb',
                   ),
 
                   _ReportRow(
                     label: 'Current',
-                    value: '8.8 lb',
+                    value: '${cat.weight.toStringAsFixed(1)} lb',
                   ),
 
-                  _ReportRow(
+                  const _ReportRow(
                     label: 'Change',
                     value: '-0.4 lb',
                   ),
 
-                  SizedBox(height: 8),
+                  const SizedBox(height: 12),
 
                   Align(
                     alignment: Alignment.centerLeft,
+
                     child: Text(
                       'Weight decreased gradually during the selected period.',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey,
+                        color: colors.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -177,13 +241,13 @@ class ReportPage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
 
             // LITTER BOX ACTIVITY
             _ReportCard(
               title: 'Litter Box Activity',
-              child: Column(
-                children: const [
+              child: const Column(
+                children: [
 
                   _ReportRow(
                     label: 'Total visits',
@@ -203,13 +267,13 @@ class ReportPage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
 
             // ALERT HISTORY
             _ReportCard(
               title: 'Alerts',
-              child: Column(
-                children: const [
+              child: const Column(
+                children: [
 
                   _ReportAlert(
                     icon: Icons.monitor_weight_outlined,
@@ -217,7 +281,7 @@ class ReportPage extends StatelessWidget {
                     date: 'September 29, 2026',
                   ),
 
-                  Divider(),
+                  Divider(height: 24),
 
                   _ReportAlert(
                     icon: Icons.pets,
@@ -225,7 +289,7 @@ class ReportPage extends StatelessWidget {
                     date: 'September 28, 2026',
                   ),
 
-                  Divider(),
+                  Divider(height: 24),
 
                   _ReportAlert(
                     icon: Icons.air,
@@ -233,7 +297,7 @@ class ReportPage extends StatelessWidget {
                     date: 'September 26, 2026',
                   ),
 
-                  Divider(),
+                  Divider(height: 24),
 
                   _ReportAlert(
                     icon: Icons.monitor_weight_outlined,
@@ -249,25 +313,37 @@ class ReportPage extends StatelessWidget {
             // PDF BUTTON
             SizedBox(
               width: double.infinity,
-              height: 48,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Report saved as PDF'),
-                    ),
-                  );
-                },
+              height: 55,
 
-                icon: const Icon(Icons.picture_as_pdf),
+              child: ElevatedButton.icon(
+                onPressed: showPdfPlaceholder,
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                  elevation: 0,
+
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+
+                icon: const Icon(
+                  Icons.picture_as_pdf_outlined,
+                  size: 22,
+                ),
 
                 label: const Text(
                   'Save Report as PDF',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
           ],
         ),
       ),
@@ -277,8 +353,10 @@ class ReportPage extends StatelessWidget {
   }
 }
 
+
 /////////////////////////////////////////////REPORT CARD/////////////////////////////////////////////
 class _ReportCard extends StatelessWidget {
+
   final String title;
   final Widget child;
 
@@ -289,37 +367,33 @@ class _ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
-
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(25),
       ),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
+          // CARD TITLE
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 17,
+            style: TextStyle(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
+              color: colors.primary,
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
 
           child,
         ],
@@ -328,8 +402,10 @@ class _ReportCard extends StatelessWidget {
   }
 }
 
+
 /////////////////////////////////////////////REPORT ROW/////////////////////////////////////////////
 class _ReportRow extends StatelessWidget {
+
   final String label;
   final String value;
 
@@ -340,26 +416,38 @@ class _ReportRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 7),
 
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
+
+          // ROW LABEL
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: colors.onSurfaceVariant,
+              ),
             ),
           ),
 
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+          const SizedBox(width: 12),
+
+          // ROW VALUE
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: colors.onSurface,
+              ),
             ),
           ),
         ],
@@ -368,8 +456,10 @@ class _ReportRow extends StatelessWidget {
   }
 }
 
+
 /////////////////////////////////////////////REPORT STAT/////////////////////////////////////////////
 class _ReportStat extends StatelessWidget {
+
   final String value;
   final String label;
 
@@ -380,26 +470,34 @@ class _ReportStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
     return Expanded(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
 
+          // STAT VALUE
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 20,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 21,
               fontWeight: FontWeight.bold,
+              color: colors.primary,
             ),
           ),
 
-          const SizedBox(height: 4),
+          const SizedBox(height: 7),
 
+          // STAT LABEL
           Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11,
-              color: Colors.grey[600],
+              color: colors.onSurfaceVariant,
             ),
           ),
         ],
@@ -408,22 +506,28 @@ class _ReportStat extends StatelessWidget {
   }
 }
 
+
 /////////////////////////////////////////////VERTICAL DIVIDER/////////////////////////////////////////////
 class _VerticalDivider extends StatelessWidget {
   const _VerticalDivider();
 
   @override
   Widget build(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       width: 1,
-      height: 42,
-      color: Colors.grey[300],
+      height: 48,
+      color: colors.outlineVariant,
     );
   }
 }
 
+
 /////////////////////////////////////////////REPORT ALERT/////////////////////////////////////////////
 class _ReportAlert extends StatelessWidget {
+
   final IconData icon;
   final String title;
   final String date;
@@ -436,46 +540,54 @@ class _ReportAlert extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
 
+        // ALERT ICON
         Container(
-          width: 38,
-          height: 38,
+          width: 42,
+          height: 42,
 
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
+            color: colors.surfaceContainerHighest,
             shape: BoxShape.circle,
           ),
 
           child: Icon(
             icon,
-            size: 20,
-            color: Theme.of(context).colorScheme.primary,
+            size: 23,
+            color: colors.primary,
           ),
         ),
 
-        const SizedBox(width: 12),
+        const SizedBox(width: 15),
 
+        // ALERT INFORMATION
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
 
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 13,
+                style: TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
+                  color: colors.onSurface,
                 ),
               ),
+
+              const SizedBox(height: 5),
 
               Text(
                 date,
                 style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[600],
+                  fontSize: 12,
+                  color: colors.onSurfaceVariant,
                 ),
               ),
             ],
@@ -485,4 +597,3 @@ class _ReportAlert extends StatelessWidget {
     );
   }
 }
-

@@ -6,7 +6,7 @@ import '../../../widgets/selection_button.dart';
 import '../../../theme/app_colours.dart';
 import '../../../models/cat_registration_model.dart';
 import 'new_profile_02.dart';
-import '../../../services/cat_registration_nav_service.dart';
+import '../../../services/cat_registration_service.dart';
 
 ////////////////////////////////////////////NEW PROFILE PAGE 01//////////////////////////////////////////
 class NewProfilePage01 extends StatefulWidget {

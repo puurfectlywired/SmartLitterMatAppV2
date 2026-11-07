@@ -47,6 +47,7 @@ dependencies:
   path_provider: ^2.1.6
   shared_preferences: ^2.5.6
   flutter_blue_plus: ^2.3.14
+  table_calendar: ^3.3.0
 
 dev_dependencies:
   flutter_test:

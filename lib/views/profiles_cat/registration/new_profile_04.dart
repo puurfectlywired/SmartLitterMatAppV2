@@ -11,12 +11,13 @@ import '../../../models/cat_registration_model.dart';
 
 //services
 import '../../../services/cat_profile_service.dart';
-import '../../../services/cat_registration_nav_service.dart';
+import '../../../services/cat_registration_service.dart';
 
 //other
 import '../../../widgets/registration_header.dart';
 import '../../../theme/app_colours.dart';
 import '../../../other/global_variables.dart';
+import '../../../other/cat_age_formatter.dart';
 
 
 ////////////////////////////////////////////NEW PROFILE PAGE 04//////////////////////////////////////////
@@ -36,29 +37,6 @@ class NewProfilePage04 extends StatefulWidget {
 class _NewProfilePage04State extends State<NewProfilePage04> {
 
   bool isSaving = false;
-
-  ////////////////////////////////////////////FORMAT DATE//////////////////////////////////////////
-  String _formatDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-
-    return '$month/$day/${date.year}';
-  }
-
-  ////////////////////////////////////////////CALCULATE AGE//////////////////////////////////////////
-  int _calculateAge(DateTime birthday) {
-    final today = DateTime.now();
-
-    int age = today.year - birthday.year;
-
-    if (today.month < birthday.month ||
-        (today.month == birthday.month &&
-            today.day < birthday.day)) {
-      age--;
-    }
-
-    return age;
-  }
 
   ////////////////////////////////////////////SAVE PROFILE//////////////////////////////////////////
   Future<void> _createProfile() async {
@@ -93,7 +71,7 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
       final newCat = CatProfile(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         name: registration.name.trim(),
-        age: _calculateAge(registration.birthday!),
+        birthday: registration.birthday!,
         breed: registration.breed,
         sex: registration.sex,
         weight: registration.weight!,
@@ -295,11 +273,11 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
 
                   const Divider(),
 
-                  // BIRTHDAY
+                  // AGE
                   _informationRow(
-                    'Birthday',
+                    'Age',
                     registration.birthday != null
-                        ? _formatDate(registration.birthday!)
+                        ? formatCatAge(registration.birthday!)
                         : 'Not provided',
                   ),
 

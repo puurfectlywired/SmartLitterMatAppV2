@@ -2,17 +2,20 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-//import 'package:cloud_firestore/cloud_firestore.dart';
-
+//models
 import '../../models/cat_profile_model.dart';
 import '../../models/ammonia_model.dart';
 
+//services
 import '../../services/cat_profile_service.dart';
 import '../../services/ammonia_service.dart';
 
+//widgets
 import '../../widgets/app_bar.dart';
 import '../../widgets/drawer.dart';
 import '../../widgets/bottom_nav_bar.dart';
+
+
 
 ////////////////////////////////////////////ALERTS PAGE//////////////////////////////////////////
 class AlertsPage extends StatefulWidget {

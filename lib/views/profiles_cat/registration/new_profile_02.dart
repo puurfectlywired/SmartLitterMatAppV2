@@ -8,7 +8,7 @@ import 'new_profile_03.dart';
 import '../../../models/cat_registration_model.dart';
 
 //services
-import '../../../services/cat_registration_nav_service.dart';
+import '../../../services/cat_registration_service.dart';
 
 //other
 import '../../../other/global_variables.dart';
