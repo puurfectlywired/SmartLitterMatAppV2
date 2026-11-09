@@ -128,7 +128,7 @@ class _AmmoniaAlertHistoryPageState extends State<AmmoniaAlertHistoryPage> {
       ),
 
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
 
         children: [
 
@@ -160,7 +160,7 @@ class _AmmoniaAlertHistoryPageState extends State<AmmoniaAlertHistoryPage> {
 
                 // ALERT TITLE
                 Text(
-                  'Time to clean!',
+                  'Time to freshen up!',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
@@ -168,21 +168,21 @@ class _AmmoniaAlertHistoryPageState extends State<AmmoniaAlertHistoryPage> {
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                // const SizedBox(height: 8),
 
-                // AMMONIA LEVEL
-                Text(
-                  percentIncrease == null
-                      ? 'Ammonia level exceeded the threshold.'
-                      : 'Ammonia increased by '
-                        '${percentIncrease.toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
+                // // AMMONIA LEVEL
+                // Text(
+                //   percentIncrease == null
+                //       ? 'Ammonia level exceeded the threshold.'
+                //       : 'Ammonia increased by '
+                //         '${percentIncrease.toStringAsFixed(1)}%',
+                //   style: TextStyle(
+                //     fontSize: 14,
+                //     color: colors.onSurfaceVariant,
+                //   ),
+                // ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 // ALERT DATE
                 Text(

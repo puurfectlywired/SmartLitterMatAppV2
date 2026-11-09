@@ -404,29 +404,122 @@ class _AlertsPageState extends State<AlertsPage> {
 
         final alert = visibleAlerts[index];
 
-        return InkWell(
-          onTap: isCalibrating
-              ? null
-              : () => _confirmLitterBoxCleaning(alert),
+      //   return InkWell(
+      //     onTap: isCalibrating
+      //         ? null
+      //         : () => _confirmLitterBoxCleaning(alert),
 
 
-          borderRadius: BorderRadius.circular(25),
+      //     borderRadius: BorderRadius.circular(25),
 
-          child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 20,
-          ),
+      //     child: Container(
+      //     padding: const EdgeInsets.symmetric(
+      //       horizontal: 20,
+      //       vertical: 20,
+      //     ),
 
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(25),
-          ),
+      //     decoration: BoxDecoration(
+      //       color: colors.surfaceContainerHigh,
+      //       borderRadius: BorderRadius.circular(25),
+      //     ),
 
-          child: Row(
-            children: [
+      //     child: Row(
+      //       children: [
 
-              // ALERT ICON
+              // // ALERT ICON
+              // Container(
+              //   width: 55,
+              //   height: 55,
+
+              //   decoration: BoxDecoration(
+              //     color: colors.surfaceContainerHighest,
+              //     shape: BoxShape.circle,
+              //   ),
+
+              //   child: Icon(
+              //     Icons.warning_amber_rounded,
+              //     color: colors.primary,
+              //     size: 30,
+              //   ),
+              // ),
+
+      //         const SizedBox(width: 15),
+
+      //         // ALERT INFORMATION
+      //         Expanded(
+      //           child: Column(
+      //             crossAxisAlignment:
+      //                 CrossAxisAlignment.start,
+
+      //             children: [
+
+      //               Text(
+      //                 'Time to clean!',
+      //                 style: TextStyle(
+      //                   fontSize: 17,
+      //                   fontWeight: FontWeight.bold,
+      //                   color: colors.onSurface,
+      //                 ),
+      //               ),
+
+      //               const SizedBox(height: 5),
+
+      //               Text(
+      //                 alert.percentIncrease == null
+      //                     ? 'Ammonia level exceeded the threshold.'
+      //                     : 'Ammonia increased by '
+      //                       '${alert.percentIncrease!.toStringAsFixed(1)}%',
+      //                 style: TextStyle(
+      //                   fontSize: 13,
+      //                   color: colors.onSurfaceVariant,
+      //                 ),
+      //               ),
+
+      //               const SizedBox(height: 5),
+
+      //               // ALERT DATE
+      //               Text(
+      //                 'Detected: ${_formatDate(alert.timestamp)}',
+      //                 style: TextStyle(
+      //                   fontSize: 13,
+      //                   color: colors.onSurfaceVariant,
+      //                 ),
+      //               ),
+
+      //             ],
+      //           ),
+      //         ),
+      //       ],
+      //     ),
+      //   ),
+      // );
+
+
+return InkWell(
+  onTap: isCalibrating
+      ? null
+      : () => _confirmLitterBoxCleaning(alert),
+
+  borderRadius: BorderRadius.circular(25),
+
+  child: Container(
+    padding: const EdgeInsets.all(20),
+
+    decoration: BoxDecoration(
+      color: colors.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(25),
+    ),
+
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        // ALERT INFORMATION
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+
+            // ALERT ICON
               Container(
                 width: 55,
                 height: 55,
@@ -443,56 +536,109 @@ class _AlertsPageState extends State<AlertsPage> {
                 ),
               ),
 
-              const SizedBox(width: 15),
+            const SizedBox(width: 15),
 
-              // ALERT INFORMATION
-              Expanded(
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-                  children: [
-
-                    Text(
-                      'Time to clean!',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: colors.onSurface,
-                      ),
+                  // ALERT TITLE
+                  Text(
+                    'Time to freshen up!',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: colors.onSurface,
                     ),
+                  ),
 
-                    const SizedBox(height: 5),
+                  const SizedBox(height: 8),
 
-                    Text(
-                      alert.percentIncrease == null
-                          ? 'Ammonia level exceeded the threshold.'
-                          : 'Ammonia increased by '
-                            '${alert.percentIncrease!.toStringAsFixed(1)}%',
-                      style: TextStyle(
-                        fontSize: 13,
+                  // ALERT DESCRIPTION
+                  Text(
+                    alert.percentIncrease == null
+                        ? 'Your litter box may need cleaning. '
+                          'Ammonia levels are elevated.'
+                        : 'Your litter box may need cleaning. '
+                          // 'Ammonia levels have increased by '
+                          // '${alert.percentIncrease!.toStringAsFixed(1)}%.'
+                          ,
+
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // ALERT TIMESTAMP
+                  Row(
+                    children: [
+
+                      Icon(
+                        Icons.access_time_rounded,
+                        size: 15,
                         color: colors.onSurfaceVariant,
                       ),
-                    ),
 
-                    const SizedBox(height: 5),
+                      const SizedBox(width: 6),
 
-                    // ALERT DATE
-                    Text(
-                      'Detected: ${_formatDate(alert.timestamp)}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: colors.onSurfaceVariant,
+                      Flexible(
+                        child: Text(
+                          _formatDate(alert.timestamp),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
                       ),
-                    ),
-
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+
+        const SizedBox(height: 18),
+
+        Divider(
+          height: 1,
+          color: colors.outlineVariant,
+        ),
+
+        const SizedBox(height: 14),
+
+        // CLEANING CONFIRMATION PROMPT
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+
+            Text(
+              'Tap to confirm cleaning',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: colors.primary,
+              ),
+            ),
+
+            Icon(
+              Icons.chevron_right_rounded,
+              color: colors.primary,
+              size: 22,
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+);
+
+
     },
   );
   }

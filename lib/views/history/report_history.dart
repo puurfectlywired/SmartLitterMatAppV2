@@ -1,8 +1,13 @@
 
 import 'package:flutter/material.dart';
 
+import '../reports/report.dart';
+
 import '../../models/cat_profile_model.dart';
+import '../../models/cat_report_model.dart';
+
 import '../../services/cat_profile_service.dart';
+import '../../services/cat_report_service.dart';
 
 import '../../widgets/app_bar.dart';
 import '../../widgets/drawer.dart';
@@ -29,6 +34,22 @@ class _ReportHistoryPageState extends State<ReportHistoryPage> {
   void initState() {
     super.initState();
     _loadCatProfiles();
+  }
+
+  //////////////////////////////////////////FORMAT DATE//////////////////////////////////////////
+  String _formatDate(DateTime date) {
+
+    final localDate = date.toLocal();
+
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr',
+      'May', 'Jun', 'Jul', 'Aug',
+      'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+
+    final month = months[localDate.month - 1];
+
+    return '$month ${localDate.day}, ${localDate.year}';
   }
 
   //////////////////////////////////////////LOAD CAT PROFILES//////////////////////////////////////////
@@ -221,16 +242,191 @@ class _ReportHistoryPageState extends State<ReportHistoryPage> {
       );
     }
 
-    // REPORT HISTORY WILL BE LOADED HERE
-    // Future implementation:
-    // Retrieve generated reports for selectedCatId
-    // from Firebase and display them as report cards.
+    // LOAD REPORTS FOR SELECTED CAT
+    return StreamBuilder<List<SavedCatReport>>(
+      key: ValueKey(selectedCatId),
 
-    return _buildEmptyPage(
-      title: 'No Reports Yet',
-      message: 'Previously generated reports will appear here.',
+      stream: CatReportService.watchReportHistory(
+        selectedCatId!,
+      ),
+
+      builder: (context, snapshot) {
+
+        // ERROR LOADING REPORTS
+        if (snapshot.hasError) {
+
+          debugPrint(
+            'ERROR LOADING REPORT HISTORY: ${snapshot.error}',
+          );
+
+          return _buildEmptyPage(
+            title: 'Unable to Load Reports',
+            message: 'Report history could not be loaded.',
+          );
+        }
+
+        // LOADING REPORTS
+        if (!snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final reports = snapshot.data!;
+
+        // NO SAVED REPORTS
+        if (reports.isEmpty) {
+          return _buildEmptyPage(
+            title: 'No Reports Yet',
+            message: 'Previously saved reports will appear here.',
+          );
+        }
+
+        // SAVED REPORT LIST
+        return ListView.separated(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 5,
+          ),
+
+          itemCount: reports.length,
+
+          separatorBuilder: (context, index) =>
+              const SizedBox(height: 15),
+
+          itemBuilder: (context, index) {
+
+            final report = reports[index];
+
+            return _buildReportCard(report);
+          },
+        );
+      },
     );
   }
+
+
+  //////////////////////////////////////////REPORT HISTORY CARD//////////////////////////////////////////
+  Widget _buildReportCard(SavedCatReport report) {
+
+    final colors = Theme.of(context).colorScheme;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(25),
+
+      // OPEN SAVED REPORT
+      onTap: () {
+
+        final matchingCats = catProfiles.where(
+          (cat) => cat.id == report.catId,
+        ).toList();
+
+        if (matchingCats.isEmpty) return;
+
+        final cat = matchingCats.first;
+
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+
+            pageBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+            ) => ReportPage(
+              cat: cat,
+              startDate: report.startDate,
+              endDate: report.endDate,
+              savedReport: report,
+            ),
+          ),
+        );
+      },
+
+      child: Container(
+        padding: const EdgeInsets.all(20),
+
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(25),
+        ),
+
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+
+            // REPORT ICON
+            Container(
+              width: 55,
+              height: 55,
+
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerHighest,
+                shape: BoxShape.circle,
+              ),
+
+              child: Icon(
+                Icons.description_outlined,
+                color: colors.primary,
+                size: 28,
+              ),
+            ),
+
+            const SizedBox(width: 15),
+
+            // REPORT INFORMATION
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  Text(
+                    'Health Report',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: colors.onSurface,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    '${_formatDate(report.startDate)} – '
+                    '${_formatDate(report.endDate)}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    'Saved ${_formatDate(report.generatedAt)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // OPEN REPORT ARROW
+            Icon(
+              Icons.chevron_right_rounded,
+              color: colors.primary,
+              size: 25,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   //////////////////////////////////////////EMPTY HISTORY PAGE//////////////////////////////////////////
   Widget _buildEmptyPage({

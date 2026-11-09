@@ -1,27 +1,76 @@
 
 import 'package:flutter/material.dart';
 
+//models
 import '../../models/cat_profile_model.dart';
+import '../../models/cat_report_model.dart';
+
+//services
+import '../../services/cat_report_service.dart';
+
 
 import '../../widgets/bottom_nav_bar.dart';
+import '../../other/global_variables.dart';
 import '../../other/cat_age_formatter.dart';
 
 
+
+
 //////////////////////////////////////////REPORT PAGE//////////////////////////////////////////
-class ReportPage extends StatelessWidget {
+class ReportPage extends StatefulWidget {
 
   final CatProfile cat;
-
   final DateTime startDate;
   final DateTime endDate;
+
+  // OPTIONAL SAVED REPORT
+  final SavedCatReport? savedReport;
 
   const ReportPage({
     super.key,
     required this.cat,
     required this.startDate,
     required this.endDate,
+    this.savedReport,
   });
 
+  @override
+  State<ReportPage> createState() => _ReportPageState();
+}
+
+
+
+//////////////////////////////////////////REPORT PAGE STATE//////////////////////////////////////////
+class _ReportPageState extends State<ReportPage> {
+
+  late Future<CatReportData> reportFuture;
+
+  bool isSaving = false;
+  bool hasSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // SAVED REPORTS USE THEIR ORIGINAL DATA
+    if (widget.savedReport != null) {
+
+      reportFuture = Future.value(
+        widget.savedReport!.reportData,
+      );
+
+      hasSaved = true;
+
+    } else {
+
+      // NEW REPORTS LOAD CURRENT DATA
+      reportFuture = CatReportService.getReportData(
+        catId: widget.cat.id,
+        startDate: widget.startDate,
+        endDate: widget.endDate,
+      );
+    }
+  }
 
 
 
@@ -38,20 +87,120 @@ class ReportPage extends StatelessWidget {
   }
 
 
+  //////////////////////////////////////////FORMAT WEIGHT//////////////////////////////////////////
+  String _formatWeight(double? weight) {
+
+    if (weight == null) return '—';
+
+    return displayWeight(weight);
+  }
 
 
+  //////////////////////////////////////////FORMAT WEIGHT CHANGE//////////////////////////////////////////
+  String _formatWeightChange(double? change) {
+
+    if (change == null) return '—';
+
+    final prefix = change > 0 ? '+' : '';
+
+    return '$prefix${displayWeight(change)}';
+  }
+
+
+  //////////////////////////////////////////FORMAT DECIMAL//////////////////////////////////////////
+  String _formatDecimal(double? value) {
+
+    if (value == null) return '—';
+
+    return value.toStringAsFixed(1);
+  }
+
+
+  //////////////////////////////////////////FORMAT COUNT//////////////////////////////////////////
+  String _formatCount(int? value) {
+
+    if (value == null) return '—';
+
+    return value.toString();
+  }
+
+
+  //////////////////////////////////////////PDF PLACEHOLDER//////////////////////////////////////////
+  void _showPdfPlaceholder() {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('PDF generation is not available yet.'),
+      ),
+    );
+  }
+
+
+  //////////////////////////////////////////SAVE REPORT//////////////////////////////////////////
+  Future<void> _saveReport(CatReportData data) async {
+
+    if (isSaving || hasSaved) return;
+
+    setState(() {
+      isSaving = true;
+    });
+
+    try {
+
+      // CREATE A PERMANENT REPORT SNAPSHOT
+      final report = SavedCatReport(
+        id: '',
+        catId: widget.cat.id,
+        catName: widget.cat.name,
+        breed: widget.cat.breed,
+        sex: widget.cat.sex,
+        ageLabel: formatCatAge(widget.cat.birthday),
+        startDate: widget.startDate,
+        endDate: widget.endDate,
+        generatedAt: DateTime.now(),
+        reportData: data,
+      );
+
+      // SAVE TO FIRESTORE
+      await CatReportService.saveReport(report);
+
+      if (!mounted) return;
+
+      setState(() {
+        hasSaved = true;
+        isSaving = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Report saved to Report History.'),
+        ),
+      );
+
+    } catch (e) {
+
+      debugPrint('ERROR SAVING REPORT: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        isSaving = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not save report.'),
+        ),
+      );
+    }
+  }
+
+
+  //////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
-
-    void showPdfPlaceholder() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PDF generation is not available yet.'),
-        ),
-      );
-    }
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -70,285 +219,381 @@ class ReportPage extends StatelessWidget {
           ),
         ),
 
-        // SAVE AS PDF ICON
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf_outlined),
             color: colors.primary,
             tooltip: 'Save as PDF',
-            onPressed: showPdfPlaceholder,
+            onPressed: _showPdfPlaceholder,
           ),
 
           const SizedBox(width: 8),
         ],
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 20,
-        ),
+      body: FutureBuilder<CatReportData>(
+        future: reportFuture,
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        builder: (context, snapshot) {
 
-            // REPORT HEADER
-            Center(
-              child: Column(
-                children: [
+          // LOADING REPORT
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-                  Container(
-                    width: 75,
-                    height: 75,
-
-                    decoration: BoxDecoration(
-                      color: colors.surfaceContainerHigh,
-                      shape: BoxShape.circle,
-                    ),
-
-                    child: Icon(
-                      Icons.pets_rounded,
-                      size: 40,
-                      color: colors.primary,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Text(
-                    cat.name,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: colors.onSurface,
-                    ),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  Text(
-                    'Health Report',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  Text(
-                    '${_formatReportDate(startDate)} – ${_formatReportDate(endDate)}',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // CAT INFORMATION
-            _ReportCard(
-              title: 'Profile',
-
-              child: Column(
-                children: [
-
-                  _ReportRow(
-                    label: 'Breed',
-                    value: cat.breed,
-                  ),
-
-                  _ReportRow(
-                    label: 'Sex',
-                    value: cat.sex,
-                  ),
-
-                  _ReportRow(
-                    label: 'Age',
-                    value: formatCatAge(cat.birthday),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // SUMMARY
-            _ReportCard(
-              title: 'Summary',
-              child: Row(
-                children: [
-
-                  _ReportStat(
-                    value: '${cat.weight.toStringAsFixed(1)} lb',
-                    label: 'Current Weight',
-                  ),
-
-                  _VerticalDivider(),
-
-                  _ReportStat(
-                    value: '3.2',
-                    label: 'Avg. Visits/Day',
-                  ),
-
-                  _VerticalDivider(),
-
-                  _ReportStat(
-                    value: '4',
-                    label: 'Alerts',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // WEIGHT
-            _ReportCard(
-              title: 'Weight',
-              child: Column(
-                children: [
-
-                  const _ReportRow(
-                    label: 'Start of period',
-                    value: '9.2 lb',
-                  ),
-
-                  _ReportRow(
-                    label: 'Current',
-                    value: '${cat.weight.toStringAsFixed(1)} lb',
-                  ),
-
-                  const _ReportRow(
-                    label: 'Change',
-                    value: '-0.4 lb',
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Align(
-                    alignment: Alignment.centerLeft,
-
-                    child: Text(
-                      'Weight decreased gradually during the selected period.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // LITTER BOX ACTIVITY
-            _ReportCard(
-              title: 'Litter Box Activity',
-              child: const Column(
-                children: [
-
-                  _ReportRow(
-                    label: 'Total visits',
-                    value: '96',
-                  ),
-
-                  _ReportRow(
-                    label: 'Daily average',
-                    value: '3.2 visits',
-                  ),
-
-                  _ReportRow(
-                    label: 'Highest daily count',
-                    value: '7 visits',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // ALERT HISTORY
-            _ReportCard(
-              title: 'Alerts',
-              child: const Column(
-                children: [
-
-                  _ReportAlert(
-                    icon: Icons.monitor_weight_outlined,
-                    title: 'Weight Decrease Detected',
-                    date: 'September 29, 2026',
-                  ),
-
-                  Divider(height: 24),
-
-                  _ReportAlert(
-                    icon: Icons.pets,
-                    title: 'Frequent Litter Box Visits',
-                    date: 'September 28, 2026',
-                  ),
-
-                  Divider(height: 24),
-
-                  _ReportAlert(
-                    icon: Icons.air,
-                    title: 'Elevated Ammonia Level',
-                    date: 'September 26, 2026',
-                  ),
-
-                  Divider(height: 24),
-
-                  _ReportAlert(
-                    icon: Icons.monitor_weight_outlined,
-                    title: 'Weight Change Detected',
-                    date: 'September 22, 2026',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 25),
-
-            // PDF BUTTON
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-
-              child: ElevatedButton.icon(
-                onPressed: showPdfPlaceholder,
-
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: colors.onPrimary,
-                  elevation: 0,
-
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-
-                icon: const Icon(
-                  Icons.picture_as_pdf_outlined,
-                  size: 22,
-                ),
-
-                label: const Text(
-                  'Save Report as PDF',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+          // ERROR LOADING REPORT
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Unable to load report data.',
+                style: TextStyle(
+                  color: colors.onSurfaceVariant,
                 ),
               ),
-            ),
+            );
+          }
 
-            const SizedBox(height: 25),
-          ],
-        ),
+          final report = snapshot.data ?? const CatReportData();
+
+          return _buildReportContent(report);
+        },
       ),
 
       bottomNavigationBar: const MyBottomNavBar(),
+    );
+  }
+
+
+  //////////////////////////////////////////REPORT CONTENT//////////////////////////////////////////
+  Widget _buildReportContent(CatReportData report) {
+
+    final colors = Theme.of(context).colorScheme;
+    
+    // USE SAVED PROFILE INFORMATION WHEN REOPENING A REPORT
+    final saved = widget.savedReport;
+
+    final reportCatName = saved?.catName ?? widget.cat.name;
+    final reportBreed = saved?.breed ?? widget.cat.breed;
+    final reportSex = saved?.sex ?? widget.cat.sex;
+    final reportAge = saved?.ageLabel ??
+        formatCatAge(widget.cat.birthday);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 20,
+      ),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          // REPORT HEADER
+          Center(
+            child: Column(
+              children: [
+
+                Container(
+                  width: 75,
+                  height: 75,
+
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerHigh,
+                    shape: BoxShape.circle,
+                  ),
+
+                  child: Icon(
+                    Icons.pets_rounded,
+                    size: 40,
+                    color: colors.primary,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  reportCatName,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: colors.onSurface,
+                  ),
+                ),
+
+                const SizedBox(height: 5),
+
+                Text(
+                  'Health Report',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+
+                const SizedBox(height: 5),
+
+                Text(
+                  '${_formatReportDate(widget.startDate)} – '
+                  '${_formatReportDate(widget.endDate)}',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
+          // CAT INFORMATION
+          _ReportCard(
+            title: 'Profile',
+
+            child: Column(
+              children: [
+
+                _ReportRow(
+                  label: 'Breed',
+                  value: reportBreed.isEmpty
+                      ? 'Not provided'
+                      : reportBreed,
+                ),
+
+                _ReportRow(
+                  label: 'Sex',
+                  value: reportSex,
+                ),
+
+                _ReportRow(
+                  label: 'Age',
+                  value: reportAge,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          // SUMMARY
+          _ReportCard(
+            title: 'Summary',
+
+            child: Row(
+              children: [
+
+                _ReportStat(
+                  value: _formatWeight(report.endingWeight),
+                  label: 'End Weight',
+                ),
+
+                const _VerticalDivider(),
+
+                _ReportStat(
+                  value: _formatDecimal(report.averageVisitsPerDay),
+                  label: 'Avg. Visits/Day',
+                ),
+
+                const _VerticalDivider(),
+
+                _ReportStat(
+                  value: '—',   //replace with line below later
+                  //value: report.alerts.length.toString(),
+                  label: 'Alerts',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          // WEIGHT
+          _ReportCard(
+            title: 'Weight',
+
+            child: Column(
+              children: [
+
+                _ReportRow(
+                  label: 'Start of period',
+                  value: _formatWeight(report.startingWeight),
+                ),
+
+                _ReportRow(
+                  label: 'End of period',
+                  value: _formatWeight(report.endingWeight),
+                ),
+
+                _ReportRow(
+                  label: 'Change',
+                  value: _formatWeightChange(report.weightChange),
+                ),
+
+                const SizedBox(height: 12),
+
+                Align(
+                  alignment: Alignment.centerLeft,
+
+                  child: Text(
+                    report.startingWeight == null ||
+                            report.endingWeight == null
+                        ? 'Weight data is not available for this period.'
+                        : 'Weight measurements for the selected period.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          // LITTER BOX ACTIVITY
+          _ReportCard(
+            title: 'Litter Box Activity',
+
+            child: Column(
+              children: [
+
+                _ReportRow(
+                  label: 'Total visits',
+                  value: _formatCount(report.totalVisits),
+                ),
+
+                _ReportRow(
+                  label: 'Daily average',
+                  value: report.averageVisitsPerDay == null
+                      ? '—'
+                      : '${_formatDecimal(report.averageVisitsPerDay)} visits',
+                ),
+
+                _ReportRow(
+                  label: 'Highest daily count',
+                  value: report.highestDailyVisits == null
+                      ? '—'
+                      : '${report.highestDailyVisits} visits',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          // WEIGHT AND FREQUENCY ALERT HISTORY
+          _ReportCard(
+            title: 'Weight & Frequency Alerts',
+
+            child: report.alerts.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                    ),
+
+                    child: Center(
+                      child: Column(
+                        children: [
+
+                          Icon(
+                            Icons.notifications_none_rounded,
+                            size: 38,
+                            color: colors.primary,
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          Text(
+                            'No alert data available',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: [
+
+                      for (int i = 0; i < report.alerts.length; i++) ...[
+
+                        if (i > 0)
+                          const Divider(height: 24),
+
+                        _ReportAlert(
+                          icon: report.alerts[i].type ==
+                                  CatReportAlertType.weight
+                              ? Icons.monitor_weight_outlined
+                              : Icons.pets,
+                          title: report.alerts[i].title,
+                          date: _formatReportDate(
+                            report.alerts[i].timestamp.toLocal(),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+          ),
+
+          const SizedBox(height: 25),
+
+          // SAVE REPORT BUTTON
+          SizedBox(
+            width: double.infinity,
+            height: 55,
+
+            child: ElevatedButton.icon(
+              onPressed: isSaving || hasSaved
+                  ? null
+                  : () => _saveReport(report),
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.primary,
+                foregroundColor: colors.onPrimary,
+                disabledBackgroundColor: colors.surfaceContainerHigh,
+                disabledForegroundColor: colors.onSurfaceVariant,
+                elevation: 0,
+
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+
+              icon: isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Icon(
+                      hasSaved
+                          ? Icons.check_circle_outline
+                          : Icons.save_outlined,
+                      size: 22,
+                    ),
+
+              label: Text(
+                isSaving
+                    ? 'Saving Report...'
+                    : hasSaved
+                        ? 'Report Saved'
+                        : 'Save Report',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+
+
+          const SizedBox(height: 25),
+        ],
+      ),
     );
   }
 }
