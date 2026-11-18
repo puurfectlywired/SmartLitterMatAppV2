@@ -25,6 +25,7 @@ import '../../../other/graphs.dart';
 import '../../../other/cat_age_formatter.dart';
 import '../../../widgets/drawer.dart';
 import '../../../widgets/bottom_nav_bar.dart';
+import '../../../widgets/latest_visit.dart';
 
 //ble tag status
 enum BleTagStatus {
@@ -473,10 +474,10 @@ class _FullProfilePageState extends State<FullProfilePage> {
 
                   const SizedBox(height: 8),
 
-                  // LAST VISIT - HARD CODED
-                  Text(
-                    'Last visit 09/30/2026 8:36PM',
-                    textAlign: TextAlign.center,
+                  // LAST VISIT
+                  LatestVisit(
+                    key: ValueKey(cat.id),
+                    catId: cat.id,
                     style: TextStyle(
                       fontSize: 12,
                       color: colors.onSurfaceVariant,
@@ -631,7 +632,7 @@ class _FullProfilePageState extends State<FullProfilePage> {
                     'Current Status',
                   ),
 
-
+ 
                   const SizedBox(height: 15),
 
                   //CURRENT STATUS CARD
@@ -662,7 +663,9 @@ class _FullProfilePageState extends State<FullProfilePage> {
                   const SizedBox(height: 15),
 
                   //WEEKLY VISITS CARD
-                  const WeeklyVisitsChart(),
+                  WeeklyVisitsChart(
+                    cat: cat,
+                  ),
 
                   const SizedBox(height: 35),
 

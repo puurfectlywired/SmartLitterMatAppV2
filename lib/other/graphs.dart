@@ -2,208 +2,553 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+//models
 import '../models/cat_profile_model.dart';
-import '../other/global_variables.dart';
-//import '../services/cat_service.dart';
+import '../models/weight_measurement_model.dart';
+import '../models/litter_visit_model.dart';
+
+//services
+import '../services/weight_measurement_service.dart';
+import '../services/litter_visit_service.dart';
+
+//widgets
+import '../widgets/latest_weight.dart';
 
 
 
 
 //////////////////////////////////////////WEEKLY VISITS GRAPH//////////////////////////////////////////
 class WeeklyVisitsChart extends StatefulWidget {
-  const WeeklyVisitsChart({super.key});
+
+  final CatProfile cat;
+
+  const WeeklyVisitsChart({
+    super.key,
+    required this.cat,
+  });
 
   @override
   State<WeeklyVisitsChart> createState() =>
       _WeeklyVisitsChartState();
 }
 
-  //////////////////////////////////////////WEEKLY VISITS STATE//////////////////////////////////////////
-  class _WeeklyVisitsChartState extends State<WeeklyVisitsChart> {
 
-    String selectedRange = '7D';
+//////////////////////////////////////////WEEKLY VISITS STATE//////////////////////////////////////////
+class _WeeklyVisitsChartState extends State<WeeklyVisitsChart> {
 
-    @override
-    Widget build(BuildContext context) {
+  String selectedRange = '7D';
 
-      final colors = Theme.of(context).colorScheme;
+  late Stream<List<DailyLitterVisits>> visitStream;
 
-      // HARDCODED DATA FOR DEMO
-      // 7D = DAILY, 30D/90D = WEEKLY, 1Y = MONTHLY
-      final Map<String, List<int>> datasets = {
-        '7D': [2, 4, 3, 5, 4, 7, 6],
-        '30D': [25, 29, 27, 32, 8],
-        '90D': [25, 28, 30, 27, 31, 29, 33, 30, 28, 32, 29, 34, 24],
-        '1Y': [118, 125, 121, 130, 126, 134, 129, 137, 132, 128, 140, 135],
-      };
+  late DateTime startDate;
+  late DateTime endDate;
 
-      final visits = datasets[selectedRange]!;
+  int numberOfDays = 7;
 
-      final labels = selectedRange == '7D'
-          ? ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-          : selectedRange == '1Y'
-              ? ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
-              : List.generate(visits.length, (i) => '${i + 1}');
 
-      final maxValue = visits.reduce((a, b) => a > b ? a : b);
+  @override
+  void initState() {
+    super.initState();
 
-      final interval = selectedRange == '7D'
-          ? 2.0
-          : selectedRange == '1Y'
-              ? 40.0
-              : 10.0;
+    _loadVisitHistory();
+  }
 
-      final maxY = ((maxValue / interval).ceil() + 1) * interval;
 
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+  @override
+  void didUpdateWidget(
+    covariant WeeklyVisitsChart oldWidget,
+  ) {
+    super.didUpdateWidget(oldWidget);
 
-        decoration: BoxDecoration(
-          color: colors.surfaceContainer,
-          borderRadius: BorderRadius.circular(25),
-        ),
-
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            // TIME RANGE DROPDOWN
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                GraphRangeDropdown(
-                  value: selectedRange,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedRange = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 30),
-
-            // BAR GRAPH
-            SizedBox(
-              height: 160,
-              child: BarChart(
-                BarChartData(
-                  minY: 0,
-                  maxY: maxY,
-                  alignment: BarChartAlignment.spaceAround,
-
-                  // GRID LINES
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    horizontalInterval: interval,
-                    getDrawingHorizontalLine: (value) {
-                      return FlLine(
-                        color: colors.outlineVariant,
-                        strokeWidth: 1,
-                      );
-                    },
-                  ),
-
-                  borderData: FlBorderData(show: false),
-
-                  // AXIS LABELS
-                  titlesData: FlTitlesData(
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-
-                    // Y AXIS
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 35,
-                        interval: interval,
-
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            value.toInt().toString(),
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: colors.onSurfaceVariant,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    // X AXIS
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 22,
-                        interval: 1,
-
-                        getTitlesWidget: (value, meta) {
-
-                          final index = value.toInt();
-
-                          if (index < 0 ||
-                              index >= labels.length ||
-                              value != index.toDouble()) {
-                            return const SizedBox.shrink();
-                          }
-
-                          // REDUCE LABEL CROWDING FOR 90 DAYS
-                          if (selectedRange == '90D' && index.isOdd) {
-                            return const SizedBox.shrink();
-                          }
-
-                          return Text(
-                            labels[index],
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: colors.onSurfaceVariant,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-
-                  // BAR DATA
-                  barGroups: List.generate(
-                    visits.length,
-                    (index) {
-                      return BarChartGroupData(
-                        x: index,
-                        barRods: [
-                          BarChartRodData(
-                            toY: visits[index].toDouble(),
-                            width: selectedRange == '90D' ? 10 : 18,
-                            color: colors.primary,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(5),
-                              topRight: Radius.circular(5),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-
-                  barTouchData: BarTouchData(
-                    enabled: false,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+    if (oldWidget.cat.id != widget.cat.id) {
+      _loadVisitHistory();
     }
   }
+
+
+  //////////////////////////////////////////LOAD VISIT HISTORY//////////////////////////////////////////
+  void _loadVisitHistory() {
+
+    final now = DateTime.now();
+
+    // DETERMINE SELECTED TIME RANGE
+    switch (selectedRange) {
+
+      case '30D':
+        numberOfDays = 30;
+        break;
+
+      case '90D':
+        numberOfDays = 90;
+        break;
+
+      case '1Y':
+        numberOfDays = 365;
+        break;
+
+      default:
+        numberOfDays = 7;
+    }
+
+    // START OF FIRST DAY
+    startDate = DateTime(
+      now.year,
+      now.month,
+      now.day - (numberOfDays - 1),
+    );
+
+    // END OF TODAY
+    endDate = DateTime(
+      now.year,
+      now.month,
+      now.day + 1,
+    ).subtract(
+      const Duration(microseconds: 1),
+    );
+
+    // WATCH FIREBASE VISIT DATA
+    visitStream = LitterVisitService.watchVisitHistory(
+      catId: widget.cat.id,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
+
+
+  //////////////////////////////////////////CHANGE TIME RANGE//////////////////////////////////////////
+  void _changeRange(String value) {
+
+    setState(() {
+
+      selectedRange = value;
+
+      _loadVisitHistory();
+
+    });
+  }
+
+
+  //////////////////////////////////////////FORMAT DATE LABEL//////////////////////////////////////////
+  String _formatDateLabel(DateTime date) {
+
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr',
+      'May', 'Jun', 'Jul', 'Aug',
+      'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+
+    if (selectedRange == '1Y') {
+      return months[date.month - 1];
+    }
+
+    return '${months[date.month - 1]} ${date.day}';
+  }
+
+
+  //////////////////////////////////////////GET DAY INDEX//////////////////////////////////////////
+  int _getDayIndex(DateTime date) {
+
+    final localDate = date.toLocal();
+
+    // USE CALENDAR DATES TO AVOID DAYLIGHT SAVING ISSUES
+    final firstDay = DateTime.utc(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+    );
+
+    final measurementDay = DateTime.utc(
+      localDate.year,
+      localDate.month,
+      localDate.day,
+    );
+
+    return measurementDay.difference(firstDay).inDays;
+  }
+
+
+  //////////////////////////////////////////BUILD CARD//////////////////////////////////////////
+  @override
+  Widget build(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      width: double.infinity,
+
+      padding: const EdgeInsets.fromLTRB(
+        20, 22, 20, 20,
+      ),
+
+      decoration: BoxDecoration(
+        color: colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(25),
+      ),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          // TIME RANGE DROPDOWN
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+
+              GraphRangeDropdown(
+                value: selectedRange,
+                onChanged: _changeRange,
+              ),
+
+            ],
+          ),
+
+          const SizedBox(height: 30),
+
+          // FIREBASE VISIT DATA
+          StreamBuilder<List<DailyLitterVisits>>(
+            key: ValueKey(
+              '${widget.cat.id}_$selectedRange',
+            ),
+
+            stream: visitStream,
+
+            builder: (context, snapshot) {
+
+              // LOADING STATE
+              if (snapshot.connectionState ==
+                  ConnectionState.waiting) {
+
+                return const SizedBox(
+                  height: 160,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              // ERROR STATE
+              if (snapshot.hasError) {
+
+                debugPrint(
+                  'Error loading litter visits: '
+                  '${snapshot.error}',
+                );
+
+                return SizedBox(
+                  height: 160,
+                  child: Center(
+                    child: Text(
+                      'Unable to load visit data.',
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              final visitData = snapshot.data ?? [];
+
+              // EMPTY STATE
+              if (visitData.isEmpty) {
+
+                return SizedBox(
+                  height: 160,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+
+                      children: [
+
+                        Icon(
+                          Icons.bar_chart,
+                          size: 35,
+                          color: colors.onSurfaceVariant,
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(
+                          'No visit data available',
+                          style: TextStyle(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return _buildVisitGraph(
+                visitData,
+                colors,
+              );
+            },
+          ),
+
+        ],
+      ),
+    );
+  }
+
+
+  //////////////////////////////////////////BUILD VISIT GRAPH//////////////////////////////////////////
+  Widget _buildVisitGraph(
+    List<DailyLitterVisits> visitData,
+    ColorScheme colors,
+  ) {
+
+    // GROUP DAILY DATA ACCORDING TO TIME RANGE
+    //
+    // 7D = DAILY TOTALS
+    // 30D / 90D = WEEKLY TOTALS
+    // 1Y = 30-DAY TOTALS
+
+    final int daysPerGroup = selectedRange == '7D'
+        ? 1
+        : selectedRange == '1Y'
+            ? 30
+            : 7;
+
+    final int groupCount =
+        (numberOfDays / daysPerGroup).ceil();
+
+    // INITIALIZE GRAPH GROUPS
+    final visits = List<int>.filled(
+      groupCount,
+      0,
+    );
+
+    final hasData = List<bool>.filled(
+      groupCount,
+      false,
+    );
+
+    // ADD FIREBASE VISITS TO CORRECT GROUP
+    for (final visit in visitData) {
+
+      final dayIndex = _getDayIndex(visit.date);
+
+      if (dayIndex < 0 ||
+          dayIndex >= numberOfDays) {
+        continue;
+      }
+
+      final groupIndex = dayIndex ~/ daysPerGroup;
+
+      visits[groupIndex] += visit.visitCount;
+
+      hasData[groupIndex] = true;
+    }
+
+    // GENERATE DATE LABELS
+    final labels = List.generate(
+      groupCount,
+      (index) {
+
+        final date = DateTime(
+          startDate.year,
+          startDate.month,
+          startDate.day + (index * daysPerGroup),
+        );
+
+        return _formatDateLabel(date);
+      },
+    );
+
+    // DYNAMIC Y AXIS
+    final maxValue = visits.reduce(
+      (a, b) => a > b ? a : b,
+    );
+
+    final double interval = maxValue <= 10
+        ? 2.0
+        : (maxValue / 4).ceilToDouble();
+
+    final double maxY =
+        ((maxValue / interval).ceil() + 1) * interval;
+
+
+    //////////////////////////////////////////BAR GRAPH//////////////////////////////////////////
+    return SizedBox(
+      height: 160,
+
+      child: BarChart(
+        BarChartData(
+
+          minY: 0,
+          maxY: maxY,
+
+          alignment: BarChartAlignment.spaceAround,
+
+          // GRID LINES
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: interval,
+
+            getDrawingHorizontalLine: (value) {
+
+              return FlLine(
+                color: colors.outlineVariant,
+                strokeWidth: 1,
+              );
+            },
+          ),
+
+          borderData: FlBorderData(
+            show: false,
+          ),
+
+          // AXIS LABELS
+          titlesData: FlTitlesData(
+
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: false,
+              ),
+            ),
+
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: false,
+              ),
+            ),
+
+            // Y AXIS
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 35,
+                interval: interval,
+
+                getTitlesWidget: (value, meta) {
+
+                  return Text(
+                    value.toInt().toString(),
+
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // X AXIS
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 22,
+                interval: 1,
+
+                getTitlesWidget: (value, meta) {
+
+                  final index = value.toInt();
+
+                  if (index < 0 ||
+                      index >= labels.length ||
+                      value != index.toDouble()) {
+
+                    return const SizedBox.shrink();
+                  }
+
+                  // REDUCE LABEL CROWDING
+                  if ((selectedRange == '7D' ||
+                      selectedRange == '90D' ||
+                      selectedRange == '1Y') &&
+                      index.isOdd) {
+
+                    return const SizedBox.shrink();
+                  }
+
+                  return Text(
+                    labels[index],
+
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // BAR DATA
+          barGroups: List.generate(
+            visits.length,
+            (index) {
+
+              return BarChartGroupData(
+                x: index,
+
+                barRods: [
+
+                  BarChartRodData(
+
+                    toY: visits[index].toDouble(),
+
+                    width: selectedRange == '90D' ||
+                           selectedRange == '1Y'
+                        ? 10
+                        : 18,
+
+                    color: colors.primary,
+
+                    borderRadius:
+                        const BorderRadius.only(
+
+                      topLeft: Radius.circular(5),
+                      topRight: Radius.circular(5),
+
+                    ),
+                  ),
+
+                ],
+
+                // DO NOT SHOW TOOLTIPS FOR MISSING DATA
+                showingTooltipIndicators: const [],
+              );
+            },
+          ),
+
+          barTouchData: BarTouchData(
+            enabled: true,
+
+            touchTooltipData: BarTouchTooltipData(
+
+              getTooltipItem: (
+                group,
+                groupIndex,
+                rod,
+                rodIndex,
+              ) {
+
+                if (!hasData[groupIndex]) {
+                  return null;
+                }
+
+                return BarTooltipItem(
+                  '${visits[groupIndex]} visits',
+
+                  TextStyle(
+                    color: colors.onSurface,
+                    fontSize: 12,
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 
 
@@ -267,7 +612,7 @@ class WeeklyVisitsChart extends StatefulWidget {
 
 
 //////////////////////////////////////////CURRENT STATUS///////////////////////////
-class CurrentStatusCard extends StatelessWidget {
+class CurrentStatusCard extends StatefulWidget {
   final CatProfile cat;
 
   const CurrentStatusCard({
@@ -276,118 +621,287 @@ class CurrentStatusCard extends StatelessWidget {
   });
 
   @override
+  State<CurrentStatusCard> createState() =>
+      _CurrentStatusCardState();
+}
+
+//////////////////////////////////////////CURRENT STATUS STATE///////////////////////////
+class _CurrentStatusCardState extends State<CurrentStatusCard> {
+
+  late Stream<List<DailyLitterVisits>> visitStream;
+
+  //INITIALIZE STREAM
+  @override
+  void initState() {
+    super.initState();
+
+    _loadStatusData();
+  }
+
+  // UPDATE CAT
+  @override
+  void didUpdateWidget(
+    covariant CurrentStatusCard oldWidget,
+  ) {
+
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.cat.id != widget.cat.id) {
+
+      _loadStatusData();
+    }
+  }
+
+  //////////////////////////////////////////LOAD STATUS DATA//////////////////////////////////////////
+  void _loadStatusData() {
+
+    final now = DateTime.now();
+
+    // START OF 7-DAY PERIOD
+    final startDate = DateTime(
+      now.year,
+      now.month,
+      now.day - 6,
+    );
+
+    // END OF TODAY
+    final endDate = DateTime(
+      now.year,
+      now.month,
+      now.day + 1,
+    ).subtract(
+      const Duration(microseconds: 1),
+    );
+
+    // WATCH FIREBASE VISIT DATA
+    visitStream =
+        LitterVisitService.watchVisitHistory(
+      catId: widget.cat.id,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
+
+  //////////////////////////////////////////FORMAT COUNT//////////////////////////////////////////
+  String _formatCount(int? value) {
+
+    if (value == null) return '—';
+
+    return value.toString();
+  }
+
+  //////////////////////////////////////////FORMAT DECIMAL//////////////////////////////////////////
+  String _formatDecimal(double? value) {
+
+    if (value == null) return '—';
+
+    return value.toStringAsFixed(1);
+  }
+
+  //////////////////////////////////////////BUILD CARD//////////////////////////////////////////
+  @override
   Widget build(BuildContext context) {
+
     final colors = Theme.of(context).colorScheme;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 15,
-        vertical: 25,
-      ),
+    return StreamBuilder<List<DailyLitterVisits>>(
 
-      decoration: BoxDecoration(
-        color: colors.surfaceContainer,
-        borderRadius: BorderRadius.circular(25),
-      ),
+    stream: visitStream,
 
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
+    builder: (context, snapshot) {
 
-          // WEIGHT
-          Expanded(
-            child: Column(
-              children: [
-                Text(
-                  displayWeight(cat.weight),
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    color: colors.primary,
-                  ),
-                ),
+      // DEFAULT VALUES WHEN DATA IS UNAVAILABLE
+      String visitsToday = '—';
+      String dailyAverage = '—';
 
-                const SizedBox(height: 8),
+      // USE FIREBASE DATA WHEN AVAILABLE
+      if (snapshot.hasData && !snapshot.hasError) {
 
-                Text(
-                  'Weight',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+        final litterVisits = snapshot.data!;
+
+        if (litterVisits.isNotEmpty) {
+
+          final now = DateTime.now();
+
+          // GET TODAY'S VISIT COUNT
+          final today = DateTime(
+            now.year,
+            now.month,
+            now.day,
+          );
+
+          int todayCount = 0;
+
+          for (final day in litterVisits) {
+
+            final visitDate = DateTime(
+              day.date.year,
+              day.date.month,
+              day.date.day,
+            );
+
+            if (visitDate == today) {
+
+              todayCount = day.visitCount;
+
+              break;
+            }
+          }
+
+          visitsToday = _formatCount(todayCount);
+
+
+          // CALCULATE TOTAL VISITS
+          final totalVisits = litterVisits.fold<int>(
+            0,
+            (total, day) =>
+                total + day.visitCount,
+          );
+
+
+          // COUNT DAYS WITH RECORDED VISITS
+          final daysWithVisits = litterVisits
+              .where((day) => day.visitCount > 0)
+              .length;
+
+
+          // CALCULATE DAILY AVERAGE
+          final double? averageVisitsPerDay =
+              daysWithVisits == 0
+                  ? null
+                  : totalVisits / daysWithVisits;
+
+          dailyAverage = _formatDecimal(
+            averageVisitsPerDay,
+          );
+        }
+      }
+
+      // PRINT ANY FIREBASE ERRORS
+      if (snapshot.hasError) {
+
+        debugPrint(
+          'Error loading current status: '
+          '${snapshot.error}',
+        );
+      }
+
+        return Container(
+          width: double.infinity,
+
+          padding: const EdgeInsets.symmetric(
+            horizontal: 15,
+            vertical: 25,
           ),
 
-          // DIVIDER
-          Container(
-            height: 45,
-            width: 1,
-            color: colors.outlineVariant,
+          decoration: BoxDecoration(
+            color: colors.surfaceContainer,
+            borderRadius: BorderRadius.circular(25),
           ),
 
-          // VISITS TODAY
-          Expanded(
-            child: Column(
-              children: [
-                Text(
-                  '#',
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    color: colors.primary,
-                  ),
-                ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
 
-                const SizedBox(height: 8),
+              // WEIGHT
+              Expanded(
+                child: Column(
+                  children: [
 
-                Text(
-                  'Visits Today',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colors.onSurfaceVariant,
-                  ),
+                    LatestWeight(
+                      key: ValueKey(widget.cat.id),
+                      catId: widget.cat.id,
+                      style: TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'Weight',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+
+              // DIVIDER
+              Container(
+                height: 45,
+                width: 1,
+                color: colors.outlineVariant,
+              ),
+
+              // VISITS TODAY
+              Expanded(
+                child: Column(
+                  children: [
+
+                    Text(
+                      visitsToday,
+                      style: TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'Visits Today',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // DIVIDER
+              Container(
+                height: 45,
+                width: 1,
+                color: colors.outlineVariant,
+              ),
+
+              // DAILY AVERAGE
+              Expanded(
+                child: Column(
+                  children: [
+
+                    Text(
+                      dailyAverage,
+                      style: TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'Daily Avg.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-
-          // DIVIDER
-          Container(
-            height: 45,
-            width: 1,
-            color: colors.outlineVariant,
-          ),
-
-          // DAILY AVERAGE
-          Expanded(
-            child: Column(
-              children: [
-                Text(
-                  '#',
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    color: colors.primary,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  'Daily Avg.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -415,40 +929,167 @@ class _WeightTrendCardState extends State<WeightTrendCard> {
 
   String selectedRange = '7D';
 
+  late Stream<List<WeightMeasurement>> weightStream;
+
+  late DateTime startDate;
+  late DateTime endDate;
+
+  int numberOfDays = 7;
+
+  //////////////////////////////////////////INITIALIZE GRAPH//////////////////////////////////////////
+  @override
+  void initState() {
+    super.initState();
+
+    _loadWeightHistory();
+  }
+
+  //////////////////////////////////////////UPDATE CAT//////////////////////////////////////////
+  @override
+  void didUpdateWidget(covariant WeightTrendCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.cat.id != widget.cat.id) {
+      _loadWeightHistory();
+    }
+  }
+
+  //////////////////////////////////////////LOAD WEIGHT HISTORY//////////////////////////////////////////
+  void _loadWeightHistory() {
+
+    final now = DateTime.now();
+
+    // DETERMINE SELECTED TIME RANGE
+    switch (selectedRange) {
+
+      case '30D':
+        numberOfDays = 30;
+        break;
+
+      case '90D':
+        numberOfDays = 90;
+        break;
+
+      case '1Y':
+        numberOfDays = 365;
+        break;
+
+      default:
+        numberOfDays = 7;
+    }
+
+    // START OF SELECTED PERIOD
+    startDate = DateTime(
+      now.year,
+      now.month,
+      now.day - (numberOfDays - 1),
+    );
+
+    // END OF TODAY
+    endDate = DateTime(
+      now.year,
+      now.month,
+      now.day + 1,
+    ).subtract(
+      const Duration(microseconds: 1),
+    );
+
+    // WATCH FIREBASE WEIGHT MEASUREMENTS
+    weightStream = WeightService.watchWeightHistory(
+      catId: widget.cat.id,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
+
+  //////////////////////////////////////////CHANGE TIME RANGE//////////////////////////////////////////
+  void _changeRange(String value) {
+
+    setState(() {
+
+      selectedRange = value;
+
+      _loadWeightHistory();
+    });
+  }
+
+  //////////////////////////////////////////FORMAT DATE LABEL//////////////////////////////////////////
+  String _formatDateLabel(DateTime date) {
+
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr',
+      'May', 'Jun', 'Jul', 'Aug',
+      'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+
+    if (selectedRange == '1Y') {
+      return months[date.month - 1];
+    }
+
+    return '${months[date.month - 1]} ${date.day}';
+  }
+
+  //////////////////////////////////////////X AXIS INTERVAL//////////////////////////////////////////
+  double _getXInterval() {
+
+    switch (selectedRange) {
+
+      case '30D':
+        return 7;
+
+      case '90D':
+        return 21;
+
+      case '1Y':
+        return 60;
+
+      default:
+        return 2;
+    }
+  }
+
+  //////////////////////////////////////////GET MEASUREMENT POSITION//////////////////////////////////////////
+  double _getMeasurementX(DateTime timestamp) {
+
+    final date = timestamp.toLocal();
+
+    // USE CALENDAR DAYS TO AVOID DAYLIGHT SAVING ISSUES
+    final firstDay = DateTime.utc(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+    );
+
+    final measurementDay = DateTime.utc(
+      date.year,
+      date.month,
+      date.day,
+    );
+
+    final days = measurementDay
+        .difference(firstDay)
+        .inDays;
+
+    // INCLUDE TIME OF DAY
+    final fractionOfDay =
+        (date.hour * 60 + date.minute +
+            date.second / 60) / 1440.0;
+
+    return days + fractionOfDay;
+  }
+
+  //////////////////////////////////////////BUILD GRAPH CARD//////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
 
-    // HARDCODED WEIGHT DATA FOR DEMO
-    final Map<String, List<double>> datasets = {
-      '7D': [8.70, 8.85, 9.10, 9.10, 9.15, 9.20, 9.15],
-      '30D': [8.55, 8.68, 8.75, 8.92, 9.10],
-      '90D': [8.40, 8.48, 8.51, 8.60, 8.58, 8.69, 8.74, 8.80, 8.83, 8.91, 9.00, 9.08, 9.20],
-      '1Y': [7.80, 7.95, 8.10, 8.15, 8.30, 8.42, 8.50, 8.62, 8.74, 8.85, 9.05, 9.20],
-    };
-
-    final weightData = datasets[selectedRange]!;
-
-    final labels = selectedRange == '7D'
-        ? ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-        : selectedRange == '1Y'
-            ? ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
-            : List.generate(weightData.length, (i) => '${i + 1}');
-
-    // DYNAMIC Y AXIS
-    final minWeight =
-        weightData.reduce((a, b) => a < b ? a : b);
-
-    final maxWeight =
-        weightData.reduce((a, b) => a > b ? a : b);
-
-    final minY = ((minWeight - 0.2) * 5).floor() / 5;
-    final maxY = ((maxWeight + 0.2) * 5).ceil() / 5;
-
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+
+      padding: const EdgeInsets.fromLTRB(
+        20, 22, 20, 20,
+      ),
 
       decoration: BoxDecoration(
         color: colors.surfaceContainer,
@@ -463,149 +1104,316 @@ class _WeightTrendCardState extends State<WeightTrendCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+
               GraphRangeDropdown(
                 value: selectedRange,
-                onChanged: (value) {
-                  setState(() {
-                    selectedRange = value;
-                  });
-                },
+                onChanged: _changeRange,
               ),
             ],
           ),
 
           const SizedBox(height: 30),
 
-          // LINE GRAPH
-          SizedBox(
-            height: 160,
-            child: LineChart(
-              LineChartData(
-                minX: 0,
-                maxX: selectedRange == '7D'
-                    ? 6
-                    : (weightData.length - 1).toDouble(),
-                minY: minY,
-                maxY: maxY,
+          // FIREBASE WEIGHT DATA
+          StreamBuilder<List<WeightMeasurement>>(
+            key: ValueKey(
+              '${widget.cat.id}_$selectedRange',
+            ),
 
-                // GRID LINES
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: 0.2,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(
-                      color: colors.outlineVariant,
-                      strokeWidth: 1,
-                    );
-                  },
-                ),
+            stream: weightStream,
 
-                borderData: FlBorderData(show: false),
+            builder: (context, snapshot) {
 
-                // AXIS LABELS
-                titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+              // LOADING
+              if (snapshot.connectionState ==
+                  ConnectionState.waiting) {
+
+                return const SizedBox(
+                  height: 160,
+
+                  child: Center(
+                    child: CircularProgressIndicator(),
                   ),
+                );
+              }
 
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+              // ERROR LOADING DATA
+              if (snapshot.hasError) {
 
-                  // Y AXIS
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 35,
-                      interval: 0.2,
+                return SizedBox(
+                  height: 160,
 
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toStringAsFixed(1),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // X AXIS
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 22,
-                      interval: 1,
-
-                      getTitlesWidget: (value, meta) {
-
-                        final index = value.toInt();
-
-                        if (index < 0 ||
-                            index >= labels.length ||
-                            value != index.toDouble()) {
-                          return const SizedBox.shrink();
-                        }
-
-                        // REDUCE LABEL CROWDING FOR 90 DAYS
-                        if (selectedRange == '90D' && index.isOdd) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Text(
-                          labels[index],
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-                // GRAPH LINE
-                lineBarsData: [
-                  LineChartBarData(
-
-                    spots: List.generate(
-                      weightData.length,
-                      (index) => FlSpot(
-                        index.toDouble(),
-                        weightData[index],
+                  child: Center(
+                    child: Text(
+                      'Unable to load weight data.',
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant,
+                        fontSize: 13,
                       ),
                     ),
+                  ),
+                );
+              }
 
-                    isCurved: true,
-                    barWidth: 3,
-                    color: colors.primary,
+              final measurements =
+                  snapshot.data ?? [];
 
-                    // DATA POINTS
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, percent, bar, index) {
-                        return FlDotCirclePainter(
-                          radius: 4,
+              // NO WEIGHT MEASUREMENTS
+              if (measurements.isEmpty) {
+
+                return SizedBox(
+                  height: 160,
+
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+
+                      children: [
+
+                        Icon(
+                          Icons.monitor_weight_outlined,
+                          size: 35,
                           color: colors.primary,
-                          strokeWidth: 0,
-                        );
-                      },
-                    ),
+                        ),
 
-                    // SHADED AREA
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: colors.primary.withValues(alpha: 0.12),
+                        const SizedBox(height: 10),
+
+                        Text(
+                          'No weight data available',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
+                );
+              }
+
+              // DISPLAY WEIGHT GRAPH
+              return _buildWeightGraph(
+                measurements,
+              );
+            },
           ),
         ],
       ),
+    );
+  }
+
+  //////////////////////////////////////////WEIGHT TREND GRAPH//////////////////////////////////////////
+  Widget _buildWeightGraph(
+    List<WeightMeasurement> measurements,
+  ) {
+
+    final colors = Theme.of(context).colorScheme;
+
+    // CREATE GRAPH POINTS
+    final spots = measurements.map((measurement) {
+
+      return FlSpot(
+        _getMeasurementX(measurement.timestamp),
+
+        measurement.weight,
+      );
+
+    }).toList();
+
+    // GET MINIMUM AND MAXIMUM WEIGHTS
+    final weightData = measurements
+        .map((measurement) => measurement.weight)
+        .toList();
+
+    final minWeight =
+        weightData.reduce((a, b) => a < b ? a : b);
+
+    final maxWeight =
+        weightData.reduce((a, b) => a > b ? a : b);
+
+    // DYNAMIC Y AXIS
+    final weightRange = maxWeight - minWeight;
+
+    final padding = weightRange > 0.8
+        ? weightRange * 0.15
+        : 0.2;
+
+    final minY = (minWeight - padding)
+        .clamp(0.0, double.infinity)
+        .toDouble();
+
+    final maxY = maxWeight + padding;
+
+    final yInterval = (maxY - minY) / 4;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        // WEIGHT UNIT
+        Text(
+          'Weight (lb)',
+          style: TextStyle(
+            fontSize: 11,
+            color: colors.onSurfaceVariant,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // LINE GRAPH
+        SizedBox(
+          height: 160,
+
+          child: LineChart(
+            LineChartData(
+
+              minX: 0,
+              maxX: numberOfDays.toDouble(),
+
+              minY: minY,
+              maxY: maxY,
+
+              // GRID LINES
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                horizontalInterval: yInterval,
+
+                getDrawingHorizontalLine: (value) {
+
+                  return FlLine(
+                    color: colors.outlineVariant,
+                    strokeWidth: 1,
+                  );
+                },
+              ),
+
+              borderData: FlBorderData(
+                show: false,
+              ),
+
+              // AXIS LABELS
+              titlesData: FlTitlesData(
+
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: false,
+                  ),
+                ),
+
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: false,
+                  ),
+                ),
+
+                // Y AXIS
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 40,
+                    interval: yInterval,
+
+                    getTitlesWidget: (value, meta) {
+
+                      return Text(
+                        value.toStringAsFixed(1),
+
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                // X AXIS
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 22,
+                    interval: _getXInterval(),
+
+                    getTitlesWidget: (value, meta) {
+
+                      // ONLY DISPLAY DATES IN RANGE
+                      if (value < 0 ||
+                          value >= numberOfDays) {
+
+                        return const SizedBox.shrink();
+                      }
+
+                      // CALCULATE DATE FROM X POSITION
+                      final date = DateTime(
+                        startDate.year,
+                        startDate.month,
+                        startDate.day + value.toInt(),
+                      );
+
+                      return Text(
+                        _formatDateLabel(date),
+
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // GRAPH LINE
+              lineBarsData: [
+
+                LineChartBarData(
+
+                  spots: spots,
+
+                  isCurved: true,
+
+                  // PREVENT CURVE OVERSHOOT
+                  preventCurveOverShooting: true,
+
+                  barWidth: 3,
+                  color: colors.primary,
+
+                  // DATA POINTS
+                  dotData: FlDotData(
+                    show: true,
+
+                    getDotPainter: (
+                      spot,
+                      percent,
+                      bar,
+                      index,
+                    ) {
+
+                      return FlDotCirclePainter(
+                        radius: 4,
+                        color: colors.primary,
+                        strokeWidth: 0,
+                      );
+                    },
+                  ),
+
+                  // SHADED AREA
+                  belowBarData: BarAreaData(
+                    show: true,
+
+                    color: colors.primary.withValues(
+                      alpha: 0.12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

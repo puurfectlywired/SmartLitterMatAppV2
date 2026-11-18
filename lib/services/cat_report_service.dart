@@ -1,8 +1,12 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+//models
 import '../models/cat_report_model.dart';
+
+//services
+import '../services/weight_measurement_service.dart';
+import '../services/litter_visit_service.dart';
 
 //////////////////////////////////////////CAT REPORT SERVICE//////////////////////////////////////////
 class CatReportService {
@@ -12,6 +16,7 @@ class CatReportService {
 
   //////////////////////////////////////////CURRENT USER//////////////////////////////////////////
   static User get _currentUser {
+
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
@@ -41,19 +46,111 @@ class CatReportService {
     required DateTime endDate,
   }) async {
 
-    // TODO: LOAD WEIGHT MEASUREMENTS FROM FIRESTORE
-    // users/{uid}/cats/{catId}/visits
+    // START OF FIRST SELECTED DAY
+    final reportStartDate = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+    );
 
-    // TODO: CALCULATE LITTER BOX ACTIVITY
-    // - Total visits
-    // - Average visits per day
-    // - Highest daily count
+    // END OF LAST SELECTED DAY
+    final reportEndDate = DateTime(
+      endDate.year,
+      endDate.month,
+      endDate.day + 1,
+    ).subtract(
+      const Duration(microseconds: 1),
+    );
+
+
+    //////////////////////////////////////////WEIGHT MEASUREMENTS//////////////////////////////////////////
+
+    // LOAD WEIGHT MEASUREMENTS FROM FIRESTORE
+    // users/{uid}/cats/{catId}/weight_measurements
+    final weightMeasurements =
+        await WeightService.getWeightHistory(
+      catId: catId,
+      startDate: reportStartDate,
+      endDate: reportEndDate,
+    );
+
+    // STARTING WEIGHT
+    final double? startingWeight =
+        weightMeasurements.isEmpty
+            ? null
+            : weightMeasurements.first.weight;
+
+    // ENDING WEIGHT
+    final double? endingWeight =
+        weightMeasurements.isEmpty
+            ? null
+            : weightMeasurements.last.weight;
+
+
+    //////////////////////////////////////////LITTER BOX ACTIVITY//////////////////////////////////////////
+
+    // LOAD LITTER VISITS FROM FIRESTORE
+    // users/{uid}/cats/{catId}/litter_visits
+    final litterVisits =
+        await LitterVisitService.getVisitHistory(
+      catId: catId,
+      startDate: reportStartDate,
+      endDate: reportEndDate,
+    );
+
+    // TOTAL VISITS
+    final int? totalVisits =
+        litterVisits.isEmpty
+            ? null
+            : litterVisits.fold<int>(
+                0,
+                (total, visit) =>
+                    total + visit.visitCount,
+              );
+
+    // NUMBER OF DAYS WITH RECORDED VISITS
+    final int daysWithVisits = litterVisits
+        .where((day) => day.visitCount > 0)
+        .length;
+
+    // AVERAGE VISITS PER DAY
+    final double? averageVisitsPerDay =
+        daysWithVisits == 0
+            ? null
+            : totalVisits! / daysWithVisits;
+
+    // HIGHEST DAILY VISIT COUNT
+    final int? highestDailyVisits =
+        litterVisits.isEmpty
+            ? null
+            : litterVisits
+                .map((visit) => visit.visitCount)
+                .reduce(
+                  (a, b) => a > b ? a : b,
+                );
+
+
+    //////////////////////////////////////////HEALTH ALERTS//////////////////////////////////////////
 
     // TODO: LOAD WEIGHT AND FREQUENCY ALERTS
     // Filter by catId, startDate, and endDate.
     // Do not include ammonia alerts.
 
-    return const CatReportData();
+
+    //////////////////////////////////////////RETURN REPORT DATA//////////////////////////////////////////
+
+    return CatReportData(
+
+      // WEIGHT DATA
+      startingWeight: startingWeight,
+      endingWeight: endingWeight,
+
+      // LITTER BOX ACTIVITY
+      totalVisits: totalVisits,
+      averageVisitsPerDay: averageVisitsPerDay,
+      highestDailyVisits: highestDailyVisits,
+
+    );
   }
 
 

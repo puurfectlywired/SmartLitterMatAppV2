@@ -1,6 +1,9 @@
 
 import 'package:flutter/material.dart';
 
+//pages
+import '../profiles_cat/maintanence/full_cat_profile.dart';
+
 //models
 import '../../models/cat_profile_model.dart';
 import '../../models/cat_report_model.dart';
@@ -136,64 +139,77 @@ class _ReportPageState extends State<ReportPage> {
   }
 
 
-  //////////////////////////////////////////SAVE REPORT//////////////////////////////////////////
-  Future<void> _saveReport(CatReportData data) async {
+//////////////////////////////////////////SAVE REPORT//////////////////////////////////////////
+Future<void> _saveReport(CatReportData data) async {
 
-    if (isSaving || hasSaved) return;
+  if (isSaving || hasSaved) return;
+
+  setState(() {
+    isSaving = true;
+  });
+
+  try {
+
+    // CREATE A PERMANENT REPORT SNAPSHOT
+    final report = SavedCatReport(
+      id: '',
+      catId: widget.cat.id,
+      catName: widget.cat.name,
+      breed: widget.cat.breed,
+      sex: widget.cat.sex,
+      ageLabel: formatCatAge(widget.cat.birthday),
+      startDate: widget.startDate,
+      endDate: widget.endDate,
+      generatedAt: DateTime.now(),
+      reportData: data,
+    );
+
+    // SAVE TO FIRESTORE
+    await CatReportService.saveReport(report);
+
+    if (!mounted) return;
 
     setState(() {
-      isSaving = true;
+      hasSaved = true;
+      isSaving = false;
     });
 
-    try {
+    // DISPLAY SUCCESS MESSAGE
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Report saved to Report History.'),
+      ),
+    );
 
-      // CREATE A PERMANENT REPORT SNAPSHOT
-      final report = SavedCatReport(
-        id: '',
-        catId: widget.cat.id,
-        catName: widget.cat.name,
-        breed: widget.cat.breed,
-        sex: widget.cat.sex,
-        ageLabel: formatCatAge(widget.cat.birthday),
-        startDate: widget.startDate,
-        endDate: widget.endDate,
-        generatedAt: DateTime.now(),
-        reportData: data,
-      );
+    // RETURN TO CAT'S FULL PROFILE
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            FullProfilePage(cat: widget.cat),
 
-      // SAVE TO FIRESTORE
-      await CatReportService.saveReport(report);
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
 
-      if (!mounted) return;
+  } catch (e) {
 
-      setState(() {
-        hasSaved = true;
-        isSaving = false;
-      });
+    debugPrint('ERROR SAVING REPORT: $e');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Report saved to Report History.'),
-        ),
-      );
+    if (!mounted) return;
 
-    } catch (e) {
+    setState(() {
+      isSaving = false;
+    });
 
-      debugPrint('ERROR SAVING REPORT: $e');
-
-      if (!mounted) return;
-
-      setState(() {
-        isSaving = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not save report.'),
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not save report.'),
+      ),
+    );
   }
+}
 
 
   //////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
@@ -214,8 +230,8 @@ class _ReportPageState extends State<ReportPage> {
         title: const Text(
           'Health Report',
           style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
+            //fontSize: 20,
+            //fontWeight: FontWeight.w500,
           ),
         ),
 

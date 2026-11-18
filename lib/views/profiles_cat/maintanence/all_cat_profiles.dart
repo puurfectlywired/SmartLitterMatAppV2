@@ -15,13 +15,13 @@ import '../../../services/cat_profile_service.dart';
 import '../../../services/cat_registration_service.dart';
 
 //themes
-import '../../../other/global_variables.dart';
 import '../../../theme/app_colours.dart';
 
 //widgets
 import '../../../widgets/app_bar.dart';
 import '../../../widgets/drawer.dart';
 import '../../../widgets/bottom_nav_bar.dart';
+import '../../../widgets/latest_weight.dart';
 
 ////////////////////////////////////////////PROFILES PAGE//////////////////////////////////////////
 class ProfilesPage extends StatefulWidget {
@@ -299,14 +299,42 @@ Future<void> _addCatProfile() async {
               ),
 
               // CAT INFORMATION
-              subtitle: Text(
-                'Age: ${formatCatAge(cat.birthday)}   '
-                'Weight: ${displayWeight(cat.weight)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context)
-                      .colorScheme.onSurfaceVariant,
-                ),
+              subtitle: Row(
+                children: [
+
+                  // AGE
+                  Text(
+                    'Age: ${formatCatAge(cat.birthday)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context)
+                          .colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // WEIGHT LABEL
+                  Text(
+                    'Weight: ',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context)
+                          .colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+
+                  // LATEST WEIGHT MEASUREMENT
+                  LatestWeight(
+                    key: ValueKey(cat.id),
+                    catId: cat.id,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context)
+                          .colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
 
               // RIGHT ARROW
