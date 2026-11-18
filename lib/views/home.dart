@@ -5,7 +5,7 @@ import 'dart:io';
 //pages
 import 'profiles_cat/registration/new_profile_01.dart';
 import 'guide.dart';
-import 'profiles_cat/maintanence/full_cat_profile.dart';
+import 'profiles_cat/general/full_cat_profile.dart';
 
 //models
 import '../models/user_data_model.dart';

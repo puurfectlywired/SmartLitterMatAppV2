@@ -298,8 +298,13 @@ Future<void> _addCatProfile() async {
                 ),
               ),
 
+              
               // CAT INFORMATION
-              subtitle: Row(
+              subtitle: Wrap(
+                spacing: 12,
+                runSpacing: 0,
+                crossAxisAlignment: WrapCrossAlignment.center,
+
                 children: [
 
                   // AGE
@@ -312,30 +317,36 @@ Future<void> _addCatProfile() async {
                     ),
                   ),
 
-                  const SizedBox(width: 12),
+                  // WEIGHT
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
 
-                  // WEIGHT LABEL
-                  Text(
-                    'Weight: ',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context)
-                          .colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                      // WEIGHT LABEL
+                      Text(
+                        'Weight: ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context)
+                              .colorScheme.onSurfaceVariant,
+                        ),
+                      ),
 
-                  // LATEST WEIGHT MEASUREMENT
-                  LatestWeight(
-                    key: ValueKey(cat.id),
-                    catId: cat.id,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context)
-                          .colorScheme.onSurfaceVariant,
-                    ),
+                      // LATEST WEIGHT MEASUREMENT
+                      LatestWeight(
+                        key: ValueKey(cat.id),
+                        catId: cat.id,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context)
+                              .colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+
 
               // RIGHT ARROW
               trailing: Icon(

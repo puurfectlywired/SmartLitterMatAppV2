@@ -8,7 +8,7 @@ import '../../other/global_variables.dart';
 import '../../theme/theme_controller.dart';
 
 // PAGES
-import '../profiles_user/maintanence/account_overview.dart';
+import '../profiles_user/general/account_overview.dart';
 
 // WIDGETS
 import '../../widgets/app_bar.dart';

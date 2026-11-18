@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:smart_litter_mat/views/history/cat_alert_history.dart';
 
 import '../views/home.dart'; 
-import '../views/profiles_cat/maintanence/all_cat_profiles.dart';
+import '../views/profiles_cat/general/all_cat_profiles.dart';
 import '../views/settings/settings.dart';
 import '../views/login.dart';
 import '../views/alerts/all_alerts.dart';
 import '../views/guide.dart';
-import '../views/profiles_user/maintanence/account_overview.dart';
+import '../views/profiles_user/general/account_overview.dart';
 import '../views/history/clean_alert_history.dart';
 import '../views/history/report_history.dart';
 

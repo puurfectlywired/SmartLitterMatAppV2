@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 //pages
-import '../profiles_cat/maintanence/full_cat_profile.dart';
+import '../profiles_cat/general/full_cat_profile.dart';
 
 //models
 import '../../models/cat_profile_model.dart';

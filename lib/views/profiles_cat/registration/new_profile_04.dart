@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 //pages
-import '../maintanence/all_cat_profiles.dart';
+import '../general/all_cat_profiles.dart';
 
 //models
 import '../../../models/cat_profile_model.dart';
