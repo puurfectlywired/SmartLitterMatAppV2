@@ -30,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool invalidLogin = false;
   bool isLoggingIn = false;
+  bool passwordVisible = false;
   String errorMessage = 'Invalid email or password';
 
   // VALIDATE EMAIL FORMAT
@@ -122,75 +123,6 @@ Future<void> login() async {
   }
 }
 
-
-  //login using firebase
-  // Future<void> login() async {
-
-  //   //prevent multiple login attempts
-  //   if (isLoggingIn) return;
-
-  //   setState(() {
-  //     isLoggingIn = true;
-  //     invalidLogin = false;
-  //   });
-
-  //   try {
-
-  //     //check email and password with firebase
-  //     await _authService.loginUser(
-  //       email: emailController.text.trim(),
-  //       password: passwordController.text,
-  //     );
-
-  //     if (!mounted) return;
-
-  //     //navigate to home page after successful login
-  //     Navigator.pushAndRemoveUntil(
-  //       context,
-  //       PageRouteBuilder(
-  //         pageBuilder: (context, animation, secondaryAnimation) =>
-  //             const HomePage(title: 'Puurfectly WIRED'),
-  //         transitionDuration: Duration.zero,
-  //         reverseTransitionDuration: Duration.zero,
-  //       ),
-  //       (route) => false,
-  //     );
-
-  //   } on FirebaseAuthException catch (e) {
-
-  //     if (!mounted) return;
-
-  //     setState(() {
-  //       invalidLogin = true;
-
-  //       if (e.code == 'invalid-email') {
-  //         errorMessage = 'Please enter a valid email address';
-  //       } else if (e.code == 'too-many-requests') {
-  //         errorMessage = 'Too many attempts. Please try again later';
-  //       } else {
-  //         errorMessage = 'Invalid email or password';
-  //       }
-  //     });
-
-  //   } catch (e) {
-
-  //     if (!mounted) return;
-
-  //     setState(() {
-  //       invalidLogin = true;
-  //       errorMessage = 'Unable to log in. Please try again';
-  //     });
-
-  //   } finally {
-
-  //     if (mounted) {
-  //       setState(() {
-  //         isLoggingIn = false;
-  //       });
-  //     }
-  //   }
-  // }
-
   //dispose controllers
   @override
   void dispose() {
@@ -202,12 +134,6 @@ Future<void> login() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      // appBar: AppBar(
-      //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      //   toolbarHeight: 60,
-      //   title: const Text('put logo here'),
-      // ),
 
       body: Center(
         child: SingleChildScrollView(
@@ -316,19 +242,36 @@ Future<void> login() async {
 
               SizedBox(height: 30),
 
-              //password field
+              
+              // PASSWORD FIELD WITH EYE ICON
               SizedBox(
                 width: 300,
                 child: TextField(
                   controller: passwordController,
-                  obscureText: true,
+                  obscureText: !passwordVisible,
                   autofillHints: const [AutofillHints.password],
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+
+                    // EYE ICON
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        passwordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+
+                      onPressed: () {
+                        setState(() {
+                          passwordVisible = !passwordVisible;
+                        });
+                      },
+                    ),
                   ),
                 ),
               ),
+
 
               SizedBox(height: 30),
 
@@ -344,7 +287,8 @@ Future<void> login() async {
               if (invalidLogin)
                 const SizedBox(height: 30),
 
-              //login button
+              
+              // LOGIN BUTTON
               SizedBox(
                 width: 300,
                 child: ElevatedButton(
@@ -352,6 +296,28 @@ Future<void> login() async {
                   child: Text(
                     isLoggingIn ? 'Logging In...' : 'Login',
                   ),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // CANCEL BUTTON
+              SizedBox(
+                width: 300,
+                child: OutlinedButton(
+                  onPressed: isLoggingIn
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                        },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor:
+                        Theme.of(context).colorScheme.onSurfaceVariant,
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                  child: const Text('Cancel'),
                 ),
               ),
             ],

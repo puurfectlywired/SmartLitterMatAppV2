@@ -264,7 +264,7 @@ class _WeeklyVisitsChartState extends State<WeeklyVisitsChart> {
                         Icon(
                           Icons.bar_chart,
                           size: 35,
-                          color: colors.onSurfaceVariant,
+                          color: colors.primary,
                         ),
 
                         const SizedBox(height: 10),

@@ -45,22 +45,6 @@ class _CreateUsernameState extends State<CreateUsername> {
       body: SafeArea(
         child: Stack(
           children: [
-            //bits kept from app bar
-            //back arrow
-            Positioned(
-              top: 10,
-              left: 10,
-              child: IconButton(
-                icon: Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: 30,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
 
             // SCROLLABLE BODY
             SingleChildScrollView(
@@ -233,6 +217,23 @@ class _CreateUsernameState extends State<CreateUsername> {
                 ],
               ),
             ),
+            ),
+
+            //bits kept from app bar
+            //back arrow
+            Positioned(
+              top: 10,
+              left: 10,
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: 30,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
             ),
           ]
         ),
