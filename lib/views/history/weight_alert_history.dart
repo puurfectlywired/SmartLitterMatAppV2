@@ -1,10 +1,13 @@
 
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
+//models
 import '../../models/cat_profile_model.dart';
+import '../../models/weight_alert_model.dart';
+
+//services
 import '../../services/cat_profile_service.dart';
-import '../../services/alert_history_service.dart';
+import '../../services/weight_alert_service.dart';
 
 import '../../widgets/app_bar.dart';
 import '../../widgets/drawer.dart';
@@ -212,10 +215,9 @@ class _WeightAlertHistoryPageState extends State<WeightAlertHistoryPage> {
     );
   }
 
+
   //////////////////////////////////////////HISTORY CONTENT//////////////////////////////////////////
   Widget _buildHistoryContent() {
-
-    //final colors = Theme.of(context).colorScheme;
 
     // NO CAT PROFILES
     if (catProfiles.isEmpty || selectedCatId == null) {
@@ -225,15 +227,21 @@ class _WeightAlertHistoryPageState extends State<WeightAlertHistoryPage> {
       );
     }
 
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: AlertHistoryService.watchAlertHistory(),
+    return StreamBuilder<List<WeightAlert>>(
+      key: ValueKey(selectedCatId),
+
+      stream: WeightAlertService.watchAlertHistory(
+        selectedCatId!,
+      ),
 
       builder: (context, snapshot) {
 
         // ERROR LOADING HISTORY
         if (snapshot.hasError) {
 
-          debugPrint('ERROR LOADING WEIGHT HISTORY: ${snapshot.error}');
+          debugPrint(
+            'ERROR LOADING WEIGHT HISTORY: ${snapshot.error}',
+          );
 
           return _buildEmptyPage(
             title: 'Unable to Load History',
@@ -248,29 +256,8 @@ class _WeightAlertHistoryPageState extends State<WeightAlertHistoryPage> {
           );
         }
 
-        // ONLY SHOW WEIGHT ALERTS FOR SELECTED CAT
-        final alerts = snapshot.data!.docs.where((doc) {
-
-          final data = doc.data();
-
-          return data['type'] == 'weight' &&
-              data['catId'] == selectedCatId;
-
-        }).toList();
-
-        // SORT ALERTS BY DATE - NEWEST FIRST
-        alerts.sort((a, b) {
-
-          final aTime =
-              (a.data()['timestamp'] as Timestamp?)
-                  ?.toDate() ?? DateTime(1970);
-
-          final bTime =
-              (b.data()['timestamp'] as Timestamp?)
-                  ?.toDate() ?? DateTime(1970);
-
-          return bTime.compareTo(aTime);
-        });
+        // WEIGHT ALERTS FOR SELECTED CAT
+        final alerts = snapshot.data!;
 
         // NO PREVIOUS WEIGHT ALERTS
         if (alerts.isEmpty) {
@@ -294,35 +281,34 @@ class _WeightAlertHistoryPageState extends State<WeightAlertHistoryPage> {
 
           itemBuilder: (context, index) {
 
-            final data = alerts[index].data();
+            final alert = alerts[index];
 
-            final timestamp =
-                (data['timestamp'] as Timestamp?)
-                    ?.toDate();
+            final isGain = alert.type == 'gain';
 
-            final resolvedAt =
-                (data['resolvedAt'] as Timestamp?)
-                    ?.toDate();
-
-            final title =
-                data['title'] as String? ??
-                'Weight Change Detected';
+            final title = isGain
+                ? 'Weight Gain Detected'
+                : 'Weight Loss Detected';
 
             final description =
-                data['description'] as String? ??
-                'An unusual weight change was detected.';
+                'A weight ${isGain ? "gain" : "loss"} of '
+                '${alert.weightChange.abs().toStringAsFixed(1)} lb '
+                'was detected over approximately one week.\n'
+                '${alert.previousWeight.toStringAsFixed(1)} lb'
+                ' → '
+                '${alert.currentWeight.toStringAsFixed(1)} lb';
 
             return _buildHistoryCard(
               title: title,
               description: description,
-              timestamp: timestamp,
-              resolvedAt: resolvedAt,
+              timestamp: alert.timestamp,
+              resolvedAt: alert.acknowledgedAt,
             );
           },
         );
       },
     );
   }
+
 
   //////////////////////////////////////////HISTORY CARD//////////////////////////////////////////
   Widget _buildHistoryCard({
@@ -413,7 +399,7 @@ class _WeightAlertHistoryPageState extends State<WeightAlertHistoryPage> {
                   const SizedBox(height: 5),
 
                   Text(
-                    'Resolved: ${_formatDate(resolvedAt)}',
+                    'Acknowledged: ${_formatDate(resolvedAt)}',
                     style: TextStyle(
                       fontSize: 13,
                       color: colors.primary,

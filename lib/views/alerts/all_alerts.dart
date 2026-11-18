@@ -5,10 +5,12 @@ import 'dart:async';
 //models
 import '../../models/cat_profile_model.dart';
 import '../../models/ammonia_model.dart';
+import '../../models/weight_alert_model.dart';
 
 //services
 import '../../services/cat_profile_service.dart';
 import '../../services/ammonia_service.dart';
+import '../../services/weight_alert_service.dart';
 
 //widgets
 import '../../widgets/app_bar.dart';
@@ -28,10 +30,14 @@ class AlertsPage extends StatefulWidget {
 ////////////////////////////////////////////ALERTS PAGE STATE//////////////////////////////////////////
 class _AlertsPageState extends State<AlertsPage> {
 
+  //weight listener
+  StreamSubscription<List<WeightAlert>>? _weightSubscription;
+  List<WeightAlert> weightAlerts = [];
+  String? weightLoadError;
+
+  //ammonia listener
   StreamSubscription<List<AmmoniaAlert>>? _ammoniaSubscription;
-
   String? selectedCatId;
-
   List<CatProfile> catProfiles = [];
   List<AmmoniaAlert> ammoniaAlerts = [];
 
@@ -48,6 +54,7 @@ class _AlertsPageState extends State<AlertsPage> {
   ////////////////////////////////////////////DISPOSE//////////////////////////////////////////
   @override
   void dispose() {
+    _weightSubscription?.cancel();
     _ammoniaSubscription?.cancel();
     super.dispose();
   }
@@ -113,6 +120,68 @@ class _AlertsPageState extends State<AlertsPage> {
     }
   }
 
+
+
+  //////////////////////////////////////////LOAD WEIGHT ALERTS//////////////////////////////////////////
+  Future<void> _loadWeightAlerts(String? catId) async {
+
+    await _weightSubscription?.cancel();
+    _weightSubscription = null;
+
+    if (!mounted) return;
+
+    setState(() {
+      weightAlerts = [];
+      weightLoadError = null;
+    });
+
+    // AMMONIA TAB SELECTED
+    if (catId == null) return;
+
+    try {
+
+      // CHECK EXISTING MEASUREMENTS FOR WEIGHT CHANGES
+      await WeightAlertService.checkWeightHistory(catId);
+
+      if (!mounted || selectedCatId != catId) return;
+
+      // LISTEN FOR ACTIVE WEIGHT ALERTS
+      _weightSubscription =
+          WeightAlertService.watchAlerts(catId).listen(
+
+        (alerts) {
+
+          if (!mounted || selectedCatId != catId) return;
+
+          setState(() {
+            weightAlerts = alerts;
+            weightLoadError = null;
+          });
+        },
+
+        onError: (error) {
+
+          debugPrint('WEIGHT ALERT ERROR: $error');
+
+          if (!mounted || selectedCatId != catId) return;
+
+          setState(() {
+            weightLoadError = 'Unable to load weight alerts.';
+          });
+        },
+      );
+
+    } catch (e) {
+
+      debugPrint('WEIGHT DETECTION ERROR: $e');
+
+      if (!mounted || selectedCatId != catId) return;
+
+      setState(() {
+        weightLoadError = 'Unable to check weight measurements.';
+      });
+    }
+  }
 
 
 
@@ -381,6 +450,40 @@ class _AlertsPageState extends State<AlertsPage> {
 
     final colors = Theme.of(context).colorScheme;
 
+    // WEIGHT ALERTS
+    if (selectedCatId != null) {
+
+      if (weightLoadError != null) {
+        return Center(
+          child: Text(weightLoadError!),
+        );
+      }
+
+      if (weightAlerts.isEmpty) {
+        return _buildEmptyPage();
+      }
+
+      return ListView.separated(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 10,
+        ),
+
+        itemCount: weightAlerts.length,
+
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: 15),
+
+        itemBuilder: (context, index) {
+
+          final alert = weightAlerts[index];
+
+          return _buildWeightAlertCard(alert);
+        },
+      );
+    }
+
+
     // AMMONIA ALERTS
     final List<AmmoniaAlert> visibleAlerts =
         selectedCatId == null ? ammoniaAlerts : [];
@@ -404,122 +507,180 @@ class _AlertsPageState extends State<AlertsPage> {
 
         final alert = visibleAlerts[index];
 
-      //   return InkWell(
-      //     onTap: isCalibrating
-      //         ? null
-      //         : () => _confirmLitterBoxCleaning(alert),
+        return InkWell(
+          onTap: isCalibrating
+              ? null
+              : () => _confirmLitterBoxCleaning(alert),
+
+          borderRadius: BorderRadius.circular(25),
+
+          child: Container(
+            padding: const EdgeInsets.all(20),
+
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(25),
+            ),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // ALERT INFORMATION
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+
+                    // ALERT ICON
+                      Container(
+                        width: 55,
+                        height: 55,
+
+                        decoration: BoxDecoration(
+                          color: colors.surfaceContainerHighest,
+                          shape: BoxShape.circle,
+                        ),
+
+                        child: Icon(
+                          Icons.warning_amber_rounded,
+                          color: colors.primary,
+                          size: 30,
+                        ),
+                      ),
+
+                    const SizedBox(width: 15),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+
+                          // ALERT TITLE
+                          Text(
+                            'Time to freshen up!',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: colors.onSurface,
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // ALERT DESCRIPTION
+                          Text(
+                            alert.percentIncrease == null
+                                ? 'Your litter box may need cleaning. '
+                                  'Ammonia levels are elevated.'
+                                : 'Your litter box may need cleaning. '
+                                  // 'Ammonia levels have increased by '
+                                  // '${alert.percentIncrease!.toStringAsFixed(1)}%.'
+                                  ,
+
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.4,
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // ALERT TIMESTAMP
+                          Row(
+                            children: [
+
+                              Icon(
+                                Icons.access_time_rounded,
+                                size: 15,
+                                color: colors.onSurfaceVariant,
+                              ),
+
+                              const SizedBox(width: 6),
+
+                              Flexible(
+                                child: Text(
+                                  _formatDate(alert.timestamp),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                Divider(
+                  height: 1,
+                  color: colors.outlineVariant,
+                ),
+
+                const SizedBox(height: 14),
+
+                // CLEANING CONFIRMATION PROMPT
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+
+                    Text(
+                      'Tap to confirm cleaning',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: colors.primary,
+                      ),
+                    ),
+
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: colors.primary,
+                      size: 22,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
 
-      //     borderRadius: BorderRadius.circular(25),
+//////////////////////////////////////////WEIGHT ALERT CARD//////////////////////////////////////////
+Widget _buildWeightAlertCard(WeightAlert alert) {
 
-      //     child: Container(
-      //     padding: const EdgeInsets.symmetric(
-      //       horizontal: 20,
-      //       vertical: 20,
-      //     ),
+  final colors = Theme.of(context).colorScheme;
 
-      //     decoration: BoxDecoration(
-      //       color: colors.surfaceContainerHigh,
-      //       borderRadius: BorderRadius.circular(25),
-      //     ),
+  final isGain = alert.type == 'gain';
 
-      //     child: Row(
-      //       children: [
+  return InkWell(
+    onTap: () => _acknowledgeWeightAlert(alert),
 
-              // // ALERT ICON
-              // Container(
-              //   width: 55,
-              //   height: 55,
+    borderRadius: BorderRadius.circular(25),
 
-              //   decoration: BoxDecoration(
-              //     color: colors.surfaceContainerHighest,
-              //     shape: BoxShape.circle,
-              //   ),
+    child: Container(
+      padding: const EdgeInsets.all(20),
 
-              //   child: Icon(
-              //     Icons.warning_amber_rounded,
-              //     color: colors.primary,
-              //     size: 30,
-              //   ),
-              // ),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(25),
+      ),
 
-      //         const SizedBox(width: 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
 
-      //         // ALERT INFORMATION
-      //         Expanded(
-      //           child: Column(
-      //             crossAxisAlignment:
-      //                 CrossAxisAlignment.start,
+          Row(
+            children: [
 
-      //             children: [
-
-      //               Text(
-      //                 'Time to clean!',
-      //                 style: TextStyle(
-      //                   fontSize: 17,
-      //                   fontWeight: FontWeight.bold,
-      //                   color: colors.onSurface,
-      //                 ),
-      //               ),
-
-      //               const SizedBox(height: 5),
-
-      //               Text(
-      //                 alert.percentIncrease == null
-      //                     ? 'Ammonia level exceeded the threshold.'
-      //                     : 'Ammonia increased by '
-      //                       '${alert.percentIncrease!.toStringAsFixed(1)}%',
-      //                 style: TextStyle(
-      //                   fontSize: 13,
-      //                   color: colors.onSurfaceVariant,
-      //                 ),
-      //               ),
-
-      //               const SizedBox(height: 5),
-
-      //               // ALERT DATE
-      //               Text(
-      //                 'Detected: ${_formatDate(alert.timestamp)}',
-      //                 style: TextStyle(
-      //                   fontSize: 13,
-      //                   color: colors.onSurfaceVariant,
-      //                 ),
-      //               ),
-
-      //             ],
-      //           ),
-      //         ),
-      //       ],
-      //     ),
-      //   ),
-      // );
-
-
-return InkWell(
-  onTap: isCalibrating
-      ? null
-      : () => _confirmLitterBoxCleaning(alert),
-
-  borderRadius: BorderRadius.circular(25),
-
-  child: Container(
-    padding: const EdgeInsets.all(20),
-
-    decoration: BoxDecoration(
-      color: colors.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(25),
-    ),
-
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-
-        // ALERT INFORMATION
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-
-            // ALERT ICON
               Container(
                 width: 55,
                 height: 55,
@@ -530,118 +691,187 @@ return InkWell(
                 ),
 
                 child: Icon(
-                  Icons.warning_amber_rounded,
+                  Icons.monitor_weight_outlined,
                   color: colors.primary,
                   size: 30,
                 ),
               ),
 
-            const SizedBox(width: 15),
+              const SizedBox(width: 15),
 
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
 
-                  // ALERT TITLE
-                  Text(
-                    'Time to freshen up!',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: colors.onSurface,
+                    Text(
+                      isGain
+                          ? 'Weight Gain Detected'
+                          : 'Weight Loss Detected',
+
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: colors.onSurface,
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 8),
 
-                  // ALERT DESCRIPTION
-                  Text(
-                    alert.percentIncrease == null
-                        ? 'Your litter box may need cleaning. '
-                          'Ammonia levels are elevated.'
-                        : 'Your litter box may need cleaning. '
-                          // 'Ammonia levels have increased by '
-                          // '${alert.percentIncrease!.toStringAsFixed(1)}%.'
-                          ,
+                    Text(
+                      'A weight ${isGain ? "gain" : "loss"} '
+                      'of ${alert.weightChange.abs().toStringAsFixed(1)} lb '
+                      'was detected over approximately one week.',
 
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.4,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // ALERT TIMESTAMP
-                  Row(
-                    children: [
-
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 15,
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.4,
                         color: colors.onSurfaceVariant,
                       ),
+                    ),
 
-                      const SizedBox(width: 6),
+                    const SizedBox(height: 8),
 
-                      Flexible(
-                        child: Text(
-                          _formatDate(alert.timestamp),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
+                    Text(
+                      '${alert.previousWeight.toStringAsFixed(1)} lb'
+                      ' → '
+                      '${alert.currentWeight.toStringAsFixed(1)} lb',
+
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colors.onSurfaceVariant,
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Text(
+                      _formatDate(alert.timestamp),
+
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
 
-        const SizedBox(height: 18),
+          const SizedBox(height: 18),
 
-        Divider(
-          height: 1,
-          color: colors.outlineVariant,
-        ),
+          Divider(
+            height: 1,
+            color: colors.outlineVariant,
+          ),
 
-        const SizedBox(height: 14),
+          const SizedBox(height: 14),
 
-        // CLEANING CONFIRMATION PROMPT
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
 
-            Text(
-              'Tap to confirm cleaning',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+              Text(
+                'Tap to acknowledge',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: colors.primary,
+                ),
+              ),
+
+              Icon(
+                Icons.chevron_right_rounded,
                 color: colors.primary,
+                size: 22,
               ),
-            ),
-
-            Icon(
-              Icons.chevron_right_rounded,
-              color: colors.primary,
-              size: 22,
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     ),
-  ),
-);
-
-
-    },
   );
+}
+
+
+  //////////////////////////////////////////ACKNOWLEDGE WEIGHT ALERT//////////////////////////////////////////
+  Future<void> _acknowledgeWeightAlert(
+    WeightAlert alert,
+  ) async {
+
+    final colors = Theme.of(context).colorScheme;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: colors.surfaceContainerHigh,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+
+        title: const Text(
+          'Acknowledge Weight Alert?',
+          textAlign: TextAlign.center,
+        ),
+
+        content: const Text(
+          'This alert will be moved to the cat\'s '
+          'weight alert history.',
+          textAlign: TextAlign.center,
+        ),
+
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+
+        actions: [
+
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, true),
+
+            child: const Text('Acknowledge'),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || confirmed != true) return;
+
+    try {
+
+      await WeightAlertService.acknowledgeAlert(
+        catId: alert.catId,
+        alertId: alert.id,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Weight alert moved to history.'),
+        ),
+      );
+
+    } catch (e) {
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to acknowledge alert: $e'),
+        ),
+      );
+    }
   }
+
 
   //////////////////////////////////////////FORMAT DATE//////////////////////////////////////////
   String _formatDate(DateTime date) {
@@ -729,10 +959,12 @@ return InkWell(
     final bool selected = selectedCatId == catId;
 
     return GestureDetector(
-      onTap: () {
+      onTap: () {     //change this to automatic loading alerts later
         setState(() {
           selectedCatId = catId;
         });
+
+        _loadWeightAlerts(catId);
       },
 
       child: Padding(
@@ -773,4 +1005,7 @@ return InkWell(
       ),
     );
   }
+
+
+
 }
