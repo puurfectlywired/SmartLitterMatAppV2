@@ -8,6 +8,7 @@ import '../models/cat_report_model.dart';
 import '../services/weight_measurement_service.dart';
 import '../services/litter_visit_service.dart';
 import '../services/weight_alert_service.dart';
+import '../other/firebase_id_formatter.dart';
 
 //////////////////////////////////////////CAT REPORT SERVICE//////////////////////////////////////////
 class CatReportService {
@@ -204,19 +205,29 @@ class CatReportService {
   }
 
 
+
+
   //////////////////////////////////////////SAVE REPORT//////////////////////////////////////////
   static Future<String> saveReport(
     SavedCatReport report,
   ) async {
 
-    // CREATE A NEW DOCUMENT UNDER THE CAT
-    final document = _reportCollection(report.catId).doc();
+    // GENERATE DOCUMENT ID USING REPORT DATE RANGE
+    final reportId = FirebaseIdFormatter.reportHistory(
+      startDate: report.startDate,
+      endDate: report.endDate,
+    );
+
+    // CREATE DOCUMENT UNDER THE CAT
+    final document = _reportCollection(report.catId).doc(reportId);
 
     // SAVE THE COMPLETE REPORT SNAPSHOT
     await document.set(report.toMap());
 
     return document.id;
   }
+
+
 
 
   //////////////////////////////////////////WATCH REPORT HISTORY//////////////////////////////////////////

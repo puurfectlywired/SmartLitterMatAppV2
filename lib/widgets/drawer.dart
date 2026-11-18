@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:smart_litter_mat/views/history/weight_alert_history.dart';
+import 'package:smart_litter_mat/views/history/cat_alert_history.dart';
 
 import '../views/home.dart'; 
 import '../views/profiles_cat/maintanence/all_cat_profiles.dart';
@@ -157,13 +157,13 @@ class MyDrawer extends StatelessWidget {
 
             // WEIGHT ALERT BUTTON
             ListTile(
-              title: const Text('Weight Alerts'),    //rename - weight change alerts?
+              title: const Text('Cat Specific Alerts'),    //rename - weight and frequency alerts
               onTap: () {
                 Navigator.pushReplacement(
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                        const WeightAlertHistoryPage(),
+                        const CatAlertHistoryPage(),
                     transitionDuration: Duration.zero,
                     reverseTransitionDuration: Duration.zero,
                   ),

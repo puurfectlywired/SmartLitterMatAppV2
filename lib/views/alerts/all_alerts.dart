@@ -6,11 +6,13 @@ import 'dart:async';
 import '../../models/cat_profile_model.dart';
 import '../../models/ammonia_model.dart';
 import '../../models/weight_alert_model.dart';
+import '../../models/frequency_alert_model.dart';
 
 //services
 import '../../services/cat_profile_service.dart';
 import '../../services/ammonia_service.dart';
 import '../../services/weight_alert_service.dart';
+import '../../services/frequency_alert_service.dart';
 
 //widgets
 import '../../widgets/app_bar.dart';
@@ -30,12 +32,20 @@ class AlertsPage extends StatefulWidget {
 ////////////////////////////////////////////ALERTS PAGE STATE//////////////////////////////////////////
 class _AlertsPageState extends State<AlertsPage> {
 
-  //weight listener
+  // weight alert listener
   StreamSubscription<List<WeightAlert>>? _weightSubscription;
   List<WeightAlert> weightAlerts = [];
-  String? weightLoadError;
 
-  //ammonia listener
+  // frequency alert listener
+  StreamSubscription<List<FrequencyAlert>>? _frequencySubscription;
+  List<FrequencyAlert> frequencyAlerts = [];
+
+  // cat alert loading
+  String? weightLoadError;
+  bool isLoadingCatAlerts = false;
+  int _catLoadVersion = 0;
+
+  //ammonia alert listener
   StreamSubscription<List<AmmoniaAlert>>? _ammoniaSubscription;
   String? selectedCatId;
   List<CatProfile> catProfiles = [];
@@ -55,6 +65,7 @@ class _AlertsPageState extends State<AlertsPage> {
   @override
   void dispose() {
     _weightSubscription?.cancel();
+    _frequencySubscription?.cancel();
     _ammoniaSubscription?.cancel();
     super.dispose();
   }
@@ -122,66 +133,132 @@ class _AlertsPageState extends State<AlertsPage> {
 
 
 
-  //////////////////////////////////////////LOAD WEIGHT ALERTS//////////////////////////////////////////
-  Future<void> _loadWeightAlerts(String? catId) async {
 
+  //////////////////////////////////////////LOAD CAT ALERTS//////////////////////////////////////////
+  Future<void> _loadCatAlerts(String? catId) async {
+
+    final int loadVersion = ++_catLoadVersion;
+
+    // CANCEL PREVIOUS CAT LISTENERS
     await _weightSubscription?.cancel();
-    _weightSubscription = null;
+    await _frequencySubscription?.cancel();
 
-    if (!mounted) return;
+    _weightSubscription = null;
+    _frequencySubscription = null;
+
+    if (!mounted || loadVersion != _catLoadVersion) return;
 
     setState(() {
       weightAlerts = [];
+      frequencyAlerts = [];
       weightLoadError = null;
+      isLoadingCatAlerts = catId != null;
     });
 
     // AMMONIA TAB SELECTED
     if (catId == null) return;
 
+    // CHECK BOTH ALERT TYPES
     try {
 
-      // CHECK EXISTING MEASUREMENTS FOR WEIGHT CHANGES
       await WeightAlertService.checkWeightHistory(catId);
 
-      if (!mounted || selectedCatId != catId) return;
-
-      // LISTEN FOR ACTIVE WEIGHT ALERTS
-      _weightSubscription =
-          WeightAlertService.watchAlerts(catId).listen(
-
-        (alerts) {
-
-          if (!mounted || selectedCatId != catId) return;
-
-          setState(() {
-            weightAlerts = alerts;
-            weightLoadError = null;
-          });
-        },
-
-        onError: (error) {
-
-          debugPrint('WEIGHT ALERT ERROR: $error');
-
-          if (!mounted || selectedCatId != catId) return;
-
-          setState(() {
-            weightLoadError = 'Unable to load weight alerts.';
-          });
-        },
-      );
+      await FrequencyAlertService.checkFrequencyHistory(catId);
 
     } catch (e) {
 
-      debugPrint('WEIGHT DETECTION ERROR: $e');
+      debugPrint('CAT ALERT DETECTION ERROR: $e');
 
-      if (!mounted || selectedCatId != catId) return;
+      if (!mounted ||
+          loadVersion != _catLoadVersion ||
+          selectedCatId != catId) {
+        return;
+      }
 
       setState(() {
-        weightLoadError = 'Unable to check weight measurements.';
+        weightLoadError = 'Unable to check cat health alerts.';
+        isLoadingCatAlerts = false;
       });
+
+      return;
     }
+
+    if (!mounted ||
+        loadVersion != _catLoadVersion ||
+        selectedCatId != catId) {
+      return;
+    }
+
+    // LISTEN FOR ACTIVE WEIGHT ALERTS
+    _weightSubscription =
+        WeightAlertService.watchAlerts(catId).listen(
+
+      (alerts) {
+
+        if (!mounted ||
+            loadVersion != _catLoadVersion ||
+            selectedCatId != catId) {
+          return;
+        }
+
+        setState(() {
+          weightAlerts = alerts;
+        });
+      },
+
+      onError: (error) {
+
+        debugPrint('WEIGHT ALERT ERROR: $error');
+
+        if (!mounted ||
+            loadVersion != _catLoadVersion ||
+            selectedCatId != catId) {
+          return;
+        }
+
+        setState(() {
+          weightLoadError = 'Unable to load weight alerts.';
+          isLoadingCatAlerts = false;
+        });
+      },
+    );
+
+    // LISTEN FOR ACTIVE FREQUENCY ALERTS
+    _frequencySubscription =
+        FrequencyAlertService.watchAlerts(catId).listen(
+
+      (alerts) {
+
+        if (!mounted ||
+            loadVersion != _catLoadVersion ||
+            selectedCatId != catId) {
+          return;
+        }
+
+        setState(() {
+          frequencyAlerts = alerts;
+          isLoadingCatAlerts = false;
+        });
+      },
+
+      onError: (error) {
+
+        debugPrint('FREQUENCY ALERT ERROR: $error');
+
+        if (!mounted ||
+            loadVersion != _catLoadVersion ||
+            selectedCatId != catId) {
+          return;
+        }
+
+        setState(() {
+          weightLoadError = 'Unable to load frequency alerts.';
+          isLoadingCatAlerts = false;
+        });
+      },
+    );
   }
+
 
 
 
@@ -450,38 +527,77 @@ class _AlertsPageState extends State<AlertsPage> {
 
     final colors = Theme.of(context).colorScheme;
 
-    // WEIGHT ALERTS
+    // CAT HEALTH ALERTS - weight and frequency
     if (selectedCatId != null) {
 
+      // ERROR LOADING ALERTS
       if (weightLoadError != null) {
         return Center(
           child: Text(weightLoadError!),
         );
       }
 
-      if (weightAlerts.isEmpty) {
+      // LOADING ALERTS
+      if (isLoadingCatAlerts) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+
+      // COMBINE WEIGHT AND FREQUENCY ALERTS
+      final List<Object> catAlerts = [
+        ...weightAlerts,
+        ...frequencyAlerts,
+      ];
+
+      // SORT BY TIMESTAMP - NEWEST FIRST
+      catAlerts.sort((a, b) {
+
+        final dateA = a is WeightAlert
+            ? a.timestamp
+            : (a as FrequencyAlert).timestamp;
+
+        final dateB = b is WeightAlert
+            ? b.timestamp
+            : (b as FrequencyAlert).timestamp;
+
+        return dateB.compareTo(dateA);
+      });
+
+      // NO ACTIVE CAT ALERTS
+      if (catAlerts.isEmpty) {
         return _buildEmptyPage();
       }
 
+      // DISPLAY ALL CAT ALERTS
       return ListView.separated(
         padding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 10,
         ),
 
-        itemCount: weightAlerts.length,
+        itemCount: catAlerts.length,
 
         separatorBuilder: (context, index) =>
             const SizedBox(height: 15),
 
         itemBuilder: (context, index) {
 
-          final alert = weightAlerts[index];
+          final alert = catAlerts[index];
 
-          return _buildWeightAlertCard(alert);
+          if (alert is WeightAlert) {
+            return _buildWeightAlertCard(alert);
+          }
+
+          if (alert is FrequencyAlert) {
+            return _buildFrequencyAlertCard(alert);
+          }
+
+          return const SizedBox.shrink();
         },
       );
     }
+
 
 
     // AMMONIA ALERTS
@@ -795,6 +911,148 @@ Widget _buildWeightAlertCard(WeightAlert alert) {
 }
 
 
+//////////////////////////////////////////FREQUENCY ALERT CARD//////////////////////////////////////////
+Widget _buildFrequencyAlertCard(FrequencyAlert alert) {
+
+  final colors = Theme.of(context).colorScheme;
+
+  final isIncrease = alert.type == 'increase';
+
+  return InkWell(
+    onTap: () => _acknowledgeFrequencyAlert(alert),
+
+    borderRadius: BorderRadius.circular(25),
+
+    child: Container(
+      padding: const EdgeInsets.all(20),
+
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(25),
+      ),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          Row(
+            children: [
+
+              Container(
+                width: 55,
+                height: 55,
+
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerHighest,
+                  shape: BoxShape.circle,
+                ),
+
+                child: Icon(
+                  Icons.bar_chart_rounded,
+                  color: colors.primary,
+                  size: 30,
+                ),
+              ),
+
+              const SizedBox(width: 15),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    Text(
+                      isIncrease
+                          ? 'Visit Frequency Increased'
+                          : 'Visit Frequency Decreased',
+
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: colors.onSurface,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'Litter box visits have '
+                      '${isIncrease ? "increased" : "decreased"} '
+                      'by ${alert.percentChange.abs().toStringAsFixed(1)}% '
+                      'compared to the previous seven-day average.',
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.4,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      '${alert.currentVisits} visits '
+                      '(Average: ${alert.averageVisits.toStringAsFixed(1)} visits/day)',
+
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Text(
+                      _formatDate(alert.timestamp),
+
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          Divider(
+            height: 1,
+            color: colors.outlineVariant,
+          ),
+
+          const SizedBox(height: 14),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+
+              Text(
+                'Tap to acknowledge',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: colors.primary,
+                ),
+              ),
+
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colors.primary,
+                size: 22,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+
   //////////////////////////////////////////ACKNOWLEDGE WEIGHT ALERT//////////////////////////////////////////
   Future<void> _acknowledgeWeightAlert(
     WeightAlert alert,
@@ -857,6 +1115,85 @@ Widget _buildWeightAlertCard(WeightAlert alert) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Weight alert moved to history.'),
+        ),
+      );
+
+    } catch (e) {
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to acknowledge alert: $e'),
+        ),
+      );
+    }
+  }
+
+
+
+  //////////////////////////////////////////ACKNOWLEDGE FREQUENCY ALERT//////////////////////////////////////////
+  Future<void> _acknowledgeFrequencyAlert(
+    FrequencyAlert alert,
+  ) async {
+
+    final colors = Theme.of(context).colorScheme;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: colors.surfaceContainerHigh,
+
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+
+        title: const Text(
+          'Acknowledge Frequency Alert?',
+          textAlign: TextAlign.center,
+        ),
+
+        content: const Text(
+          'This alert will be moved to the cat\'s '
+          'frequency alert history.',
+          textAlign: TextAlign.center,
+        ),
+
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+
+        actions: [
+
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.pop(dialogContext, true),
+
+            child: const Text('Acknowledge'),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || confirmed != true) return;
+
+    try {
+
+      await FrequencyAlertService.acknowledgeAlert(
+        catId: alert.catId,
+        alertId: alert.id,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Frequency alert moved to history.'),
         ),
       );
 
@@ -959,12 +1296,12 @@ Widget _buildWeightAlertCard(WeightAlert alert) {
     final bool selected = selectedCatId == catId;
 
     return GestureDetector(
-      onTap: () {     //change this to automatic loading alerts later
+      onTap: () {
         setState(() {
           selectedCatId = catId;
         });
 
-        _loadWeightAlerts(catId);
+        _loadCatAlerts(catId);
       },
 
       child: Padding(

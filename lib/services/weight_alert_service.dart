@@ -1,12 +1,11 @@
-//change later so it reads average weights instead on individual weights?
-
-
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/weight_alert_model.dart';
 import '../models/weight_measurement_model.dart';
+
+import '../other/firebase_id_formatter.dart';
 
 //////////////////////////////////////////WEIGHT ALERT SERVICE//////////////////////////////////////////
 class WeightAlertService {
@@ -164,8 +163,11 @@ class WeightAlertService {
 
       previousAlertType = alertType;
 
-      // CREATE A STABLE ID FOR THIS DETECTED EVENT
-      final alertId = '${current.id}_${alertType}';
+      // GENERATE ALERT DOCUMENT ID
+      final alertId = FirebaseIdFormatter.weightAlert(
+        type: alertType,
+        timestamp: current.timestamp,
+      );
 
       await _createWeightAlert(
         catId: catId,
@@ -193,18 +195,23 @@ class WeightAlertService {
 
     final alertRef = _alertsCollection(catId).doc(alertId);
 
-    final historyRef = _historyCollection(catId).doc(alertId);
+    // CHECK IF ALERT HAS ALREADY BEEN ACKNOWLEDGED
+    final historySnapshot = await _historyCollection(catId)
+        .where('sourceAlertId', isEqualTo: alertId)
+        .limit(1)
+        .get();
 
-    // PREVENT DUPLICATES IN ACTIVE ALERTS AND HISTORY
+    if (historySnapshot.docs.isNotEmpty) {
+      return;
+    }
+
+    // CREATE ALERT ONLY IF IT DOES NOT ALREADY EXIST
     await _firestore.runTransaction((transaction) async {
 
       final activeSnapshot =
           await transaction.get(alertRef);
 
-      final historySnapshot =
-          await transaction.get(historyRef);
-
-      if (activeSnapshot.exists || historySnapshot.exists) {
+      if (activeSnapshot.exists) {
         return;
       }
 
@@ -252,10 +259,10 @@ class WeightAlertService {
         .snapshots()
         .map((snapshot) {
 
-          return snapshot.docs
-              .map(WeightAlert.fromFirestore)
-              .toList();
-        });
+      return snapshot.docs
+          .map(WeightAlert.fromFirestore)
+          .toList();
+    });
   }
 
 
@@ -268,8 +275,7 @@ class WeightAlertService {
     final alertRef =
         _alertsCollection(catId).doc(alertId);
 
-    final historyRef =
-        _historyCollection(catId).doc(alertId);
+    final acknowledgedAt = DateTime.now();
 
     // MOVE ALERT TO HISTORY IN ONE TRANSACTION
     await _firestore.runTransaction((transaction) async {
@@ -277,29 +283,39 @@ class WeightAlertService {
       final alertSnapshot =
           await transaction.get(alertRef);
 
-      final historySnapshot =
-          await transaction.get(historyRef);
-
       // ALREADY ACKNOWLEDGED
-      if (historySnapshot.exists) {
-
-        if (alertSnapshot.exists) {
-          transaction.delete(alertRef);
-        }
-
-        return;
-      }
-
       if (!alertSnapshot.exists) {
-        throw Exception('Weight alert no longer exists.');
+        return;
       }
 
       final alertData = alertSnapshot.data()!;
 
+      // GENERATE HISTORY DOCUMENT ID
+      final historyId =
+          FirebaseIdFormatter.weightAlertHistory(
+        type: alertData['type'] as String,
+        acknowledgedAt: acknowledgedAt,
+      );
+
+      final historyRef =
+          _historyCollection(catId).doc(historyId);
+
+      // PREVENT OVERWRITING EXISTING HISTORY
+      final historySnapshot =
+          await transaction.get(historyRef);
+
+      if (historySnapshot.exists) {
+        throw Exception(
+          'Weight alert history ID already exists.',
+        );
+      }
+
+      // MOVE ALERT TO HISTORY
       transaction.set(historyRef, {
         ...alertData,
+        'sourceAlertId': alertId,
         'status': 'acknowledged',
-        'acknowledgedAt': FieldValue.serverTimestamp(),
+        'acknowledgedAt': Timestamp.fromDate(acknowledgedAt),
       });
 
       transaction.delete(alertRef);
@@ -332,9 +348,9 @@ class WeightAlertService {
         .snapshots()
         .map((snapshot) {
 
-          return snapshot.docs
-              .map(WeightAlert.fromFirestore)
-              .toList();
-        });
+      return snapshot.docs
+          .map(WeightAlert.fromFirestore)
+          .toList();
+    });
   }
 }

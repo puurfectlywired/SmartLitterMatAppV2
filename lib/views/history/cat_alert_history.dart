@@ -13,16 +13,16 @@ import '../../widgets/app_bar.dart';
 import '../../widgets/drawer.dart';
 
 //////////////////////////////////////////WEIGHT HISTORY PAGE//////////////////////////////////////////
-class WeightAlertHistoryPage extends StatefulWidget {
-  const WeightAlertHistoryPage({super.key});
+class CatAlertHistoryPage extends StatefulWidget {
+  const CatAlertHistoryPage({super.key});
 
   @override
-  State<WeightAlertHistoryPage> createState() =>
-      _WeightAlertHistoryPageState();
+  State<CatAlertHistoryPage> createState() =>
+      _CatAlertHistoryPageState();
 }
 
 //////////////////////////////////////////WEIGHT HISTORY STATE//////////////////////////////////////////
-class _WeightAlertHistoryPageState extends State<WeightAlertHistoryPage> {
+class _CatAlertHistoryPageState extends State<CatAlertHistoryPage> {
 
   String? selectedCatId;
 
@@ -78,7 +78,7 @@ class _WeightAlertHistoryPageState extends State<WeightAlertHistoryPage> {
       backgroundColor: colors.surface,
 
       appBar: const MyAppBar(
-        title: 'Weight Alert History',
+        title: 'Cat Alert History',
         showBackButton: false,
       ),
 

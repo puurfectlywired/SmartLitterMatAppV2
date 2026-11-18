@@ -61,7 +61,7 @@ class ProfileService {
   static Future<void> addProfile(CatProfile cat) async {
 
     //SAVE NEW CAT TO FIRESTORE
-    await _cats.doc(cat.id).set({
+    await _cats.doc(cat.name.trim()).set({
       'name': cat.name,
       'birthday': cat.birthday.toIso8601String(),
       'breed': cat.breed,

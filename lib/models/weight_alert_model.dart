@@ -2,7 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 //////////////////////////////////////////WEIGHT ALERT MODEL//////////////////////////////////////////
-class WeightAlert {
+class WeightAlert { 
   final String id;
   final String catId;
   final String type;

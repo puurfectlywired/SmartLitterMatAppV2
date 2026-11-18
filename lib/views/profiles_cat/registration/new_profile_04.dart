@@ -69,7 +69,7 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
 
       // CREATE CAT PROFILE
       final newCat = CatProfile(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        id: registration.name.trim(),
         name: registration.name.trim(),
         birthday: registration.birthday!,
         breed: registration.breed,
