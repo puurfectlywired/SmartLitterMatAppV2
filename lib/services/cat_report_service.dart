@@ -7,6 +7,7 @@ import '../models/cat_report_model.dart';
 //services
 import '../services/weight_measurement_service.dart';
 import '../services/litter_visit_service.dart';
+import '../services/weight_alert_service.dart';
 
 //////////////////////////////////////////CAT REPORT SERVICE//////////////////////////////////////////
 class CatReportService {
@@ -64,9 +65,6 @@ class CatReportService {
 
 
     //////////////////////////////////////////WEIGHT MEASUREMENTS//////////////////////////////////////////
-
-    // LOAD WEIGHT MEASUREMENTS FROM FIRESTORE
-    // users/{uid}/cats/{catId}/weight_measurements
     final weightMeasurements =
         await WeightService.getWeightHistory(
       catId: catId,
@@ -88,9 +86,6 @@ class CatReportService {
 
 
     //////////////////////////////////////////LITTER BOX ACTIVITY//////////////////////////////////////////
-
-    // LOAD LITTER VISITS FROM FIRESTORE
-    // users/{uid}/cats/{catId}/litter_visits
     final litterVisits =
         await LitterVisitService.getVisitHistory(
       catId: catId,
@@ -118,7 +113,7 @@ class CatReportService {
         daysWithVisits == 0
             ? null
             : totalVisits! / daysWithVisits;
-
+ 
     // HIGHEST DAILY VISIT COUNT
     final int? highestDailyVisits =
         litterVisits.isEmpty
@@ -130,11 +125,63 @@ class CatReportService {
                 );
 
 
-    //////////////////////////////////////////HEALTH ALERTS//////////////////////////////////////////
 
-    // TODO: LOAD WEIGHT AND FREQUENCY ALERTS
-    // Filter by catId, startDate, and endDate.
-    // Do not include ammonia alerts.
+  //////////////////////////////////////////HEALTH ALERTS//////////////////////////////////////////
+  // LOAD ACTIVE AND ACKNOWLEDGED WEIGHT ALERTS
+  final weightAlertResults = await Future.wait([
+    WeightAlertService.getAlerts(catId),
+    WeightAlertService.getAlertHistory(catId),
+  ]);
+
+  final activeWeightAlerts = weightAlertResults[0];
+  final acknowledgedWeightAlerts = weightAlertResults[1];
+
+  // COMBINE ALERTS AND PREVENT DUPLICATES BY ID
+  final allWeightAlerts = {
+    for (final alert in acknowledgedWeightAlerts)
+      alert.id: alert,
+    for (final alert in activeWeightAlerts)
+      alert.id: alert,
+  }.values;
+
+  // CONVERT WEIGHT ALERTS TO REPORT ALERTS
+  final List<CatReportAlert> reportAlerts = [];
+
+  for (final alert in allWeightAlerts) {
+
+    // ONLY INCLUDE ALERTS WITHIN REPORT DATE RANGE
+    if (alert.timestamp.isBefore(reportStartDate) ||
+        alert.timestamp.isAfter(reportEndDate)) {
+      continue;
+    }
+
+    // DETERMINE WEIGHT ALERT TITLE
+    final String title;
+
+    if (alert.type == 'gain') {
+      title = 'Weight Gain: '
+          '+${alert.weightChange.abs().toStringAsFixed(1)} lb';
+    } else if (alert.type == 'loss') {
+      title = 'Weight Loss: '
+          '-${alert.weightChange.abs().toStringAsFixed(1)} lb';
+    } else {
+      title = 'Weight Change Detected';
+    }
+
+    reportAlerts.add(
+      CatReportAlert(
+        id: alert.id,
+        type: CatReportAlertType.weight,
+        title: title,
+        timestamp: alert.timestamp,
+      ),
+    );
+  }
+
+  // SORT ALERTS BY DATE - NEWEST FIRST
+  reportAlerts.sort(
+    (a, b) => b.timestamp.compareTo(a.timestamp),
+  );
 
 
     //////////////////////////////////////////RETURN REPORT DATA//////////////////////////////////////////
@@ -149,6 +196,9 @@ class CatReportService {
       totalVisits: totalVisits,
       averageVisitsPerDay: averageVisitsPerDay,
       highestDailyVisits: highestDailyVisits,
+
+      // WEIGHT AND FREQUENCY ALERTS
+      alerts: reportAlerts,
 
     );
   }

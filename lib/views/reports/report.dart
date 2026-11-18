@@ -412,8 +412,7 @@ Future<void> _saveReport(CatReportData data) async {
                 const _VerticalDivider(),
 
                 _ReportStat(
-                  value: '—',   //replace with line below later
-                  //value: report.alerts.length.toString(),
+                  value: report.alerts.length.toString(),
                   label: 'Alerts',
                 ),
               ],
