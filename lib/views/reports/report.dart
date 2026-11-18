@@ -554,12 +554,14 @@ Future<void> _saveReport(CatReportData data) async {
 
           const SizedBox(height: 25),
 
-          // SAVE REPORT BUTTON
-          SizedBox(
-            width: double.infinity,
-            height: 55,
+          // SAVE REPORT BUTTON - ONLY SHOW FOR NEW REPORTS
+          if (widget.savedReport == null) ...[
 
-            child: ElevatedButton.icon(
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+
+              child: ElevatedButton.icon(
               onPressed: isSaving || hasSaved
                   ? null
                   : () => _saveReport(report),
@@ -604,7 +606,7 @@ Future<void> _saveReport(CatReportData data) async {
               ),
             ),
           ),
-
+        ],
 
           const SizedBox(height: 25),
         ],
