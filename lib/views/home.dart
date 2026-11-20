@@ -1,6 +1,5 @@
 
 import 'package:flutter/material.dart';
-import 'dart:io';
 
 //pages
 import 'profiles_cat/registration/new_profile_01.dart';
@@ -305,28 +304,41 @@ class _HomePageState extends State<HomePage> {
                                 children: [
 
                                   // CAT IMAGE
-                                  CircleAvatar(
-                                    radius: 28,
-                                    backgroundColor: Theme.of(context)
-                                        .colorScheme.surfaceContainerHighest,
+                                  ClipOval(
+                                    child: Container(
+                                      width: 56,
+                                      height: 56,
+                                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
 
-                                    backgroundImage:
-                                        cat.imagePath != null &&
-                                        cat.imagePath!.isNotEmpty &&
-                                        File(cat.imagePath!).existsSync()
-                                            ? FileImage(File(cat.imagePath!))
-                                            : null,
+                                      child: cat.imagePath != null &&
+                                              cat.imagePath!.startsWith('https://')
 
-                                    child: cat.imagePath == null ||
-                                            cat.imagePath!.isEmpty ||
-                                            !File(cat.imagePath!).existsSync()
-                                        ? Icon(
-                                            Icons.pets,
-                                            size: 30,
-                                            color: Theme.of(context).colorScheme.primary,
-                                          )
-                                        : null,
-                                  ),
+                                          // IMAGE FROM FIREBASE STORAGE
+                                          ? Image.network(
+                                              cat.imagePath!,
+                                              width: 56,
+                                              height: 56,
+                                              fit: BoxFit.cover,
+
+                                              errorBuilder: (context, error, stackTrace) {
+                                                debugPrint('ERROR LOADING HOME CAT IMAGE: $error');
+
+                                                return Icon(
+                                                  Icons.pets,
+                                                  size: 30,
+                                                  color: Theme.of(context).colorScheme.primary,
+                                                );
+                                              },
+                                            )
+
+                                          // DEFAULT PLACEHOLDER
+                                          : Icon(
+                                              Icons.pets,
+                                              size: 30,
+                                              color: Theme.of(context).colorScheme.primary,
+                                            ),
+                                      ),
+                                    ),
 
                                   const SizedBox(width: 15),
 

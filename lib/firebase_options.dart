@@ -57,7 +57,6 @@ class DefaultFirebaseOptions {
     projectId: 'smartlittermat',
     storageBucket: 'smartlittermat.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyApDqMScWxZB4QRSqQNvxTCFZpvmKOKGco',
     appId: '1:432767535806:ios:677b829d44cb35a1b7ecef',
@@ -66,7 +65,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'smartlittermat.firebasestorage.app',
     iosBundleId: 'com.example.smartMatApp',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyApDqMScWxZB4QRSqQNvxTCFZpvmKOKGco',
     appId: '1:432767535806:ios:677b829d44cb35a1b7ecef',

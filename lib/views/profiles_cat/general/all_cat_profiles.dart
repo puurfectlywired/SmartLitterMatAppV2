@@ -264,30 +264,39 @@ Future<void> _addCatProfile() async {
                 vertical: 8,
               ),
 
-              // CAT IMAGE
-              leading: ClipOval(
-                child: SizedBox(
-                  width: 55,
-                  height: 55,
+              
+                // CAT IMAGE
+                leading: ClipOval(
+                  child: SizedBox(
+                    width: 55,
+                    height: 55,
 
-                  child: cat.imagePath != null
-                      ? Image.file(
-                          File(cat.imagePath!),
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          color: Theme.of(context)
-                              .colorScheme.surfaceContainerHighest,
+                    child: cat.imagePath != null &&
+                            cat.imagePath!.startsWith('https://')
 
-                          child: Icon(
+                        ? Image.network(
+                            cat.imagePath!,
+                            fit: BoxFit.cover,
+
+                            errorBuilder: (context, error, stackTrace) {
+                              debugPrint('ERROR LOADING CAT IMAGE: $error');
+
+                              return Icon(
+                                Icons.pets,
+                                size: 30,
+                                color: Theme.of(context).colorScheme.primary,
+                              );
+                            },
+                          )
+
+                        : Icon(
                             Icons.pets,
                             size: 30,
-                            color: Theme.of(context)
-                                .colorScheme.primary,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                        ),
+                  ),
                 ),
-              ),
+
 
               // CAT NAME
               title: Text(

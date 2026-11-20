@@ -1,9 +1,13 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 //models
 import '../models/cat_profile_model.dart';
+
+//services
+import '../services/cat_image_service.dart';
 
 
 ///////////////////////////////////////////CAT PROFILE SERVICE///////////////////////////////////////////
@@ -60,17 +64,42 @@ class ProfileService {
   ///////////////////////////////////////////ADD CAT PROFILE///////////////////////////////////////////
   static Future<void> addProfile(CatProfile cat) async {
 
-    //SAVE NEW CAT TO FIRESTORE
-    await _cats.doc(cat.name.trim()).set({
+    final catId = cat.name.trim();
+
+    String? imageUrl;
+
+    // UPLOAD IMAGE TO FIREBASE STORAGE
+    if (cat.imagePath != null && cat.imagePath!.isNotEmpty) {
+
+      debugPrint('UPLOADING IMAGE FOR: $catId');
+
+      imageUrl = await CatImageService.uploadCatImage(
+        catId: catId,
+        imagePath: cat.imagePath!,
+      );
+
+      debugPrint('IMAGE UPLOADED SUCCESSFULLY');
+
+    } else {
+
+      debugPrint('NO IMAGE PATH PROVIDED FOR: $catId');
+    }
+
+    // SAVE CAT PROFILE TO FIRESTORE
+    await _cats.doc(catId).set({
       'name': cat.name,
       'birthday': cat.birthday.toIso8601String(),
       'breed': cat.breed,
       'sex': cat.sex,
       'weight': cat.weight,
-      'imagePath': cat.imagePath,
+      'imagePath': imageUrl,
       'createdAt': FieldValue.serverTimestamp(),
     });
+
+    debugPrint('CAT PROFILE SAVED TO FIRESTORE');
   }
+
+
 
 
   ///////////////////////////////////////////UPDATE CAT PROFILE///////////////////////////////////////////
@@ -92,7 +121,11 @@ class ProfileService {
   ///////////////////////////////////////////DELETE CAT PROFILE///////////////////////////////////////////
   static Future<void> deleteProfile(String id) async {
 
-    //DELETE CAT DOCUMENT FROM FIRESTORE
+    // DELETE CAT IMAGE FROM FIREBASE STORAGE
+    await CatImageService.deleteCatImage(id);
+
+    // DELETE CAT DOCUMENT FROM FIRESTORE
     await _cats.doc(id).delete();
   }
+
 }

@@ -1,5 +1,4 @@
 
-//////////////////////////////////////////FIREBASE ID FORMATTER//////////////////////////////////////////
 
 class FirebaseIdFormatter {
 
@@ -76,6 +75,13 @@ class FirebaseIdFormatter {
   }
 
 
+
+
+
+
+
+
+
   //////////////////////////////////////////AMMONIA ALERT ID//////////////////////////////////////////
   // EXAMPLE: elevated_21.95%
   static String ammoniaAlert(double percentIncrease) {
@@ -92,17 +98,17 @@ class FirebaseIdFormatter {
   }
 
 
+
+
+
+
+
+
+
+
   //////////////////////////////////////////WEIGHT MEASUREMENT ID//////////////////////////////////////////
   // EXAMPLE: nov-17-2026_8:18:32pm
   static String weightMeasurement(DateTime timestamp) {
-
-    return formatDateTimeSeconds(timestamp);
-  }
-
-
-  //////////////////////////////////////////LITTER VISIT ID//////////////////////////////////////////
-  // EXAMPLE: nov-17-2026_8:18:32pm
-  static String litterVisit(DateTime timestamp) {
 
     return formatDateTimeSeconds(timestamp);
   }
@@ -130,6 +136,23 @@ class FirebaseIdFormatter {
   }
 
 
+
+
+
+
+
+
+
+
+
+  //////////////////////////////////////////LITTER VISIT ID//////////////////////////////////////////
+  // EXAMPLE: nov-17-2026_8:18:32pm
+  static String litterVisit(DateTime timestamp) {
+
+    return formatDateTimeSeconds(timestamp);
+  }
+
+
   //////////////////////////////////////////FREQUENCY ALERT ID//////////////////////////////////////////
   // EXAMPLE: increase_nov-14-2026
   static String frequencyAlert({
@@ -150,6 +173,17 @@ class FirebaseIdFormatter {
 
     return '${type.trim().toLowerCase()}_acknowledged_${formatDateTime(acknowledgedAt)}';
   }
+
+
+
+
+
+
+
+
+
+
+
 
 
   //////////////////////////////////////////REPORT HISTORY ID//////////////////////////////////////////

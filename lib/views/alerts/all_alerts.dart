@@ -832,19 +832,19 @@ Widget _buildWeightAlertCard(WeightAlert alert) {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    // const SizedBox(height: 8),
 
-                    Text(
-                      'A weight ${isGain ? "gain" : "loss"} '
-                      'of ${alert.weightChange.abs().toStringAsFixed(1)} lb '
-                      'was detected over approximately one week.',
+                    // Text(
+                    //   'A weight ${isGain ? "gain" : "loss"} '
+                    //   'of ${alert.weightChange.abs().toStringAsFixed(1)} lb '
+                    //   'was detected over approximately one week.',
 
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.4,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
+                    //   style: TextStyle(
+                    //     fontSize: 14,
+                    //     height: 1.4,
+                    //     color: colors.onSurfaceVariant,
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 8),
 
@@ -915,7 +915,6 @@ Widget _buildWeightAlertCard(WeightAlert alert) {
 Widget _buildFrequencyAlertCard(FrequencyAlert alert) {
 
   final colors = Theme.of(context).colorScheme;
-
   final isIncrease = alert.type == 'increase';
 
   return InkWell(
@@ -973,20 +972,20 @@ Widget _buildFrequencyAlertCard(FrequencyAlert alert) {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    // const SizedBox(height: 8),
 
-                    Text(
-                      'Litter box visits have '
-                      '${isIncrease ? "increased" : "decreased"} '
-                      'by ${alert.percentChange.abs().toStringAsFixed(1)}% '
-                      'compared to the previous seven-day average.',
+                    // Text(
+                    //   'Litter box visits have '
+                    //   '${isIncrease ? "increased" : "decreased"} '
+                    //   'by ${alert.percentChange.abs().toStringAsFixed(1)}% '
+                    //   'compared to the previous seven-day average.',
 
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.4,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
+                    //   style: TextStyle(
+                    //     fontSize: 14,
+                    //     height: 1.4,
+                    //     color: colors.onSurfaceVariant,
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 8),
 

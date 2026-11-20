@@ -78,8 +78,14 @@ class _NewProfilePage04State extends State<NewProfilePage04> {
         imagePath: registration.imagePath,
       );
 
+      // CHECK IMAGE BEFORE SAVING
+      debugPrint('CREATING CAT: ${newCat.name}');
+      debugPrint('CAT IMAGE PATH: ${newCat.imagePath}');
+
       // SAVE PROFILE
       await ProfileService.addProfile(newCat);
+
+      debugPrint('CAT PROFILE SAVE COMPLETED');
 
       if (!mounted) return;
 

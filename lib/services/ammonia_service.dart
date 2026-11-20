@@ -6,6 +6,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/ammonia_model.dart';
 
 
+//other
+import '../other/firebase_id_formatter.dart';
+
+
 
 //////////////////////////////////////////AMMONIA SERVICE//////////////////////////////////////////
 class AmmoniaService {
@@ -114,12 +118,19 @@ class AmmoniaService {
         .collection('active_alerts')
         .doc(alertId);
 
-    // USER'S ALERT HISTORY
-    final historyRef = _firestore
+    // USER'S ALERT HISTORY COLLECTION
+    final historyCollection = _firestore
         .collection('users')
         .doc(user.uid)
-        .collection('alert_history')
-        .doc(alertId);
+        .collection('alert_history');
+
+    // USE SAME TIMESTAMP FOR DOCUMENT ID AND FIELD
+    final cleanedAt = DateTime.now();
+
+    // GENERATE FORMATTED HISTORY ID
+    final historyId = FirebaseIdFormatter.ammoniaHistory(cleanedAt);
+
+    final historyRef = historyCollection.doc(historyId);
 
     // MOVE ALERT USING A TRANSACTION
     await _firestore.runTransaction((transaction) async {
@@ -129,12 +140,9 @@ class AmmoniaService {
 
       // PREVENT DUPLICATE HISTORY ENTRIES
       if (historySnapshot.exists) {
-
-        if (alertSnapshot.exists) {
-          transaction.delete(alertRef);
-        }
-
-        return;
+        throw Exception(
+          'An ammonia alert was already cleaned at this time.',
+        );
       }
 
       if (!alertSnapshot.exists) {
@@ -147,13 +155,14 @@ class AmmoniaService {
       transaction.set(historyRef, {
         ...alertData,
         'status': 'cleaned',
-        'cleaned_at': FieldValue.serverTimestamp(),
+        'cleaned_at': Timestamp.fromDate(cleanedAt),
       });
 
       // REMOVE ORIGINAL ACTIVE ALERT
       transaction.delete(alertRef);
     });
   }
+
 
 
 

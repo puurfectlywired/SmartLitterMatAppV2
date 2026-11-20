@@ -355,64 +355,56 @@ class _FullProfilePageState extends State<FullProfilePage> {
       endDrawer: const MyDrawer(),
       
 
-      //SCROLLABLE PAGE
-      body: Column(
-        children: [
+      // SCROLLABLE PAGE
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
 
-          // CAT IMAGE + BACK BUTTON + MENU BUTTON
-          Stack(
-            children: [
+            // CAT IMAGE + MENU BUTTON
+            Stack(
+              children: [
 
+              
               // CAT IMAGE
               Container(
                 width: double.infinity,
                 height: 250,
-                color: Colors.grey[200],
+                color: colors.surfaceContainerHighest,
 
-                // child: cat.imagePath == null
-                //     ? const Center(
-                //         child: Icon(
-                //           Icons.add_a_photo,
-                //           size: 60,
-                //           color: Colors.grey,
-                //         ),
-                //       )
-                //     : Image.file(
-                //         File(cat.imagePath!),
-                //         width: double.infinity,
-                //         height: 250,
-                //         fit: BoxFit.cover,
-                //       ),
-                
-                //temp replace of ^
-                child: cat.imagePath == null
-                ? const Center(
-                    child: Icon(
-                      Icons.add_a_photo,
-                      size: 60,
-                      color: Colors.grey,
-                    ),
-                  )
-                : Image.file(
-                    File(cat.imagePath!),
-                    width: double.infinity,
-                    height: 250,
-                    fit: BoxFit.cover,
+                child: cat.imagePath != null &&
+                        cat.imagePath!.startsWith('https://')
 
-                    errorBuilder: (context, error, stackTrace) {
-                      debugPrint('ERROR LOADING CAT IMAGE: $error');
-                      debugPrint('IMAGE PATH: ${cat.imagePath}');
+                    // IMAGE FROM FIREBASE STORAGE
+                    ? Image.network(
+                        cat.imagePath!,
+                        width: double.infinity,
+                        height: 250,
+                        fit: BoxFit.cover,
 
-                      return const Center(
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint('ERROR LOADING CAT IMAGE: $error');
+
+                          return const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 60,
+                              color: Colors.red,
+                            ),
+                          );
+                        },
+                      )
+
+                    // DEFAULT PLACEHOLDER
+                    : Center(
                         child: Icon(
-                          Icons.broken_image,
+                          Icons.add_a_photo,
                           size: 60,
-                          color: Colors.red,
+                          color: colors.primary,
                         ),
-                      );
-                    },
-                  ),
+                      ),
               ),
+
 
               // HAMBURGER MENU
               Positioned(
@@ -437,15 +429,14 @@ class _FullProfilePageState extends State<FullProfilePage> {
           ),
 
 
-          //SCROLLABLE CONTENT
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 25,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          // PROFILE CONTENT
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 25,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
 
                   const SizedBox(height: 15),
 
@@ -758,8 +749,8 @@ class _FullProfilePageState extends State<FullProfilePage> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
 
       //BOTTOM NAVIGATION

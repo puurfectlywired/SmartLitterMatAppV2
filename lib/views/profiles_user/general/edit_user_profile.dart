@@ -305,27 +305,6 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
 
                 const SizedBox(height: 35),
 
-                // ACCOUNT ICON
-                Center(
-                  child: Container(
-                    width: 150,
-                    height: 150,
-
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: colors.surfaceContainerHighest,
-                    ),
-
-                    child: Icon(
-                      Icons.person_outline,
-                      size: 75,
-                      color: colors.primary,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 35),
-
                 ////////////////////////////////////ACCOUNT INFORMATION CARD////////////////////////////////////
                 Container(
                   padding: const EdgeInsets.all(20),

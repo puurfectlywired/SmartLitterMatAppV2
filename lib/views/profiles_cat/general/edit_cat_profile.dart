@@ -5,13 +5,13 @@ import 'dart:io';
 //images
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
-import '../../../services/local_image_service.dart';
 
 // MODELS
 import '../../../models/cat_profile_model.dart';
 
 // SERVICES
 import '../../../services/cat_profile_service.dart';
+import '../../../services/cat_image_service.dart';
 
 // OTHER
 //import '../../../other/global_variables.dart';
@@ -41,6 +41,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   bool isSaving = false;
 
   String? selectedImagePath;
+  String? newImagePath;
+
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -95,8 +97,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
   }
 
+
   //////////////////////////////////////////SAVE CHANGES//////////////////////////////////////////
   Future<void> _saveChanges() async {
+
     if (isSaving) return;
 
     final name = nameController.text.trim();
@@ -106,12 +110,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
         weight == null ||
         !weight.isFinite ||
         weight <= 0 ||
-        selectedSex.isEmpty)  {
+        selectedSex.isEmpty) {
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter valid profile information.'),
         ),
       );
+
       return;
     }
 
@@ -120,6 +126,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
 
     try {
+
+      // KEEP EXISTING IMAGE IF NO NEW PHOTO WAS SELECTED
+      String? imagePath = widget.cat.imagePath;
+
+      // UPLOAD NEW PHOTO TO FIREBASE STORAGE
+      if (newImagePath != null) {
+
+        imagePath = await CatImageService.uploadCatImage(
+          catId: widget.cat.id,
+          imagePath: newImagePath!,
+        );
+      }
+
+      // CREATE UPDATED CAT PROFILE
       final updatedCat = CatProfile(
         id: widget.cat.id,
         name: name,
@@ -127,17 +147,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
         breed: breedController.text.trim(),
         sex: selectedSex,
         weight: weight,
-        imagePath: selectedImagePath,
+        imagePath: imagePath,
       );
 
       // UPDATE EXISTING CAT PROFILE IN FIREBASE
       await ProfileService.updateProfile(updatedCat);
 
+      // CLEAR PREVIOUS IMAGE FROM CACHE
+      if (widget.cat.imagePath != null &&
+          widget.cat.imagePath!.startsWith('https://')) {
+
+        await NetworkImage(widget.cat.imagePath!).evict();
+      }
+
       if (!mounted) return;
 
       // RETURN UPDATED CAT TO FULL PROFILE PAGE
       Navigator.pop(context, updatedCat);
+
     } catch (e) {
+
       debugPrint('ERROR UPDATING PROFILE: $e');
 
       if (!mounted) return;
@@ -147,7 +176,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
           content: Text('Could not update cat profile.'),
         ),
       );
+
     } finally {
+
       if (mounted) {
         setState(() {
           isSaving = false;
@@ -155,6 +186,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
     }
   }
+
 
 
   //////////////////////////////////////////EDIT FIELD//////////////////////////////////////////
@@ -201,69 +233,68 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
 
-//////////////////////////////////////////SELECT PROFILE PHOTO//////////////////////////////////////////
-Future<void> _selectProfilePhoto() async {
-  try {
 
-    // OPEN PHOTO LIBRARY
-    final XFile? pickedImage = await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
+  //////////////////////////////////////////SELECT PROFILE PHOTO//////////////////////////////////////////
+  Future<void> _selectProfilePhoto() async {
 
-    if (pickedImage == null) return;
+    try {
 
-    // CROP IMAGE
-    final CroppedFile? croppedImage = await ImageCropper().cropImage(
-      sourcePath: pickedImage.path,
+      // OPEN PHOTO LIBRARY
+      final XFile? pickedImage = await _picker.pickImage(
+        source: ImageSource.gallery,
+      );
 
-      uiSettings: [
+      if (pickedImage == null) return;
 
-        // IOS CIRCULAR CROPPER
-        IOSUiSettings(
-          title: 'Adjust Photo',
-          cropStyle: CropStyle.circle,
-          aspectRatioLockEnabled: true,
-          resetAspectRatioEnabled: false,
+      // CROP IMAGE
+      final CroppedFile? croppedImage =
+          await ImageCropper().cropImage(
+        sourcePath: pickedImage.path,
+
+        compressFormat: ImageCompressFormat.jpg,
+
+        uiSettings: [
+
+          // IOS CIRCULAR CROPPER
+          IOSUiSettings(
+            title: 'Adjust Photo',
+            cropStyle: CropStyle.circle,
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+
+          // ANDROID CIRCULAR CROPPER
+          AndroidUiSettings(
+            toolbarTitle: 'Adjust Photo',
+            cropStyle: CropStyle.circle,
+            lockAspectRatio: true,
+            initAspectRatio: CropAspectRatioPreset.square,
+          ),
+        ],
+      );
+
+      if (croppedImage == null || !mounted) return;
+
+      // KEEP NEW PHOTO TEMPORARILY UNTIL SAVED
+      setState(() {
+        newImagePath = croppedImage.path;
+        selectedImagePath = croppedImage.path;
+      });
+
+    } catch (e) {
+
+      debugPrint('ERROR SELECTING PROFILE PHOTO: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not select profile photo.'),
         ),
-
-        // ANDROID CIRCULAR CROPPER
-        AndroidUiSettings(
-          toolbarTitle: 'Adjust Photo',
-          cropStyle: CropStyle.circle,
-          lockAspectRatio: true,
-          initAspectRatio: CropAspectRatioPreset.square,
-        ),
-      ],
-    );
-
-    if (croppedImage == null || !mounted) return;
-
-    // SAVE IMAGE TO APP'S DOCUMENTS DIRECTORY
-    final savedImagePath = await LocalImageService.saveCatImage(
-      croppedImage.path,
-    );
-
-    if (!mounted) return;
-
-    // UPDATE PROFILE PHOTO PREVIEW
-    setState(() {
-      selectedImagePath = savedImagePath;
-    });
-
-    debugPrint('UPDATED CAT IMAGE SAVED TO: $savedImagePath');
-
-  } catch (e) {
-    debugPrint('ERROR SELECTING PROFILE PHOTO: $e');
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Could not select profile photo.'),
-      ),
-    );
+      );
+    }
   }
-}
+
 
   //////////////////////////////////////////BUILD PAGE//////////////////////////////////////////
   @override
@@ -287,13 +318,8 @@ Future<void> _selectProfilePhoto() async {
         ),
         children: [
 
-          //const SizedBox(height: 12),
-
           Text(
-            //keep it populated with the name?
             "Let's update ${widget.cat.name}'s information",
-            //or not because the name can be changed?
-            //"Let's update your cat's information",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 17,
@@ -322,16 +348,47 @@ Future<void> _selectProfilePhoto() async {
                     ),
 
                     child: ClipOval(
-                      child: selectedImagePath != null
+                      child: newImagePath != null
+
+                          // NEWLY SELECTED PHOTO (TEMPORARY LOCAL FILE)
                           ? Image.file(
-                              File(selectedImagePath!),
+                              File(newImagePath!),
                               fit: BoxFit.cover,
+                              width: 150,
+                              height: 150,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.pets,
+                                  size: 75,
+                                  color: colors.primary,
+                                );
+                              },
                             )
-                          : Icon(
-                              Icons.pets,
-                              size: 75,
-                              color: colors.primary,
-                            ),
+
+                          // EXISTING PHOTO FROM FIREBASE STORAGE
+                          : selectedImagePath != null &&
+                                  selectedImagePath!.startsWith('https://')
+
+                              ? Image.network(
+                                  selectedImagePath!,
+                                  fit: BoxFit.cover,
+                                  width: 150,
+                                  height: 150,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.pets,
+                                      size: 75,
+                                      color: colors.primary,
+                                    );
+                                  },
+                                )
+
+                              // DEFAULT PLACEHOLDER
+                              : Icon(
+                                  Icons.pets,
+                                  size: 75,
+                                  color: colors.primary,
+                                ),
                     ),
                   ),
 

@@ -8,7 +8,6 @@ import '../../../widgets/registration_header.dart';
 import '../../../theme/app_colours.dart';
 import '../../../models/cat_registration_model.dart';
 import 'new_profile_04.dart';
-import '../../../services/local_image_service.dart';
 import '../../../services/cat_registration_service.dart';
 
 
@@ -66,19 +65,10 @@ class _NewProfilePage03State extends State<NewProfilePage03> {
 
       if (croppedImage == null || !mounted) return;
 
-      // SAVE IMAGE TO APP'S DOCUMENTS DIRECTORY
-      final savedImagePath = await LocalImageService.saveCatImage(
-        croppedImage.path,
-      );
-
-      if (!mounted) return;
-
-      // UPDATE SELECTED IMAGE
+      // KEEP CROPPED IMAGE TEMPORARILY UNTIL PROFILE IS CREATED
       setState(() {
-        selectedImage = File(savedImagePath);
+      selectedImage = File(croppedImage.path);
       });
-
-      debugPrint('CAT IMAGE SAVED TO: $savedImagePath');
 
     } catch (e) {
       debugPrint('IMAGE PICKER ERROR: $e');
